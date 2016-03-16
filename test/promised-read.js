@@ -22,6 +22,20 @@ BBPromise.config({cancellation: true});
 
 function untilNever() { return false; }
 
+function writeEachTo(writable, inputData, cb) {
+  var written = 0;
+  function writeOne() {
+    writable.write(inputData[written]);
+    ++written;
+    if (written < inputData.length) {
+      process.nextTick(writeOne);
+    } else if (cb) {
+      cb();
+    }
+  }
+  writeOne();
+}
+
 /** Describes the promisedRead behavior for a given stream type. */
 function describePromisedReadWith(PassThrough) {
   describe('.read()', function() {
@@ -628,14 +642,7 @@ function describePromisedReadWith(PassThrough) {
     it('reads up to the marker across writes in objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [1, 2, 3];
-      var inputToWrite = inputData.slice();
-      function writeOne() {
-        input.write(inputToWrite.shift());
-        if (inputToWrite.length) {
-          process.nextTick(writeOne);
-        }
-      }
-      writeOne();
+      writeEachTo(input, inputData);
       return readTo(input, 3).then(function(data) {
         assert.deepEqual(data, inputData);
       });
@@ -654,8 +661,6 @@ function describePromisedReadWith(PassThrough) {
     });
 
     it('reads up to the marker split across writes with encoding', function() {
-      // Note:  read is not aware stream is in objectMode
-      // It is used to prevent write combining by PassThrough
       var input = new PassThrough({encoding: 'utf8'});
       var inputData = [
         'Larry\n',
@@ -663,9 +668,7 @@ function describePromisedReadWith(PassThrough) {
         'ly\n',
         'Moe\n'
       ];
-      inputData.forEach(function(data) {
-        input.write(data);
-      });
+      writeEachTo(input, inputData);
       return readTo(input, 'Curly\n').then(function(data) {
         assert.deepEqual(data, inputData.slice(0, 3).join(''));
       });
@@ -754,16 +757,14 @@ function describePromisedReadWith(PassThrough) {
     });
 
     it('stops reading after first write for 0-length marker', function() {
-      var input = new PassThrough({objectMode: true});
+      var input = new PassThrough();
       input.unshift = undefined;
       var inputData = [
         new Buffer('Larry\n'),
         new Buffer('Curly\n'),
         new Buffer('Moe\n')
       ];
-      inputData.forEach(function(data) {
-        input.write(data);
-      });
+      writeEachTo(input, inputData);
       return readTo(input, '').then(function(data) {
         assert.deepEqual(data, Buffer.concat(inputData).slice(0, data.length));
       });
@@ -771,21 +772,12 @@ function describePromisedReadWith(PassThrough) {
 
     if (PassThrough.prototype.unshift) {
       it('returns empty Buffer for 0-length marker w/ unshift', function() {
-        var input = new PassThrough({objectMode: true});
-        var inputData = [
-          new Buffer('Larry\n'),
-          new Buffer('Curly\n'),
-          new Buffer('Moe\n')
-        ];
-        inputData.forEach(function(data) {
-          input.write(data);
-        });
+        var input = new PassThrough();
+        var inputData = new Buffer('Larry\n');
+        input.write(inputData);
         return readTo(input, new Buffer(0)).then(function(data) {
           assert.deepEqual(data, new Buffer(0));
-          var expectData = inputData.slice();
-          while (expectData.length > 0) {
-            assert.deepEqual(input.read(), expectData.shift());
-          }
+          assert.deepEqual(input.read(), inputData);
         });
       });
     }
@@ -1054,17 +1046,13 @@ function describePromisedReadWith(PassThrough) {
     }
 
     it('calls the until function on each read', function() {
-      // Note:  read is not aware stream is in objectMode
-      // It is used to prevent write combining by PassThrough
-      var input = new PassThrough({objectMode: true});
+      var input = new PassThrough();
       var inputData = [
         new Buffer('Larry\n'),
         new Buffer('Curly\n'),
         new Buffer('Moe\n')
       ];
-      inputData.forEach(function(data) {
-        input.write(data);
-      });
+      writeEachTo(input, inputData);
       var spy = sinon.spy(function until(buffer, chunk) {
         assert(buffer instanceof Buffer);
         assert(chunk instanceof Buffer);
@@ -1087,15 +1075,13 @@ function describePromisedReadWith(PassThrough) {
     });
 
     it('treats Buffers as objects if options.objectMode', function() {
-      var input = new PassThrough({objectMode: true});
+      var input = new PassThrough();
       var inputData = [
         new Buffer('Larry\n'),
         new Buffer('Curly\n'),
         new Buffer('Moe\n')
       ];
-      inputData.forEach(function(data) {
-        input.write(data);
-      });
+      writeEachTo(input, inputData);
       function until(buffer) {
         assert(Array.isArray(buffer));
         return buffer.length < 2 ? -1 : 2;
