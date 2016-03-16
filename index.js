@@ -465,20 +465,48 @@ function readUntil(stream, until, options) {
  * the partial read result.
  */
 function readTo(stream, needle, options) {
-  function until(result) {
-    var needleIndex = result.indexOf ? result.indexOf(needle) :
-      bufferIndexOf(result, needle);
+  var needleForIndexOf;
+  var needleLength;
+  function until(result, chunk) {
+    if (Array.isArray(result)) {
+      // objectMode.  Use strict equality, like Array.prototype.indexOf
+      return chunk === needle ? result.length : -1;
+    }
+
+    // Calculate the length of the needle, as used by indexOf and perform the
+    // type conversion done by indexOf once, to avoid converting on every call
+    if (needleLength === undefined) {
+      if (typeof result === 'string') {
+        needleForIndexOf = String(needle);
+        needleLength = needleForIndexOf.length;
+      } else if (result instanceof Buffer) {
+        if (typeof needle === 'number') {
+          needleForIndexOf = needle;
+          needleLength = 1;
+        } else if (typeof needle === 'string') {
+          needleForIndexOf = needle;
+          needleLength = Buffer.byteLength(needle);
+        } else if (needle instanceof Buffer) {
+          needleForIndexOf = needle;
+          needleLength = needle.length;
+        }
+      }
+
+      if (needleLength === undefined) {
+        throw new TypeError('Unsupported indexOf argument types: ' +
+            Object.prototype.toString.call(result) + '.indexOf(' +
+            Object.prototype.toString.call(needle) + ')');
+      }
+    }
+
+    var start = Math.max(result.length - chunk.length - needleLength + 1, 0);
+    var needleIndex =
+      result.indexOf ? result.indexOf(needleForIndexOf, start) :
+      bufferIndexOf(result, needleForIndexOf, start);
     if (needleIndex < 0) {
       return -1;
     }
 
-    var needleLength =
-      typeof result === 'string' ? String(needle).length :
-      result instanceof Buffer ?
-        typeof needle === 'number' ? 1 :
-        typeof needle === 'string' ? Buffer.byteLength(needle) :
-        needle.length :
-      1;
     return needleIndex + needleLength;
   }
   return readInternal(stream, undefined, until, options);

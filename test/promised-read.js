@@ -577,7 +577,7 @@ function describePromisedReadWith(PassThrough) {
       var input = new PassThrough();
       var inputData = new Buffer('Larry\n');
       input.write(inputData);
-      return readTo(input, '\n').then(function(data) {
+      return readTo(input, new Buffer('\n')).then(function(data) {
         assert.deepEqual(data, inputData);
       });
     });
@@ -608,7 +608,7 @@ function describePromisedReadWith(PassThrough) {
       process.nextTick(function() {
         input.write(inputData.slice(2));
       });
-      return readTo(input, '\n').then(function(data) {
+      return readTo(input, new Buffer('\n')).then(function(data) {
         assert.deepEqual(data, inputData);
       });
     });
@@ -638,6 +638,65 @@ function describePromisedReadWith(PassThrough) {
       writeOne();
       return readTo(input, 3).then(function(data) {
         assert.deepEqual(data, inputData);
+      });
+    });
+
+    it('reads up to the marker split across writes with encoding', function() {
+      // Note:  read is not aware stream is in objectMode
+      // It is used to prevent write combining by PassThrough
+      var input = new PassThrough({encoding: 'utf8'});
+      var inputData = [
+        'Larry\n',
+        'Cur',
+        'ly\n',
+        'Moe\n'
+      ];
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      return readTo(input, 'Curly\n').then(function(data) {
+        assert.deepEqual(data, inputData.slice(0, 3).join(''));
+      });
+    });
+
+    describe('uses result indexOf conversions', function() {
+      it('string marker in Buffer', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('Larry\n');
+        input.write(inputData);
+        return readTo(input, '\n').then(function(data) {
+          assert.deepEqual(data, inputData);
+        });
+      });
+
+      it('character code marker in Buffer', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('Larry\n');
+        input.write(inputData);
+        return readTo(input, '\n'.charCodeAt(0)).then(function(data) {
+          assert.deepEqual(data, inputData);
+        });
+      });
+
+      it('Buffer marker in string', function() {
+        var input = new PassThrough({encoding: 'utf8'});
+        var inputData = 'Larry\n';
+        input.write(inputData);
+        return readTo(input, new Buffer('\n')).then(function(data) {
+          assert.deepEqual(data, inputData);
+        });
+      });
+
+      it('rejects with TypeError on type mismatch', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('Larry\n');
+        input.write(inputData);
+        return readTo(input, true).then(
+          sinon.mock().never(),
+          function(err) {
+            assert.strictEqual(err.name, 'TypeError');
+          }
+        );
       });
     });
 
