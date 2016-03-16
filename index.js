@@ -141,12 +141,12 @@ function readInternal(stream, size, until, options) {
   var cancelRead;
 
   var promise = new Promise(function(resolve, reject, cancelled) {
-    var isDone = false;
+    var isDoneReading = false;
     var result = null;
     var timeoutID;
-    function done() {
-      if (isDone) { return; }
-      isDone = true;
+    function doneReading() {
+      if (isDoneReading) { return; }
+      isDoneReading = true;
       stream.removeListener('data', onData);
       stream.removeListener('end', onEnd);
       stream.removeListener('error', doReject);
@@ -154,7 +154,7 @@ function readInternal(stream, size, until, options) {
       if (timeoutID) { clearTimeout(timeoutID); }
     }
     function doReject(err) {
-      done();
+      doneReading();
 
       if (result !== null) {
         if (typeof err === 'object' && err !== null) {
@@ -168,7 +168,7 @@ function readInternal(stream, size, until, options) {
       reject(err);
     }
     function doResolve() {
-      done();
+      doneReading();
       resolve(result);
     }
 
@@ -183,8 +183,8 @@ function readInternal(stream, size, until, options) {
      * @see {ReadOptions.cancellable}
      */
     abortRead = function() {
-      if (isDone) { return; }
-      done();
+      if (isDoneReading) { return; }
+      doReject(new AbortError('read aborted'), true);
       if (result && result.length > 0) {
         result = tryUnshift(stream, result, 0);
       }
@@ -205,8 +205,8 @@ function readInternal(stream, size, until, options) {
      * @see {ReadOptions.cancellable}
      */
     cancelRead = function() {
-      if (isDone) { return null; }
-      done();
+      if (isDoneReading) { return null; }
+      doneReading();
       if (result && result.length > 0) {
         result = tryUnshift(stream, result, 0);
       }
@@ -226,7 +226,7 @@ function readInternal(stream, size, until, options) {
 
     if (timeout !== undefined && timeout !== null) {
       timeoutID = setTimeout(function onTimeout() {
-        done();
+        doneReading();
         if (result && result.length > 0) {
           result = tryUnshift(stream, result, 0);
         }
@@ -334,7 +334,7 @@ function readInternal(stream, size, until, options) {
 
       // Check if the caller thinks we are done
       var desiredLength = until ? tryUntil() : result.length;
-      if (isDone) {
+      if (isDoneReading) {
         return;
       }
 
@@ -355,10 +355,10 @@ function readInternal(stream, size, until, options) {
     }
 
     function readPending() {
-      while (!isDone) {
+      while (!isDoneReading) {
         var data = stream.read(size);
         if (data === null) {
-          if (!isDone) {
+          if (!isDoneReading) {
             stream.once('readable', readPending);
           }
           return;
