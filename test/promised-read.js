@@ -641,6 +641,18 @@ function describePromisedReadWith(PassThrough) {
       });
     });
 
+    it('does strict equality checks for marker in objectMode', function() {
+      var input = new PassThrough({objectMode: true});
+      // Note:  null and undefined are not supported by stream.PassThrough
+      var inputData = [true, 0, '', false];
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      return readTo(input, false).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+    });
+
     it('reads up to the marker split across writes with encoding', function() {
       // Note:  read is not aware stream is in objectMode
       // It is used to prevent write combining by PassThrough
