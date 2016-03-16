@@ -853,6 +853,119 @@ function describePromisedReadWith(PassThrough) {
   });
 
   describe('.readUntil()', function() {
+    it('continues reading when negative or non-numeric falsey', function() {
+      var input = new PassThrough({objectMode: true});
+      var inputData = [0, 1, 2, 3, 4, 5];
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      var callNum = 0;
+      var returnValues = [undefined, null, false, '', -5, true];
+      function until(buffer, chunk) {
+        assert(Array.isArray(buffer));
+        assert(typeof chunk === 'number');
+        return returnValues[callNum++];
+      }
+      return readUntil(input, until).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+    });
+
+    it('stops reading on true', function() {
+      var input = new PassThrough();
+      var inputData = new Buffer('test');
+      input.write(inputData);
+      function until(buffer, chunk) {
+        return true;
+      }
+      return readUntil(input, until).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+    });
+
+    if (PassThrough.prototype.unshift) {
+      it('stops reading and unshifts on positive numbers', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('test');
+        input.write(inputData);
+        function until(buffer, chunk) {
+          return 2;
+        }
+        return readUntil(input, until).then(function(data) {
+          assert.deepEqual(data, inputData.slice(0, 2));
+        });
+      });
+
+      it('stops reading and unshifts on 0', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('test');
+        input.write(inputData);
+        function until(buffer, chunk) {
+          return 0;
+        }
+        return readUntil(input, until).then(function(data) {
+          assert.deepEqual(data, new Buffer(0));
+        });
+      });
+    } else {
+      it('stops reading on positive numbers', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('test');
+        input.write(inputData);
+        function until(buffer, chunk) {
+          return 2;
+        }
+        return readUntil(input, until).then(function(data) {
+          assert.deepEqual(data, inputData);
+        });
+      });
+
+      it('stops reading on 0', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('test');
+        input.write(inputData);
+        function until(buffer, chunk) {
+          return 0;
+        }
+        return readUntil(input, until).then(function(data) {
+          assert.deepEqual(data, inputData);
+        });
+      });
+    }
+
+    it('calls the until function on each read', function() {
+      // Note:  read is not aware stream is in objectMode
+      // It is used to prevent write combining by PassThrough
+      var input = new PassThrough({objectMode: true});
+      var inputData = [
+        new Buffer('Larry\n'),
+        new Buffer('Curly\n'),
+        new Buffer('Moe\n')
+      ];
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      var spy = sinon.spy(function until(buffer, chunk) {
+        assert(buffer instanceof Buffer);
+        assert(chunk instanceof Buffer);
+        // Note:  No Buffer.equals before Node v0.11.13
+        return String(chunk) === String(inputData[inputData.length - 1]);
+      });
+      return readUntil(input, spy).then(function(data) {
+        assert.deepEqual(data, Buffer.concat(inputData));
+        assert.strictEqual(spy.callCount, 3);
+        spy.getCall(0).calledWithExactly(inputData[0], inputData[0]);
+        spy.getCall(1).calledWithExactly(
+          Buffer.concat(inputData.slice(0, 2)),
+          inputData[1]
+        );
+        spy.getCall(2).calledWithExactly(
+          Buffer.concat(inputData),
+          inputData[2]
+        );
+      });
+    });
+
     it('treats Buffers as objects if options.objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [
