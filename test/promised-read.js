@@ -647,7 +647,7 @@ function describePromisedReadWith(PassThrough) {
         var inputData = new Buffer('Larry\nCurly');
         input.write(inputData);
         return readTo(input, '\n').then(function(data) {
-          var afterMarker = inputData.indexOf('\n') + 1;
+          var afterMarker = String(inputData).indexOf('\n') + 1;
           assert.deepEqual(data, inputData.slice(0, afterMarker));
           assert.deepEqual(input.read(), inputData.slice(afterMarker));
         });

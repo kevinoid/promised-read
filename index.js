@@ -9,6 +9,24 @@ var AnyPromise = require('any-promise');
 var EOFError = require('./lib/eof-error');
 var TimeoutError = require('./lib/timeout-error');
 
+var bufferIndexOf;
+if (!Buffer.prototype.indexOf) {
+  try {
+    bufferIndexOf = require('buffertools').indexOf;
+  } catch (errRequire) {
+    // debug('Unable to require(\'buffertools\')', errRequire);
+    // Do a little dance to un-polyfill and convert method to function
+    bufferIndexOf = (function bufferIndexOfClosure() {
+      require('buffer-indexof-polyfill');
+      var bufferIndexOfMethod = Buffer.prototype.indexOf;
+      delete Buffer.prototype.indexOf;
+      return function bufferIndexOfFunction(buffer, needle, fromIndex) {
+        return bufferIndexOfMethod.call(buffer, needle, fromIndex);
+      };
+    }());
+  }
+}
+
 /** Attempts to unshift result data down to a desired length.
  * @param {stream.Readable} stream Stream into which to unshift data.
  * @param {!Buffer|string|!Array} result Read result data.
@@ -422,6 +440,18 @@ function readUntil(stream, until, options) {
 }
 
 /** Reads from a stream.Readable until a given value is found.
+ *
+ * This function calls {@link readUntil} with an <code>until</code> function
+ * which uses <code>.indexOf</code> to search for <code>needle</code>.  On
+ * Node.js versions before v1.5.0, {@link
+ * https://www.npmjs.com/package/buffertools buffertools} is used when
+ * available and {@link https://www.npmjs.com/package/buffer-indexof-polyfill
+ * buffer-indexof-polyfill} otherwise.  When reading Buffers and performance is
+ * paramount, consider using {@link readUntil} directly with an optional
+ * function for the problem (e.g. {@link
+ * https://www.npmjs.com/package/buffer-indexof-fast buffer-indexof-fast} for
+ * single-character search).
+ *
  * @param {stream.Readable} stream Stream from which to read.
  * @param {!Buffer|string|*} needle Value to search for in the read result.
  * The stream will be read until this value is found.
@@ -437,7 +467,8 @@ function readUntil(stream, until, options) {
  */
 function readTo(stream, needle, options) {
   function until(result) {
-    var needleIndex = result.indexOf(needle);
+    var needleIndex = result.indexOf ? result.indexOf(needle) :
+      bufferIndexOf(result, needle);
     if (needleIndex < 0) {
       return -1;
     }
