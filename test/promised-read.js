@@ -700,6 +700,16 @@ function describePromisedReadWith(PassThrough) {
       });
     });
 
+    it('may return data after the marker w/o .unshift', function() {
+      var input = new PassThrough();
+      input.unshift = undefined;
+      var inputData = new Buffer('Larry\nCurly');
+      input.write(inputData);
+      return readTo(input, '\n').then(function(data) {
+        assert.deepEqual(data, inputData.slice(0, data.length));
+      });
+    });
+
     if (PassThrough.prototype.unshift) {
       it('does not read past the marker w/ .unshift', function() {
         var input = new PassThrough();
