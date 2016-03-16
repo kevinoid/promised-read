@@ -153,8 +153,12 @@ function readInternal(stream, size, until, options) {
       stream.removeListener('readable', readPending);
       if (timeoutID) { clearTimeout(timeoutID); }
     }
-    function doReject(err) {
+    function doReject(err, unshiftResult) {
       doneReading();
+
+      if (unshiftResult && result !== null && result.length > 0) {
+        result = tryUnshift(stream, result, 0);
+      }
 
       if (result !== null) {
         if (typeof err === 'object' && err !== null) {
@@ -185,10 +189,6 @@ function readInternal(stream, size, until, options) {
     abortRead = function() {
       if (isDoneReading) { return; }
       doReject(new AbortError('read aborted'), true);
-      if (result && result.length > 0) {
-        result = tryUnshift(stream, result, 0);
-      }
-      doReject(new AbortError('read aborted'));
     };
 
     /** Cancels a pending read operation, causing the Promise never to be
@@ -206,6 +206,8 @@ function readInternal(stream, size, until, options) {
      */
     cancelRead = function() {
       if (isDoneReading) { return null; }
+      // Note:  Must stop reading before unshifting to avoid emitting a
+      // 'readable' event and immediately re-reading unshifted data.
       doneReading();
       if (result && result.length > 0) {
         result = tryUnshift(stream, result, 0);
@@ -226,11 +228,7 @@ function readInternal(stream, size, until, options) {
 
     if (timeout !== undefined && timeout !== null) {
       timeoutID = setTimeout(function onTimeout() {
-        doneReading();
-        if (result && result.length > 0) {
-          result = tryUnshift(stream, result, 0);
-        }
-        doReject(new TimeoutError());
+        doReject(new TimeoutError(), true);
       }, timeout);
     }
 
@@ -239,10 +237,7 @@ function readInternal(stream, size, until, options) {
       try {
         return until(result);
       } catch (errUntil) {
-        if (result && result.length > 0) {
-          result = tryUnshift(stream, result, 0);
-        }
-        doReject(errUntil);
+        doReject(errUntil, true);
         return undefined;
       }
     }
