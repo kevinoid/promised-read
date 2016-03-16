@@ -189,11 +189,11 @@ function describePromisedReadWith(PassThrough) {
 
     it('resolves with null when no data is read', function() {
       var input = new PassThrough();
-      var result = read(input).then(function(data) {
+      var promise = read(input).then(function(data) {
         assert.strictEqual(data, null);
       });
       input.end();
-      return result;
+      return promise;
     });
 
     if (!PassThrough.prototype.read) {
@@ -201,12 +201,12 @@ function describePromisedReadWith(PassThrough) {
       it('does not resolve with null for null \'data\' event', function() {
         var input = new PassThrough({objectMode: true});
         var inputData = new Buffer('test');
-        var result = read(input).then(function(data) {
+        var promise = read(input).then(function(data) {
           assert.strictEqual(data, inputData);
         });
         input.write(null);
         input.write(inputData);
-        return result;
+        return promise;
       });
     }
 
@@ -225,19 +225,19 @@ function describePromisedReadWith(PassThrough) {
     it('rejects with stream error', function() {
       var input = new PassThrough();
       var errTest = new Error('test');
-      var result = read(input).then(
+      var promise = read(input).then(
         sinon.mock().never(),
         function(err) { assert.strictEqual(err, errTest); }
       );
       input.emit('error', errTest);
-      return result;
+      return promise;
     });
 
     if (PassThrough.prototype.read) {
       it('does not read after error', function() {
         var input = new PassThrough();
         var errTest = new Error('test');
-        var result = read(input).then(
+        var promise = read(input).then(
           sinon.mock().never(),
           function(err) {
             assert.strictEqual(err, errTest);
@@ -246,7 +246,7 @@ function describePromisedReadWith(PassThrough) {
         );
         input.emit('error', errTest);
         input.write('data');
-        return result;
+        return promise;
       });
     }
 
@@ -257,7 +257,7 @@ function describePromisedReadWith(PassThrough) {
         var input = new PassThrough();
         var errTest = new Error('test');
         var inputData = new Buffer('test');
-        var result = read(input, 8).then(
+        var promise = read(input, 8).then(
           sinon.mock().never(),
           function(err) {
             assert.strictEqual(err, errTest);
@@ -267,7 +267,7 @@ function describePromisedReadWith(PassThrough) {
         input.write(inputData, function() {
           input.emit('error', errTest);
         });
-        return result;
+        return promise;
       });
     }
 
@@ -314,30 +314,30 @@ function describePromisedReadWith(PassThrough) {
 
     it('returns an instance of options.Promise', function() {
       var input = new PassThrough();
-      var result = read(input, {Promise: BBPromise});
-      assert(result instanceof BBPromise);
+      var promise = read(input, {Promise: BBPromise});
+      assert(promise instanceof BBPromise);
     });
 
     it('does not have .abortRead or .cancelRead by default', function() {
       var input = new PassThrough();
-      var result = read(input);
-      assert.strictEqual(result.abortRead, undefined);
-      assert.strictEqual(result.cancelRead, undefined);
+      var promise = read(input);
+      assert.strictEqual(promise.abortRead, undefined);
+      assert.strictEqual(promise.cancelRead, undefined);
     });
 
     describe('with options.cancellable', function() {
       it('has .abortRead and .cancelRead methods', function() {
         var input = new PassThrough();
-        var result = read(input, {cancellable: true});
-        assert.strictEqual(typeof result.abortRead, 'function');
-        assert.strictEqual(typeof result.cancelRead, 'function');
+        var promise = read(input, {cancellable: true});
+        assert.strictEqual(typeof promise.abortRead, 'function');
+        assert.strictEqual(typeof promise.cancelRead, 'function');
       });
 
       it('supports .cancelable as an alias', function() {
         var input = new PassThrough();
-        var result = read(input, {cancelable: true});
-        assert.strictEqual(typeof result.abortRead, 'function');
-        assert.strictEqual(typeof result.cancelRead, 'function');
+        var promise = read(input, {cancelable: true});
+        assert.strictEqual(typeof promise.abortRead, 'function');
+        assert.strictEqual(typeof promise.cancelRead, 'function');
       });
 
       it('rejects with AbortError on .abortRead', function(done) {
@@ -498,7 +498,7 @@ function describePromisedReadWith(PassThrough) {
       it('passes options.timeout of 0 to setTimeout', function() {
         var input = new PassThrough();
         var spy = sinon.spy(global, 'setTimeout');
-        var result = read(input, {timeout: 0}).then(
+        var promise = read(input, {timeout: 0}).then(
           sinon.mock().never(),
           function(err) {
             assert.strictEqual(err.name, 'TimeoutError');
@@ -507,7 +507,7 @@ function describePromisedReadWith(PassThrough) {
         setTimeout.restore();
         assert.strictEqual(spy.callCount, 1);
         assert.strictEqual(spy.firstCall.args[1], 0);
-        return result;
+        return promise;
       });
 
       if (PassThrough.prototype.read) {
@@ -819,13 +819,13 @@ function describePromisedReadWith(PassThrough) {
       // Note:  I would be open to adding an option to allow this, if needed.
       it('can read null from \'data\' events', function() {
         var input = new PassThrough({objectMode: true});
-        var result = readTo(input, null).then(function(data) {
+        var promise = readTo(input, null).then(function(data) {
           assert(Array.isArray(data));
           assert.strictEqual(data.length, 1);
           assert.strictEqual(data[0], null);
         });
         input.write(null);
-        return result;
+        return promise;
       });
     }
 
@@ -833,7 +833,7 @@ function describePromisedReadWith(PassThrough) {
       var input = new PassThrough();
       var errTest = new Error('test');
       var inputData = new Buffer('test');
-      var result = readTo(input, '\n').then(
+      var promise = readTo(input, '\n').then(
         sinon.mock().never(),
         function(err) {
           assert.strictEqual(err, errTest);
@@ -843,25 +843,25 @@ function describePromisedReadWith(PassThrough) {
       input.write(inputData, function() {
         input.emit('error', errTest);
       });
-      return result;
+      return promise;
     });
 
     it('rejects with EOFError when no data is read', function() {
       var input = new PassThrough();
-      var result = readTo(input, '\n').then(
+      var promise = readTo(input, '\n').then(
         sinon.mock().never(),
         function(err) {
           assert.strictEqual(err.name, 'EOFError');
         }
       );
       input.end();
-      return result;
+      return promise;
     });
 
     it('sets previously read data as .read on EOFError', function() {
       var input = new PassThrough();
       var inputData = new Buffer('test');
-      var result = readTo(input, '\n').then(
+      var promise = readTo(input, '\n').then(
         sinon.mock().never(),
         function(err) {
           assert.strictEqual(err.name, 'EOFError');
@@ -869,7 +869,7 @@ function describePromisedReadWith(PassThrough) {
         }
       );
       input.end(inputData);
-      return result;
+      return promise;
     });
 
     it('without unshift, sets read data as .read on .abortRead', function() {
@@ -1125,20 +1125,20 @@ function describePromisedReadWith(PassThrough) {
 
     it('rejects with EOFError when no data is read', function() {
       var input = new PassThrough();
-      var result = readUntil(input, untilNever).then(
+      var promise = readUntil(input, untilNever).then(
         sinon.mock().never(),
         function(err) {
           assert.strictEqual(err.name, 'EOFError');
         }
       );
       input.end();
-      return result;
+      return promise;
     });
 
     it('sets previously read data as .read on EOFError', function() {
       var input = new PassThrough();
       var inputData = new Buffer('test');
-      var result = readUntil(input, untilNever).then(
+      var promise = readUntil(input, untilNever).then(
         sinon.mock().never(),
         function(err) {
           assert.strictEqual(err.name, 'EOFError');
@@ -1146,7 +1146,7 @@ function describePromisedReadWith(PassThrough) {
         }
       );
       input.end(inputData);
-      return result;
+      return promise;
     });
 
     if (stream.Readable && new PassThrough() instanceof stream.Readable) {
