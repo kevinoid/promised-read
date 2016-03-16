@@ -31,11 +31,14 @@ if (!Buffer.prototype.indexOf) {
  * @param {stream.Readable} stream Stream into which to unshift data.
  * @param {!Buffer|string|!Array} result Read result data.
  * @param {number} desiredLength Desired length of result after unshifting.
- * @return {!Buffer|string|!Array} Result data after unshifting.
- * <code>null</code> if all data was unshifted.
+ * @param {boolean=} emptySlice Return an empty slice when all data is
+ * unshifted, rather than <code>null</code>.
+ * @return {Buffer|string|Array} Result data after unshifting, or
+ * <code>null</code> if all data was unshifted and <code>emptySlice</code> is
+ * falsey.
  * @private
  */
-function tryUnshift(stream, result, desiredLength) {
+function tryUnshift(stream, result, desiredLength, emptySlice) {
   if (typeof stream.unshift !== 'function') {
     // debug('stream does not support unshift');
     return result;
@@ -76,7 +79,7 @@ function tryUnshift(stream, result, desiredLength) {
     stream.on('error', errorListener);
   });
 
-  return resultLength === 0 ? null :
+  return resultLength === 0 && !emptySlice ? null :
     resultLength < result.length ? result.slice(0, resultLength) :
     result;
 }
@@ -336,7 +339,7 @@ function readInternal(stream, size, until, options) {
       if (typeof desiredLength === 'number') {
         if (desiredLength >= 0) {
           if (desiredLength < result.length) {
-            result = tryUnshift(stream, result, desiredLength);
+            result = tryUnshift(stream, result, desiredLength, true);
           }
           doResolve();
         }
