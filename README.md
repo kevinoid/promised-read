@@ -72,20 +72,19 @@ var input = fs.createReadStream('input.jsons', {encoding: 'utf8'});
 // Don't use this without handling '{' and '}' in strings
 function untilObject(data) {
   var depth = 0;
-  var i = 0;
-  for (; i < data.length; ++i) {
+  for (var i = 0; i < data.length; ++i) {
     var ch = data[i];
     if (ch === '{') {
       ++depth;
     } else if (ch === '}') {
       --depth;
       if (depth === 0) {
-        break;
+        // Length including closing bracket.  Additional data will be unshifted.
+        return i + 1;
       }
     }
   }
-  // Length including closing bracket.  Additional data will be unshifted.
-  return i + 1;
+  return -1;
 }
 readUntil(input, untilObject).then(function(jsonObject) {
   JSON.parse(jsonObject);
