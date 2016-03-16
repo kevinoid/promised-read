@@ -497,6 +497,13 @@ function readTo(stream, needle, options) {
             Object.prototype.toString.call(result) + '.indexOf(' +
             Object.prototype.toString.call(needle) + ')');
       }
+
+      // Buffer.prototype.indexOf returns -1 for 0-length string/Buffer.
+      // To be consistent with string, we return 0.
+      // Note:  If removing this check, remove + 1 from start calc when 0.
+      if (needleLength === 0) {
+        return 0;
+      }
     }
 
     var start = Math.max(result.length - chunk.length - needleLength + 1, 0);

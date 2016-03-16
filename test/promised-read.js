@@ -741,6 +741,43 @@ function describePromisedReadWith(PassThrough) {
       });
     });
 
+    it('stops reading after first write for 0-length marker', function() {
+      var input = new PassThrough({objectMode: true});
+      input.unshift = undefined;
+      var inputData = [
+        new Buffer('Larry\n'),
+        new Buffer('Curly\n'),
+        new Buffer('Moe\n')
+      ];
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      return readTo(input, '').then(function(data) {
+        assert.deepEqual(data, Buffer.concat(inputData).slice(0, data.length));
+      });
+    });
+
+    if (PassThrough.prototype.unshift) {
+      it('returns empty Buffer for 0-length marker w/ unshift', function() {
+        var input = new PassThrough({objectMode: true});
+        var inputData = [
+          new Buffer('Larry\n'),
+          new Buffer('Curly\n'),
+          new Buffer('Moe\n')
+        ];
+        inputData.forEach(function(data) {
+          input.write(data);
+        });
+        return readTo(input, new Buffer(0)).then(function(data) {
+          assert.deepEqual(data, new Buffer(0));
+          var expectData = inputData.slice();
+          while (expectData.length > 0) {
+            assert.deepEqual(input.read(), expectData.shift());
+          }
+        });
+      });
+    }
+
     it('treats strings as objects if options.objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = ['Larry', 'Curly', 'Moe'];
