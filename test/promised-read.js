@@ -711,23 +711,25 @@ function describePromisedReadWith(PassThrough) {
           assert.deepEqual(input.read(), inputData.slice(afterMarker));
         });
       });
+    }
 
-      it('does not read past the marker w/ .unshift in objectMode', function() {
-        var input = new PassThrough({objectMode: true});
-        var inputData = [1, 2, 3, 4, 5];
-        inputData.forEach(function(data) {
-          input.write(data);
-        });
-        return readTo(input, 3).then(function(data) {
-          var afterMarker = inputData.indexOf(3) + 1;
-          assert.deepEqual(data, inputData.slice(0, afterMarker));
+    it('does not read past the marker in objectMode', function() {
+      var input = new PassThrough({objectMode: true});
+      var inputData = [1, 2, 3, 4, 5];
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      readTo(input, 3).then(function(data) {
+        var afterMarker = inputData.indexOf(3) + 1;
+        assert.deepEqual(data, inputData.slice(0, afterMarker));
+        if (input.read) {
           var expectData = inputData.slice(afterMarker);
           while (expectData.length > 0) {
             assert.deepEqual(input.read(), expectData.shift());
           }
-        });
+        }
       });
-    }
+    });
 
     it('treats strings as objects if options.objectMode', function() {
       var input = new PassThrough({objectMode: true});
