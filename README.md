@@ -91,6 +91,38 @@ readUntil(input, untilObject).then(function(jsonObject) {
 });
 ```
 
+### Read Until (incremental, faster)
+
+The `until` function can also operate on the individual chunks read, which are
+passed as the second argument.  This avoids re-processing data which was
+previously checked.  The previous example can be made more efficient with:
+
+```js
+var fs = require('fs');
+var readUntil = require('promised-read').readUntil;
+var input = fs.createReadStream('input.jsons', {encoding: 'utf8'});
+var depth = 0;
+// Don't use this without handling '{' and '}' in strings
+function untilObject(data, chunk) {
+  for (var i = 0; i < chunk.length; ++i) {
+    var ch = chunk[i];
+    if (ch === '{') {
+      ++depth;
+    } else if (ch === '}') {
+      --depth;
+      if (depth === 0) {
+        // Length including closing bracket.  Additional data will be unshifted.
+        return data.length - chunk.length + i + 1;
+      }
+    }
+  }
+  return -1;
+}
+readUntil(input, untilObject).then(function(jsonObject) {
+  JSON.parse(jsonObject);
+});
+```
+
 ### Read with Timeout
 
 ```js
