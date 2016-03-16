@@ -42,15 +42,6 @@ function describePromisedReadWith(PassThrough) {
     it('returns a Promise with read data', function() {
       var input = new PassThrough();
       var inputData = new Buffer('test');
-      input.write(inputData);
-      return read(input).then(function(data) {
-        assert.deepEqual(data, inputData);
-      });
-    });
-
-    it('returns a Promise with read data when available', function() {
-      var input = new PassThrough();
-      var inputData = new Buffer('test');
       process.nextTick(function() {
         input.write(inputData);
       });
@@ -68,35 +59,56 @@ function describePromisedReadWith(PassThrough) {
       });
     });
 
+    if (PassThrough.prototype.read) {
+      it('returns a Promise with available data', function(done) {
+        var input = new PassThrough();
+        var inputData = new Buffer('test');
+        input.write(inputData);
+
+        process.nextTick(function() {
+          read(input).then(
+            function(data) {
+              assert.deepEqual(data, inputData);
+              done();
+            },
+            done
+          );
+        });
+      });
+    }
+
     it('can read a chunk larger than writes', function() {
       var input = new PassThrough();
       var inputData = new Buffer('test');
+      var promise = read(input, 8).then(function(data) {
+        assert.deepEqual(data, Buffer.concat([inputData, inputData]));
+      });
       input.write(inputData);
       process.nextTick(function() {
         input.write(inputData);
       });
-      return read(input, 8).then(function(data) {
-        assert.deepEqual(data, Buffer.concat([inputData, inputData]));
-      });
+      return promise;
     });
 
     if (PassThrough.prototype.read) {
       it('can read a chunk smaller than writes', function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
-        input.write(inputData);
-        return read(input, 2).then(function(data) {
+        var promise = read(input, 2).then(function(data) {
           assert.deepEqual(data, inputData.slice(0, 2));
         });
+        input.write(inputData);
+        return promise;
       });
     } else {
       it('can\'t read a chunk smaller than writes', function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
-        input.write(inputData);
-        return read(input, 2).then(function(data) {
+        var promise = read(input, 2).then(function(data) {
           assert.deepEqual(data, inputData);
         });
+        input.write(inputData);
+        return promise;
       });
 
       it('can read a chunk smaller than writes w/ .unshift()', function() {
@@ -105,10 +117,11 @@ function describePromisedReadWith(PassThrough) {
         input.unshift = function(chunk) {
           assert.deepEqual(chunk, inputData.slice(2));
         };
-        input.write(inputData);
-        return read(input, 2).then(function(data) {
+        var promise = read(input, 2).then(function(data) {
           assert.deepEqual(data, inputData.slice(0, 2));
         });
+        input.write(inputData);
+        return promise;
       });
 
       it('reads a larger chunk if unshift emits error', function() {
@@ -117,10 +130,11 @@ function describePromisedReadWith(PassThrough) {
           this.emit('error', new Error('test'));
         };
         var inputData = new Buffer('test');
-        input.write(inputData);
-        return read(input, 2).then(function(data) {
+        var promise = read(input, 2).then(function(data) {
           assert.deepEqual(data, inputData);
         });
+        input.write(inputData);
+        return promise;
       });
 
       it('reads a larger chunk if unshift throws error', function() {
@@ -129,10 +143,11 @@ function describePromisedReadWith(PassThrough) {
           throw new Error('test');
         };
         var inputData = new Buffer('test');
-        input.write(inputData);
-        return read(input, 2).then(function(data) {
+        var promise = read(input, 2).then(function(data) {
           assert.deepEqual(data, inputData);
         });
+        input.write(inputData);
+        return promise;
       });
 
       // The value of this behavior is debatable, but the intention is that
@@ -149,56 +164,63 @@ function describePromisedReadWith(PassThrough) {
           this.emit('error', new Error('test'));
         };
         var inputData = new Buffer('test');
+        read(input, 2).then(
+          function(data) {
+            assert.deepEqual(data, inputData);
+            done();
+          },
+          done
+        );
         input.write(inputData);
-        read(input, 2).then(function(data) {
-          assert.deepEqual(data, inputData);
-          done();
-        });
       });
     }
 
     it('can short-read due to end', function() {
       var input = new PassThrough();
       var inputData = new Buffer('test');
+      var promise = read(input, 8).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
       input.write(inputData);
       process.nextTick(function() {
         input.end();
       });
-      return read(input, 8).then(function(data) {
-        assert.deepEqual(data, inputData);
-      });
+      return promise;
     });
 
     it('can read an empty Array in objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [];
-      input.write(inputData);
-      return read(input).then(function(data) {
+      var promise = read(input).then(function(data) {
         assert.strictEqual(data, inputData);
       });
+      input.write(inputData);
+      return promise;
     });
 
     // Just like stream.Readable.prototype.read when in objectMode
     it('reads at most one non-Buffer/string', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [1, 2, 3];
+      var promise = read(input, 2).then(function(data) {
+        assert.strictEqual(data, inputData[0]);
+      });
       inputData.forEach(function(data) {
         input.write(data);
       });
-      return read(input, 2).then(function(data) {
-        assert.strictEqual(data, inputData[0]);
-      });
+      return promise;
     });
 
     it('reads at most one Buffer/string if options.objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [new Buffer('Larry'), new Buffer('Curly')];
+      var promise = read(input, 2, {objectMode: true}).then(function(data) {
+        assert.strictEqual(data, inputData[0]);
+      });
       inputData.forEach(function(data) {
         input.write(data);
       });
-      return read(input, 2, {objectMode: true}).then(function(data) {
-        assert.strictEqual(data, inputData[0]);
-      });
+      return promise;
     });
 
     it('resolves with null when no data is read', function() {
@@ -225,13 +247,15 @@ function describePromisedReadWith(PassThrough) {
     }
 
     if (stream.Readable && new PassThrough() instanceof stream.Readable) {
-      it('resolves with null after end on best-effort basis', function() {
+      it('resolves with null after end for stream.Readable', function(done) {
         // This only works for proper instances of stream.Readable and is not
         // guaranteed to work (due to use of Readable implementation details).
         var input = new PassThrough();
         input.end();
-        return read(input).then(function(data) {
-          assert.strictEqual(data, null);
+        process.nextTick(function() {
+          read(input).then(function(data) {
+            assert.strictEqual(data, null);
+          }).then(done, done);
         });
       });
     }
@@ -293,10 +317,8 @@ function describePromisedReadWith(PassThrough) {
       it(desc, function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
-        input.write(inputData);
-        var spy;
-        if (input.read) { spy = sinon.spy(input, 'read'); }
-        return read(input, readArg).then(function(data) {
+        var spy = input.read && sinon.spy(input, 'read');
+        var promise = read(input, readArg).then(function(data) {
           if (readsData) {
             assert.notEqual(data, null);
           } else {
@@ -306,6 +328,8 @@ function describePromisedReadWith(PassThrough) {
             assert(spy.firstCall.calledWithExactly(readArg));
           }
         });
+        input.write(inputData);
+        return promise;
       });
     }
     [0, -1, false].forEach(function(readArg) {
@@ -547,12 +571,12 @@ function describePromisedReadWith(PassThrough) {
       it('resolves if read completes before timeout ms', function(done) {
         var input = new PassThrough();
         var inputData = new Buffer('test');
-        input.write(inputData);
         read(input, {timeout: 1}).then(function(data) {
           assert.deepEqual(data, inputData);
           // Wait until after timeout to catch unhandled error
           setTimeout(done, 2);
         }, done);
+        input.write(inputData);
       });
     });
 
@@ -590,74 +614,81 @@ function describePromisedReadWith(PassThrough) {
     it('reads up to (and including) the marker', function() {
       var input = new PassThrough();
       var inputData = new Buffer('Larry\n');
-      input.write(inputData);
-      return readTo(input, new Buffer('\n')).then(function(data) {
+      var promise = readTo(input, new Buffer('\n')).then(function(data) {
         assert.deepEqual(data, inputData);
       });
+      input.write(inputData);
+      return promise;
     });
 
     it('reads up to (and including) the marker with encoding', function() {
       var input = new PassThrough({encoding: 'utf8'});
       var inputData = 'Larry\n';
-      input.write(inputData);
-      return readTo(input, '\n').then(function(data) {
+      var promise = readTo(input, '\n').then(function(data) {
         assert.deepEqual(data, inputData);
       });
+      input.write(inputData);
+      return promise;
     });
 
     it('reads up to (and including) the marker in objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = 3;
-      input.write(inputData);
-      return readTo(input, 3).then(function(data) {
+      var promise = readTo(input, 3).then(function(data) {
         // Note:  readTo result is always an Array in objectMode
         assert.deepEqual(data, [inputData]);
       });
+      input.write(inputData);
+      return promise;
     });
 
     it('reads up to the marker across writes', function() {
       var input = new PassThrough();
-      var inputData = new Buffer('Larry\n');
-      input.write(inputData.slice(0, 2));
-      process.nextTick(function() {
-        input.write(inputData.slice(2));
+      var inputData = [
+        new Buffer('La'),
+        new Buffer('rry\n')
+      ];
+      var promise = readTo(input, new Buffer('\n')).then(function(data) {
+        assert.deepEqual(data, Buffer.concat(inputData));
       });
-      return readTo(input, new Buffer('\n')).then(function(data) {
-        assert.deepEqual(data, inputData);
-      });
+      writeEachTo(input, inputData);
+      return promise;
     });
 
     it('reads up to the marker across writes with encoding', function() {
       var input = new PassThrough({encoding: 'utf8'});
-      var inputData = 'Larry\n';
-      input.write(inputData.slice(0, 2));
-      process.nextTick(function() {
-        input.write(inputData.slice(2));
+      var inputData = [
+        'La',
+        'rry\n'
+      ];
+      var promise = readTo(input, '\n').then(function(data) {
+        assert.deepEqual(data, inputData.join(''));
       });
-      return readTo(input, '\n').then(function(data) {
-        assert.deepEqual(data, inputData);
-      });
+      writeEachTo(input, inputData);
+      return promise;
     });
 
     it('reads up to the marker across writes in objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [1, 2, 3];
-      writeEachTo(input, inputData);
-      return readTo(input, 3).then(function(data) {
+      var promise = readTo(input, 3).then(function(data) {
         assert.deepEqual(data, inputData);
       });
+      writeEachTo(input, inputData);
+      return promise;
     });
 
     it('does strict equality checks for marker in objectMode', function() {
       var input = new PassThrough({objectMode: true});
       // Note:  null and undefined are not supported by stream.PassThrough
       var inputData = [true, 0, '', false];
+      var promise = readTo(input, false).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
       inputData.forEach(function(data) {
         input.write(data);
       });
-      return readTo(input, false).then(function(data) {
-        assert.deepEqual(data, inputData);
-      });
+      return promise;
     });
 
     it('reads up to the marker split across writes with encoding', function() {
@@ -668,50 +699,55 @@ function describePromisedReadWith(PassThrough) {
         'ly\n',
         'Moe\n'
       ];
-      writeEachTo(input, inputData);
-      return readTo(input, 'Curly\n').then(function(data) {
+      var promise = readTo(input, 'Curly\n').then(function(data) {
         assert.deepEqual(data, inputData.slice(0, 3).join(''));
       });
+      writeEachTo(input, inputData);
+      return promise;
     });
 
     describe('uses result indexOf conversions', function() {
       it('string marker in Buffer', function() {
         var input = new PassThrough();
         var inputData = new Buffer('Larry\n');
-        input.write(inputData);
-        return readTo(input, '\n').then(function(data) {
+        var promise = readTo(input, '\n').then(function(data) {
           assert.deepEqual(data, inputData);
         });
+        input.write(inputData);
+        return promise;
       });
 
       it('character code marker in Buffer', function() {
         var input = new PassThrough();
         var inputData = new Buffer('Larry\n');
-        input.write(inputData);
-        return readTo(input, '\n'.charCodeAt(0)).then(function(data) {
+        var promise = readTo(input, '\n'.charCodeAt(0)).then(function(data) {
           assert.deepEqual(data, inputData);
         });
+        input.write(inputData);
+        return promise;
       });
 
       it('Buffer marker in string', function() {
         var input = new PassThrough({encoding: 'utf8'});
         var inputData = 'Larry\n';
-        input.write(inputData);
-        return readTo(input, new Buffer('\n')).then(function(data) {
+        var promise = readTo(input, new Buffer('\n')).then(function(data) {
           assert.deepEqual(data, inputData);
         });
+        input.write(inputData);
+        return promise;
       });
 
       it('rejects with TypeError on type mismatch', function() {
         var input = new PassThrough();
         var inputData = new Buffer('Larry\n');
-        input.write(inputData);
-        return readTo(input, true).then(
+        var promise = readTo(input, true).then(
           sinon.mock().never(),
           function(err) {
             assert.strictEqual(err.name, 'TypeError');
           }
         );
+        input.write(inputData);
+        return promise;
       });
     });
 
@@ -719,32 +755,31 @@ function describePromisedReadWith(PassThrough) {
       var input = new PassThrough();
       input.unshift = undefined;
       var inputData = new Buffer('Larry\nCurly');
-      input.write(inputData);
-      return readTo(input, '\n').then(function(data) {
+      var promise = readTo(input, '\n').then(function(data) {
         assert.deepEqual(data, inputData.slice(0, data.length));
       });
+      input.write(inputData);
+      return promise;
     });
 
     if (PassThrough.prototype.unshift) {
       it('does not read past the marker w/ .unshift', function() {
         var input = new PassThrough();
         var inputData = new Buffer('Larry\nCurly');
-        input.write(inputData);
-        return readTo(input, '\n').then(function(data) {
+        var promise = readTo(input, '\n').then(function(data) {
           var afterMarker = String(inputData).indexOf('\n') + 1;
           assert.deepEqual(data, inputData.slice(0, afterMarker));
           assert.deepEqual(input.read(), inputData.slice(afterMarker));
         });
+        input.write(inputData);
+        return promise;
       });
     }
 
     it('does not read past the marker in objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [1, 2, 3, 4, 5];
-      inputData.forEach(function(data) {
-        input.write(data);
-      });
-      readTo(input, 3).then(function(data) {
+      var promise = readTo(input, 3).then(function(data) {
         var afterMarker = inputData.indexOf(3) + 1;
         assert.deepEqual(data, inputData.slice(0, afterMarker));
         if (input.read) {
@@ -754,6 +789,10 @@ function describePromisedReadWith(PassThrough) {
           }
         }
       });
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      return promise;
     });
 
     it('stops reading after first write for 0-length marker', function() {
@@ -764,33 +803,37 @@ function describePromisedReadWith(PassThrough) {
         new Buffer('Curly\n'),
         new Buffer('Moe\n')
       ];
-      writeEachTo(input, inputData);
-      return readTo(input, '').then(function(data) {
+      var promise = readTo(input, '').then(function(data) {
         assert.deepEqual(data, Buffer.concat(inputData).slice(0, data.length));
       });
+      writeEachTo(input, inputData);
+      return promise;
     });
 
     if (PassThrough.prototype.unshift) {
       it('returns empty Buffer for 0-length marker w/ unshift', function() {
         var input = new PassThrough();
         var inputData = new Buffer('Larry\n');
-        input.write(inputData);
-        return readTo(input, new Buffer(0)).then(function(data) {
+        var promise = readTo(input, new Buffer(0)).then(function(data) {
           assert.deepEqual(data, new Buffer(0));
           assert.deepEqual(input.read(), inputData);
         });
+        input.write(inputData);
+        return promise;
       });
     }
 
     it('treats strings as objects if options.objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = ['Larry', 'Curly', 'Moe'];
+      var promise = readTo(input, 'Moe', {objectMode: true})
+        .then(function(data) {
+          assert.deepEqual(data, inputData);
+        });
       inputData.forEach(function(data) {
         input.write(data);
       });
-      return readTo(input, 'Moe', {objectMode: true}).then(function(data) {
-        assert.deepEqual(data, inputData);
-      });
+      return promise;
     });
 
     it('can recognize objectMode late', function() {
@@ -799,12 +842,13 @@ function describePromisedReadWith(PassThrough) {
       // recover gracefully.
       var input = new PassThrough({objectMode: true});
       var inputData = [new Buffer('test1'), 'test2'];
+      var promise = readTo(input, inputData[1]).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
       inputData.forEach(function(data) {
         input.write(data);
       });
-      return readTo(input, inputData[1]).then(function(data) {
-        assert.deepEqual(data, inputData);
-      });
+      return promise;
     });
 
     if (!PassThrough.prototype.read) {
@@ -968,9 +1012,6 @@ function describePromisedReadWith(PassThrough) {
     it('continues reading when negative or non-numeric falsey', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [0, 1, 2, 3, 4, 5];
-      inputData.forEach(function(data) {
-        input.write(data);
-      });
       var callNum = 0;
       var returnValues = [undefined, null, false, '', -5, true];
       function until(buffer, chunk) {
@@ -978,70 +1019,79 @@ function describePromisedReadWith(PassThrough) {
         assert(typeof chunk === 'number');
         return returnValues[callNum++];
       }
-      return readUntil(input, until).then(function(data) {
+      var promise = readUntil(input, until).then(function(data) {
         assert.deepEqual(data, inputData);
       });
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      return promise;
     });
 
     it('stops reading on true', function() {
       var input = new PassThrough();
       var inputData = new Buffer('test');
-      input.write(inputData);
       function until(buffer, chunk) {
         return true;
       }
-      return readUntil(input, until).then(function(data) {
+      var promise = readUntil(input, until).then(function(data) {
         assert.deepEqual(data, inputData);
       });
+      input.write(inputData);
+      return promise;
     });
 
     if (PassThrough.prototype.unshift) {
       it('stops reading and unshifts on positive numbers', function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
-        input.write(inputData);
         function until(buffer, chunk) {
           return 2;
         }
-        return readUntil(input, until).then(function(data) {
+        var promise = readUntil(input, until).then(function(data) {
           assert.deepEqual(data, inputData.slice(0, 2));
         });
+        input.write(inputData);
+        return promise;
       });
 
       it('stops reading and unshifts on 0', function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
-        input.write(inputData);
         function until(buffer, chunk) {
           return 0;
         }
-        return readUntil(input, until).then(function(data) {
+        var promise = readUntil(input, until).then(function(data) {
           assert.deepEqual(data, new Buffer(0));
         });
+        input.write(inputData);
+        return promise;
       });
     } else {
       it('stops reading on positive numbers', function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
-        input.write(inputData);
         function until(buffer, chunk) {
           return 2;
         }
-        return readUntil(input, until).then(function(data) {
+        var promise = readUntil(input, until).then(function(data) {
           assert.deepEqual(data, inputData);
         });
+        input.write(inputData);
+        return promise;
       });
 
       it('stops reading on 0', function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
-        input.write(inputData);
         function until(buffer, chunk) {
           return 0;
         }
-        return readUntil(input, until).then(function(data) {
+        var promise = readUntil(input, until).then(function(data) {
           assert.deepEqual(data, inputData);
         });
+        input.write(inputData);
+        return promise;
       });
     }
 
@@ -1052,14 +1102,13 @@ function describePromisedReadWith(PassThrough) {
         new Buffer('Curly\n'),
         new Buffer('Moe\n')
       ];
-      writeEachTo(input, inputData);
       var spy = sinon.spy(function until(buffer, chunk) {
         assert(buffer instanceof Buffer);
         assert(chunk instanceof Buffer);
         // Note:  No Buffer.equals before Node v0.11.13
         return String(chunk) === String(inputData[inputData.length - 1]);
       });
-      return readUntil(input, spy).then(function(data) {
+      var promise = readUntil(input, spy).then(function(data) {
         assert.deepEqual(data, Buffer.concat(inputData));
         assert.strictEqual(spy.callCount, 3);
         spy.getCall(0).calledWithExactly(inputData[0], inputData[0]);
@@ -1072,6 +1121,8 @@ function describePromisedReadWith(PassThrough) {
           inputData[2]
         );
       });
+      writeEachTo(input, inputData);
+      return promise;
     });
 
     it('treats Buffers as objects if options.objectMode', function() {
@@ -1081,32 +1132,35 @@ function describePromisedReadWith(PassThrough) {
         new Buffer('Curly\n'),
         new Buffer('Moe\n')
       ];
-      writeEachTo(input, inputData);
       function until(buffer) {
         assert(Array.isArray(buffer));
         return buffer.length < 2 ? -1 : 2;
       }
-      return readUntil(input, until, {objectMode: true}).then(function(data) {
-        assert.deepEqual(data, inputData.slice(0, 2));
-      });
+      var promise = readUntil(input, until, {objectMode: true})
+        .then(function(data) {
+          assert.deepEqual(data, inputData.slice(0, 2));
+        });
+      writeEachTo(input, inputData);
+      return promise;
     });
 
     it('does not combine Arrays in objectMode', function() {
       var input = new PassThrough({objectMode: true});
       var inputData = [['a'], ['b'], []];
-      inputData.forEach(function(data) {
-        input.write(data);
-      });
       function untilEmpty(arrays) {
         assert(arrays.every(Array.isArray));
         return arrays[arrays.length - 1].length === 0 ? arrays.length : -1;
       }
-      return readUntil(input, untilEmpty).then(function(data) {
+      var promise = readUntil(input, untilEmpty).then(function(data) {
         assert.strictEqual(data.length, inputData.length);
         data.forEach(function(array, i) {
           assert.strictEqual(array, inputData[i]);
         });
       });
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      return promise;
     });
 
     it('rejects with EOFError when no data is read', function() {
@@ -1136,17 +1190,19 @@ function describePromisedReadWith(PassThrough) {
     });
 
     if (stream.Readable && new PassThrough() instanceof stream.Readable) {
-      it('rejects with EOFError after end on best-effort basis', function() {
+      it('rejects with EOFError after end for stream.Readable', function(done) {
         // This only works for proper instances of stream.Readable and is not
         // guaranteed to work (due to use of Readable implementation details).
         var input = new PassThrough();
         input.end();
-        return readUntil(input, untilNever).then(
-          sinon.mock().never(),
-          function(err) {
-            assert.strictEqual(err.name, 'EOFError');
-          }
-        );
+        process.nextTick(function() {
+          readUntil(input, untilNever).then(
+            sinon.mock().never(),
+            function(err) {
+              assert.strictEqual(err.name, 'EOFError');
+            }
+          ).then(done, done);
+        });
       });
     }
 
