@@ -233,9 +233,9 @@ function readInternal(stream, size, until, options) {
     }
 
     // Moved try block out of onData to allow v8 optimization of onData
-    function tryUntil() {
+    function tryUntil(resultWithData, data) {
       try {
-        return until(result);
+        return until(resultWithData, data);
       } catch (errUntil) {
         doReject(errUntil, true);
         return undefined;
@@ -328,7 +328,7 @@ function readInternal(stream, size, until, options) {
       }
 
       // Check if the caller thinks we are done
-      var desiredLength = until ? tryUntil() : result.length;
+      var desiredLength = until ? tryUntil(result, data) : result.length;
       if (isDoneReading) {
         return;
       }
@@ -411,13 +411,14 @@ function read(stream, size, options) {
 
 /** Reads from a stream.Readable until a given test is satisfied.
  * @param {stream.Readable} stream Stream from which to read.
- * @param {function(!Buffer|string|!Array): number|boolean} test Test function
- * called with the data read so far.  If it returns a negative or falsey value,
- * more data will be read.  If it returns a non-negative number and the stream
- * can be unshifted, that many bytes will be returned and the others will be
- * unshifted into the stream.  Otherwise, all data read will be returned.
- * Non-numeric, non-boolean truthy values should not be returned, since they
- * may have specific interpretations in future versions.
+ * @param {function(!Buffer|string|!Array, Buffer|string|*): number|boolean}
+ * test Test function called with the data read so far and the most recent
+ * chunk read.  If it returns a negative or falsey value, more data will be
+ * read.  If it returns a non-negative number and the stream can be unshifted,
+ * that many bytes will be returned and the others will be unshifted into the
+ * stream.  Otherwise, all data read will be returned.  Non-numeric,
+ * non-boolean truthy values should not be returned, since they may have
+ * specific interpretations in future versions.
  * @param {ReadOptions=} options Options.
  * @return {Promise<!Buffer|string|!Array>|
  * CancellableReadPromise<!Buffer|string|!Array>} Promise with the data read
