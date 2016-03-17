@@ -252,7 +252,10 @@ function readInternal(stream, size, until, options) {
       if (typeof desiredLength === 'number') {
         // debug('until returned a desired length of ' + desiredLength + '.');
         if (desiredLength >= 0) {
-          if (result && desiredLength < result.length) {
+          if (result && desiredLength < result.length && !ended) {
+            // if (ended) {
+            //  debug('Can not unshift after end.');
+            // } else
             result = tryUnshift(stream, result, desiredLength, true);
           }
           doResolve();

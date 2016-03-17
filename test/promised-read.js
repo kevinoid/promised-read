@@ -1086,6 +1086,19 @@ function describePromisedReadWith(PassThrough) {
         input.write(inputData);
         return promise;
       });
+
+      it('can not unshift once ended', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('test');
+        function until(buffer, chunk, ended) {
+          return ended ? 2 : -1;
+        }
+        var promise = readUntil(input, until).then(function(data) {
+          assert.deepEqual(data, inputData);
+        });
+        input.end(inputData);
+        return promise;
+      });
     } else {
       it('stops reading on positive numbers', function() {
         var input = new PassThrough();
