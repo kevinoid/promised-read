@@ -908,6 +908,25 @@ function describePromisedReadWith(PassThrough) {
       return promise;
     });
 
+    it('resolves with null when no data if options.endOK', function() {
+      var input = new PassThrough();
+      var promise = readTo(input, '\n', {endOK: true}).then(function(data) {
+        assert.strictEqual(data, null);
+      });
+      input.end();
+      return promise;
+    });
+
+    it('resolves with data previously read data if options.endOK', function() {
+      var input = new PassThrough();
+      var inputData = new Buffer('test');
+      var promise = readTo(input, '\n', {endOK: true}).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+      input.end(inputData);
+      return promise;
+    });
+
     it('without unshift, sets read data as .read on .abortRead', function() {
       var input = new PassThrough();
       input.unshift = undefined;

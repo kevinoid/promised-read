@@ -103,7 +103,13 @@ var readUntil = require('promised-read').readUntil;
 var input = fs.createReadStream('input.jsons', {encoding: 'utf8'});
 var depth = 0;
 // Don't use this without handling '{' and '}' in strings
-function untilObject(data, chunk) {
+function untilObject(data, chunk, ended) {
+  if (!chunk) {
+    // chunk === null and ended === true when called for the 'end' event
+    // (chunk === null could also happen on pre-0.10 streams in objectMode)
+    return -1;
+  }
+
   for (var i = 0; i < chunk.length; ++i) {
     var ch = chunk[i];
     if (ch === '{') {

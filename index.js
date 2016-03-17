@@ -235,19 +235,50 @@ function readInternal(stream, size, until, options) {
       }, timeout);
     }
 
-    // Moved try block out of onData to allow v8 optimization of onData
-    function tryUntil(resultWithData, data) {
+    /** Calls the until function and handles its result.
+     * @return {boolean} <code>true</code> if done reading, <code>false</code>
+     * otherwise.
+     * @private
+     */
+    function checkUntil(resultWithData, data, ended) {
+      var desiredLength;
       try {
-        return until(resultWithData, data);
+        desiredLength = until(resultWithData, data, ended);
       } catch (errUntil) {
         doReject(errUntil, true);
-        return undefined;
+        return true;
       }
+
+      if (typeof desiredLength === 'number') {
+        // debug('until returned a desired length of ' + desiredLength + '.');
+        if (desiredLength >= 0) {
+          if (result && desiredLength < result.length) {
+            result = tryUnshift(stream, result, desiredLength, true);
+          }
+          doResolve();
+          return true;
+        }
+      } else if (desiredLength) {
+        //  if (desiredLength !== true) {
+        //    debug('Warning: non-numeric, non-boolean until() result may ' +
+        //      'have specific meanings in future versions.');
+        //  } else {
+        //    debug('until returned true, indicating read finished.');
+        //  }
+        doResolve();
+        return true;
+      // } else {
+      //   debug('until returned ' + desiredLength + ', continuing to read.');
+      }
+
+      return false;
     }
 
     function onEnd() {
       if (until) {
-        doReject(new EOFError());
+        if (!checkUntil(result, null, true)) {
+          doReject(new EOFError());
+        }
       } else {
         doResolve();
       }
@@ -330,26 +361,12 @@ function readInternal(stream, size, until, options) {
         return;
       }
 
-      // Check if the caller thinks we are done
-      var desiredLength = until ? tryUntil(result, data) : result.length;
-      if (isDoneReading) {
+      if (!until) {
+        doResolve();
         return;
       }
 
-      if (typeof desiredLength === 'number') {
-        if (desiredLength >= 0) {
-          if (desiredLength < result.length) {
-            result = tryUnshift(stream, result, desiredLength, true);
-          }
-          doResolve();
-        }
-      } else if (desiredLength) {
-        //  if (desiredLength !== true) {
-        //    debug('Warning: non-numeric, non-boolean until() result may ' +
-        //      'have specific meanings in future versions');
-        //  }
-        doResolve();
-      }
+      checkUntil(result, data, false);
     }
 
     function readPending() {
@@ -393,16 +410,17 @@ function readInternal(stream, size, until, options) {
 /** Reads from a stream.Readable.
  * @param {stream.Readable} stream Stream from which to read.
  * @param {number=} size Number of bytes to read.  If <code>stream.read</code>
- * is a function, <code>size</code> is passed to it, guaranteeing exact result
- * size.  Otherwise, <code>'data'</code> events will be consumed until
+ * is a function, <code>size</code> is passed to it, guaranteeing maximum
+ * result size.  Otherwise, <code>'data'</code> events will be consumed until
  * <code>size</code> bytes are read, making it a minimum rather than an exact
  * value.
  * @param {ReadOptions=} options Options.
  * @return {Promise<Buffer|string|*>|CancellableReadPromise<Buffer|string|*>}
  * Promise with result of read or Error.  Result may be shorter than
  * <code>size</code> if <code>'end'</code> occurs and will be <code>null</code>
- * if no data is read.  If an error occurs after reading some data, the
- * <code>.read</code> property will contain the partial read result.
+ * if no data can be read.  If an error occurs after reading some data, the
+ * <code>.read</code> property of the error object will contain the partial
+ * read result.
  */
 function read(stream, size, options) {
   if (!options && typeof size === 'object') {
@@ -428,7 +446,8 @@ function read(stream, size, options) {
  * and not unshifted, or an Error if one occurred.  If <code>'end'</code> is
  * emitted before <code>until</code> returns a non-negative/true value, an
  * {@link EOFError} is returned.  If an error occurs after reading some data,
- * the <code>.read</code> property will contain the partial read result.
+ * the <code>.read</code> property of the error object will contain the partial
+ * read result.
  */
 function readUntil(stream, until, options) {
   if (typeof until !== 'function') {
@@ -451,23 +470,37 @@ function readUntil(stream, until, options) {
  * https://www.npmjs.com/package/buffer-indexof-fast buffer-indexof-fast} for
  * single-character search).
  *
+ * Doc note:  options should be a ReadToOptions type which extends ReadOptions,
+ * but record types can't currently be extended
+ * https://github.com/google/closure-compiler/issues/604
+ *
  * @param {stream.Readable} stream Stream from which to read.
  * @param {!Buffer|string|*} needle Value to search for in the read result.
- * The stream will be read until this value is found.
- * @param {ReadOptions=} options Options.
- * @return {Promise<!Buffer|string|!Array}|
- * CancellableReadPromise<!Buffer|string|!Array>} Promise with the data read up
+ * The stream will be read until this value is found or <code>'end'</code> or
+ * <code>'error'</code> is emitted.
+ * @param {ReadOptions=} options Options.  This function additionally supports
+ * an <code>endOK</code> option which causes <code>'end'</code> not to be
+ * considered an error.
+ * @return {Promise<Buffer|string|Array}|
+ * CancellableReadPromise<Buffer|string|Array>} Promise with the data read up
  * to and including <code>needle</code>, or an Error if one occurs.  If
  * <code>stream</code> does not support <code>unshift</code>, the result may
  * include additional data.  If <code>'end'</code> is emitted before
- * <code>needle</code> is found, an {@link EOFError} is returned.  If an error
- * occurs after reading some data, the <code>.read</code> property will contain
- * the partial read result.
+ * <code>needle</code> is found, an {@link EOFError} is returned, unless
+ * <code>options.endOK</code> is truthy in which case any remaining data is
+ * returned or <code>null</code> if none was read.  If an error occurs after
+ * reading some data, the <code>.read</code> property of the error object will
+ * contain the partial read result.
  */
 function readTo(stream, needle, options) {
+  var endOK = Boolean(options && (options.endOK || options.endOk));
   var needleForIndexOf;
   var needleLength;
-  function until(result, chunk) {
+  function until(result, chunk, ended) {
+    if (ended) {
+      return endOK ? (result ? result.length : 0) : -1;
+    }
+
     if (Array.isArray(result)) {
       // objectMode.  Use strict equality, like Array.prototype.indexOf
       return chunk === needle ? result.length : -1;
