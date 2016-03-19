@@ -275,7 +275,9 @@ specifications](https://kevinoid.github.io/promised-read/specs).
 To use this module as a library, see the [API
 Documentation](https://kevinoid.github.io/promised-read/api).
 
-## API Warning
+## API Warnings
+
+### Reading after end
 
 The [stream API](https://nodejs.org/api/stream.html) does not provide a way to
 differentiate between a stream which has ended and one which does not
@@ -283,6 +285,29 @@ currently have data available.  For this reason, the `read` functions should
 not be called after a stream emits `'end'` or `'error'`.  It is the caller's
 responsibility to ensure that `read` is only called on streams in a readable
 state.
+
+### Synchronous resolution for flowing streams
+
+When reading from streams which lack a `.read()` method, or when
+`options.flowing` is `true`, the `onFulfilled` and `onRejected` functions
+(i.e. functions added with `.then()` or `.catch()`) will be called
+synchronously upon promise resolution or rejection.  This is necessary to
+prevent missing stream events between resolution and the handler being called,
+when another read can be started.
+
+This behavior may be surprising, since it conflicts with [point 2.2.4 of the
+Promises/A+ spec](https://promisesaplus.com/#point-34) (for an example, see [A
+Promises/A Test
+Suite](https://github.com/domenic/promise-tests#always-async)).  However,
+since read promises are only resolved synchronously when an argument error
+occurs, one of the most common pitfalls is avoided.  Additionally, once the
+synchronous behavior is not necessary (e.g. after the next read has started)
+asynchronous behavior can be restored by chaining to another promise class
+(e.g. `Promise.resolve(readPromise)`).
+
+Synchronous promises can also be avoided by specifying an asynchronous promise
+constructor via `options.Promise`.  However, this is likely to cause missed
+events if the writer is not synchronized with with reader.
 
 ## Contributing
 
