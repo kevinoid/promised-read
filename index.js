@@ -286,15 +286,20 @@ function readInternal(stream, size, until, options) {
           doResolve();
           return true;
         }
-      } else if (desiredLength) {
-        //  if (desiredLength !== true) {
-        //    debug('Warning: non-numeric, non-boolean until() result may ' +
-        //      'have specific meanings in future versions.');
-        //  } else {
-        //    debug('until returned true, indicating read finished.');
-        //  }
+      } else if (desiredLength === true) {
+        // debug('until returned true, read finished.');
         doResolve();
         return true;
+      } else if (desiredLength !== undefined &&
+          desiredLength !== null &&
+          desiredLength !== false) {
+        // Note:  Although this could be allowed, it causes an Error so that
+        // future versions may add behavior for these values without causing
+        // breakage.
+        doReject(new TypeError(
+          'non-numeric, non-boolean until() result: ' + desiredLength,
+          true
+        ));
       // } else {
       //   debug('until returned ' + desiredLength + ', continuing to read.');
       }
@@ -467,8 +472,7 @@ function read(stream, size, options) {
  * read.  If it returns a non-negative number and the stream can be unshifted,
  * that many bytes will be returned and the others will be unshifted into the
  * stream.  Otherwise, all data read will be returned.  Non-numeric,
- * non-boolean truthy values should not be returned, since they may have
- * specific interpretations in future versions.
+ * non-boolean values will result in an error.
  * @param {ReadOptions=} options Options.
  * @return {Promise<!Buffer|string|!Array>|
  * CancellableReadPromise<!Buffer|string|!Array>} Promise with the data read

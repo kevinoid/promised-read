@@ -1179,9 +1179,9 @@ function describePromisedReadWith(PassThrough) {
   describe('.readUntil()', function() {
     it('continues reading when negative or non-numeric falsey', function() {
       var input = new PassThrough({objectMode: true});
-      var inputData = [0, 1, 2, 3, 4, 5];
+      var inputData = [0, 1, 2, 3, 4];
       var callNum = 0;
-      var returnValues = [undefined, null, false, '', -5, true];
+      var returnValues = [undefined, null, false, -5, true];
       function until(buffer, chunk) {
         assert(Array.isArray(buffer));
         assert(typeof chunk === 'number');
@@ -1275,6 +1275,22 @@ function describePromisedReadWith(PassThrough) {
         return promise;
       });
     }
+
+    it('rejects with TypeError for non-numeric/non-boolean', function() {
+      var input = new PassThrough();
+      var inputData = new Buffer('test');
+      function until(buffer, chunk) {
+        return {};
+      }
+      var promise = readUntil(input, until).then(
+        sinon.mock().never(),
+        function(err) {
+          assert.strictEqual(err.name, 'TypeError');
+        }
+      );
+      input.write(inputData);
+      return promise;
+    });
 
     it('calls the until function on each read', function() {
       var input = new PassThrough();
