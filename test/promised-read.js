@@ -1132,6 +1132,26 @@ function describePromisedReadWith(PassThrough) {
       return promise;
     });
 
+    it('optimizes search from options.maxMatchLen', function() {
+      var input = new PassThrough({encoding: 'utf8'});
+      var inputData = [
+        'Larry\n',
+        'Cur',
+        'ly\n',
+        'Moe\n'
+      ];
+      var regexp = /Curly\n/g;
+      var options = {maxMatchLen: 6};
+      // Note:  We could spy on writes to .lastIndex of regexp, but this would
+      // rely too much on implementation details (of readToMatch and RegExp).
+      // Instead, this tests it doesn't hurt and coverage shows the codepath.
+      var promise = readToMatch(input, regexp, options).then(function(data) {
+        assert.deepEqual(data, inputData.slice(0, 3).join(''));
+      });
+      writeEachTo(input, inputData);
+      return promise;
+    });
+
     it('rejects with SyntaxError for invalid string expressions', function() {
       var input = new PassThrough({encoding: 'utf8'});
       return readToMatch(input, '*').then(

@@ -604,7 +604,8 @@ function readTo(stream, needle, options) {
  * <code>'error'</code> is emitted.
  * @param {ReadOptions=} options Options.  This function additionally supports
  * an <code>endOK</code> option which causes <code>'end'</code> not to be
- * considered an error.
+ * considered an error and a <code>maxMatchLen</code> option which specifies
+ * the maximum length of a match, which allow additional search optimizations.
  * @return {Promise<string}|CancellableReadPromise<string>} Promise with the
  * data read, up to and including the data matched by <code>regexp</code>, or
  * an Error if one occurs.  If <code>stream</code> does not support
@@ -619,6 +620,7 @@ function readTo(stream, needle, options) {
  */
 function readToMatch(stream, regexp, options) {
   var endOK = Boolean(options && (options.endOK || options.endOk));
+  var maxMatchLen = Number(options && options.maxMatchLen);
   // Convert to RegExp where necessary, like String.prototype.match
   // Make sure RegExp has global flag so lastIndex will be set
   if (!(regexp instanceof RegExp)) {
@@ -644,7 +646,9 @@ function readToMatch(stream, regexp, options) {
           ' (use constructor options.encoding or .setEncoding method)');
     }
 
-    regexp.lastIndex = 0;
+    regexp.lastIndex = maxMatchLen ?
+      Math.max(result.length - chunk.length - maxMatchLen + 1, 0) :
+      0;
     if (regexp.test(result)) {
       return regexp.lastIndex;
     }
