@@ -63,6 +63,37 @@ read(input, 1024).then(function(data) {
 });
 ```
 
+### Read lines
+
+```js
+var fs = require('fs');
+var readToMatch = require('promised-read').readToMatch;
+var file = fs.createReadStream('numbers.txt', {encoding: 'utf8'});
+function readLine(readable) {
+  // endOK returns the data (or null) at end without matching the RegExp
+  return readToMatch(readable, /\r\n|\r|\n/g, {endOK: true});
+}
+function readNumbers(readable) {
+  var numbers = [];
+  var ended = false;
+  file.once('end', function() { ended = true; });
+  return readLine(file).then(function(line) {
+    // line will be null if no data is read on last read before 'end'
+    if (line !== null) {
+      line = line.trim();
+      if (/^[0-9]+$/.test(line)) {
+        numbers.push(Number(line));
+      }
+    }
+    return ended ? numbers : readLine(file);
+  });
+}
+readNumbers(file).then(function(numbers) {
+  numbers.sort();
+  console.log(numbers.join('\n'));
+});
+```
+
 ### Read Until
 
 ```js
