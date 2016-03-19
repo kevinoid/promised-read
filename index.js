@@ -481,7 +481,10 @@ function read(stream, size, options) {
  */
 function readUntil(stream, until, options) {
   if (typeof until !== 'function') {
-    var Promise = (options && options.Promise) || AnyPromise;
+    var flowing = options && options.flowing ||
+      typeof stream.read !== 'function';
+    var Promise = (options && options.Promise) ||
+      (flowing ? SyncPromise : AnyPromise);
     return Promise.reject(new TypeError('until must be a function'));
   }
   return readInternal(stream, undefined, until, options);
