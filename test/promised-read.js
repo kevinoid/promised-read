@@ -13,6 +13,7 @@ var stream = require('stream');
 
 var read = promisedRead.read;
 var readTo = promisedRead.readTo;
+var readToMatch = promisedRead.readToMatch;
 var readUntil = promisedRead.readUntil;
 
 // eslint-disable-next-line no-shadow
@@ -1083,6 +1084,51 @@ function describePromisedReadWith(PassThrough) {
         );
       });
     }
+  });
+
+  describe('.readToMatch()', function() {
+    it('reads up to (and including) a RegExp', function() {
+      var input = new PassThrough({encoding: 'utf8'});
+      var inputData = 'Larry\n';
+      var promise = readToMatch(input, /\n/g).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+      input.write(inputData);
+      return promise;
+    });
+
+    it('reads up to (and including) a string expression', function() {
+      var input = new PassThrough({encoding: 'utf8'});
+      var inputData = 'Larry\n';
+      var promise = readToMatch(input, '\n').then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+      input.write(inputData);
+      return promise;
+    });
+
+    it('rejects with SyntaxError for invalid string expressions', function() {
+      var input = new PassThrough({encoding: 'utf8'});
+      return readToMatch(input, '*').then(
+          sinon.mock().never(),
+          function(err) {
+            assert.strictEqual(err.name, 'SyntaxError');
+          }
+      );
+    });
+
+    it('rejects with TypeError for non-string streams', function() {
+      var input = new PassThrough();
+      var inputData = new Buffer('Larry\n');
+      var promise = readToMatch(input, /\n/g).then(
+          sinon.mock().never(),
+          function(err) {
+            assert.strictEqual(err.name, 'TypeError');
+          }
+      );
+      input.write(inputData);
+      return promise;
+    });
   });
 
   describe('.readUntil()', function() {

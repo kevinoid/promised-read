@@ -586,8 +586,77 @@ function readTo(stream, needle, options) {
   return readInternal(stream, undefined, until, options);
 }
 
+/** Reads from a stream.Readable until a given expression is matched.
+ *
+ * This function calls {@link readUntil} with an <code>until</code> function
+ * which applies <code>regexp</code> to the data read.  This works well for
+ * long and complex expressions, but can be significantly slower than
+ * {@link readTo} due to expression matching and re-searching previous chunks.
+ *
+ * Doc note:  options should be a ReadToMatchOptions type which extends
+ * ReadToOptions, but record types can't currently be extended
+ * https://github.com/google/closure-compiler/issues/604
+ *
+ * @param {stream.Readable<string>} stream Stream from which to read.  This
+ * stream must produce strings (so call <code>.setEncoding</code> if necessary).
+ * @param {!RegExp|string} regexp Expression to search for in the read result.
+ * The stream will be read until this value is matched or <code>'end'</code> or
+ * <code>'error'</code> is emitted.
+ * @param {ReadOptions=} options Options.  This function additionally supports
+ * an <code>endOK</code> option which causes <code>'end'</code> not to be
+ * considered an error.
+ * @return {Promise<string}|CancellableReadPromise<string>} Promise with the
+ * data read, up to and including the data matched by <code>regexp</code>, or
+ * an Error if one occurs.  If <code>stream</code> does not support
+ * <code>unshift</code>, the result may include additional data.  If
+ * <code>'end'</code> is emitted before <code>regexp</code> is matched, an
+ * {@link EOFError} is returned, unless <code>options.endOK</code> is truthy in
+ * which case any remaining data is returned or <code>null</code> if none was
+ * read.  If an error occurs after reading some data, the <code>.read</code>
+ * property of the error object will contain the partial read result.  The
+ * promise is resolved synchronously for streams in flowing mode (see README.md
+ * for details).
+ */
+function readToMatch(stream, regexp, options) {
+  var endOK = Boolean(options && (options.endOK || options.endOk));
+  // Convert to RegExp where necessary, like String.prototype.match
+  // Make sure RegExp has global flag so lastIndex will be set
+  if (!(regexp instanceof RegExp)) {
+    try {
+      regexp = new RegExp(regexp, 'g');
+    } catch (errRegExp) {
+      var flowing = options && options.flowing ||
+        typeof stream.read !== 'function';
+      var Promise = (options && options.Promise) ||
+        (flowing ? SyncPromise : AnyPromise);
+      return Promise.reject(errRegExp);
+    }
+  } else if (!regexp.global) {
+    regexp = new RegExp(regexp.source, (regexp.flags || '') + 'g');
+  }
+  function until(result, chunk, ended) {
+    if (ended) {
+      return endOK ? (result ? result.length : 0) : -1;
+    }
+
+    if (typeof result !== 'string') {
+      throw new TypeError('readToMatch requires a string stream' +
+          ' (use constructor options.encoding or .setEncoding method)');
+    }
+
+    regexp.lastIndex = 0;
+    if (regexp.test(result)) {
+      return regexp.lastIndex;
+    }
+
+    return -1;
+  }
+  return readInternal(stream, undefined, until, options);
+}
+
 module.exports = {
   read: read,
   readUntil: readUntil,
-  readTo: readTo
+  readTo: readTo,
+  readToMatch: readToMatch
 };
