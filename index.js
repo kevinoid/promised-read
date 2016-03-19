@@ -515,7 +515,7 @@ function readUntil(stream, until, options) {
  * an <code>endOK</code> option which causes <code>'end'</code> not to be
  * considered an error.
  * @return {Promise<Buffer|string|Array}|
- * CancellableReadPromise<Buffer|string|Array>} Promise with the data read up
+ * CancellableReadPromise<Buffer|string|Array>} Promise with the data read, up
  * to and including <code>needle</code>, or an Error if one occurs.  If
  * <code>stream</code> does not support <code>unshift</code>, the result may
  * include additional data.  If <code>'end'</code> is emitted before
