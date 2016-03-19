@@ -485,10 +485,9 @@ function read(stream, size, options) {
  */
 function readUntil(stream, until, options) {
   if (typeof until !== 'function') {
-    var flowing = options && options.flowing ||
-      typeof stream.read !== 'function';
-    var Promise = (options && options.Promise) ||
-      (flowing ? SyncPromise : AnyPromise);
+    // Note:  Synchronous Yaku emits unhandledRejection before returning.
+    // Best current option is to use an async promise, even when flowing
+    var Promise = (options && options.Promise) || AnyPromise;
     return Promise.reject(new TypeError('until must be a function'));
   }
   return readInternal(stream, undefined, until, options);
@@ -631,10 +630,9 @@ function readToMatch(stream, regexp, options) {
     try {
       regexp = new RegExp(regexp, 'g');
     } catch (errRegExp) {
-      var flowing = options && options.flowing ||
-        typeof stream.read !== 'function';
-      var Promise = (options && options.Promise) ||
-        (flowing ? SyncPromise : AnyPromise);
+      // Note:  Synchronous Yaku emits unhandledRejection before returning.
+      // Best current option is to use an async promise, even when flowing
+      var Promise = (options && options.Promise) || AnyPromise;
       return Promise.reject(errRegExp);
     }
   } else if (!regexp.global) {

@@ -1504,6 +1504,33 @@ function describePromisedReadWith(PassThrough) {
         );
       });
     }
+
+    it('rejects with TypeError for non-function until', function() {
+      var input = new PassThrough();
+      var promise = readUntil(input, true).then(
+        sinon.mock().never(),
+        function(err) {
+          assert.strictEqual(err.name, 'TypeError');
+        }
+      );
+      return promise;
+    });
+
+    // This can be an issue with synchronous promises.
+    it('does not cause unhandledRejection for non-function', function(done) {
+      var input = new PassThrough();
+      var immID = setImmediate(done);
+      process.once('unhandledRejection', function() {
+        clearImmediate(immID);
+        done(new Error('unhandledRejection'));
+      });
+      readUntil(input, true).then(
+        sinon.mock().never(),
+        function(err) {
+          assert.strictEqual(err.name, 'TypeError');
+        }
+      );
+    });
   });
 }
 
