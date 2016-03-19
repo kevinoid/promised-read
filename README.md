@@ -70,8 +70,17 @@ var fs = require('fs');
 var readToMatch = require('promised-read').readToMatch;
 var file = fs.createReadStream('numbers.txt', {encoding: 'utf8'});
 function readLine(readable) {
-  // endOK returns the data (or null) at end without matching the RegExp
-  return readToMatch(readable, /\r\n|\r|\n/g, {endOK: true});
+  return readToMatch(
+    readable,
+    /\r\n|\r|\n/g,
+    {
+      // endOK returns the data (or null) at end without matching the RegExp
+      endOK: true,
+      // maxMatchLen specifies the maximum length of a match.  It is optional,
+      // but can increase performance for reads across multiple chunks.
+      maxMatchLen: 2
+    }
+  );
 }
 function readNumbers(readable) {
   var numbers = [];
