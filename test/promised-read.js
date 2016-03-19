@@ -1207,8 +1207,21 @@ function describePromisedReadWith(PassThrough) {
       return promise;
     });
 
+    it('stops reading if matches length', function() {
+      var input = new PassThrough();
+      var inputData = new Buffer('test');
+      function until(buffer, chunk) {
+        return buffer.length;
+      }
+      var promise = readUntil(input, until).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+      input.write(inputData);
+      return promise;
+    });
+
     if (PassThrough.prototype.unshift) {
-      it('stops reading and unshifts on positive numbers', function() {
+      it('stops reading and unshifts if less than length', function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
         function until(buffer, chunk) {
@@ -1247,7 +1260,7 @@ function describePromisedReadWith(PassThrough) {
         return promise;
       });
     } else {
-      it('stops reading on positive numbers', function() {
+      it('stops reading if less than length', function() {
         var input = new PassThrough();
         var inputData = new Buffer('test');
         function until(buffer, chunk) {
@@ -1270,6 +1283,42 @@ function describePromisedReadWith(PassThrough) {
           assert.deepEqual(data, inputData);
         });
         input.write(inputData);
+        return promise;
+      });
+    }
+
+    // This can be useful for data formats where length preceeds data
+    it('reads to length greater than current buffer', function() {
+      var input = new PassThrough();
+      var inputData = [
+        new Buffer('test1'),
+        new Buffer('test2')
+      ];
+      function until(buffer, chunk) {
+        return inputData[0].length + inputData[1].length;
+      }
+      var promise = readUntil(input, until).then(function(data) {
+        assert.deepEqual(data, Buffer.concat(inputData));
+      });
+      writeEachTo(input, inputData);
+      return promise;
+    });
+
+    if (PassThrough.prototype.read) {
+      it('reads to exact length greater than current buffer', function() {
+        var input = new PassThrough();
+        input.unshift = undefined;
+        var inputData = [
+          new Buffer('test1'),
+          new Buffer('test2')
+        ];
+        function until(buffer, chunk) {
+          return inputData[0].length + inputData[1].length - 2;
+        }
+        var promise = readUntil(input, until).then(function(data) {
+          assert.deepEqual(data, Buffer.concat(inputData).slice(0, -2));
+        });
+        writeEachTo(input, inputData);
         return promise;
       });
     }

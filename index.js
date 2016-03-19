@@ -289,13 +289,22 @@ function readInternal(stream, size, until, options) {
         return true;
       }
 
+      var resultLength = result ? result.length : 0;
       if (typeof desiredLength === 'number') {
-        if (desiredLength >= 0) {
+        if (desiredLength > resultLength) {
+          debug(
+            'until returned a desired length of %d.  ' +
+              'Only have %d.  Reading up to %d.',
+            desiredLength, resultLength, desiredLength
+          );
+          numSize = desiredLength;
+          size = desiredLength - resultLength;
+        } else if (desiredLength >= 0) {
           debug(
             'until returned a desired length of %d out of %d',
-            desiredLength, result.length
+            desiredLength, resultLength
           );
-          if (result && desiredLength < result.length) {
+          if (desiredLength < resultLength) {
             if (ended) {
               debug('Unable to unshift:  Can not unshift after end.');
             } else {
@@ -304,8 +313,9 @@ function readInternal(stream, size, until, options) {
           }
           doResolve();
           return true;
+        } else {
+          debug('until returned %d, continuing to read', desiredLength);
         }
-        debug('until returned %d, continuing to read', desiredLength);
       } else if (desiredLength === true) {
         debug('until returned true, read finished.');
         doResolve();
@@ -494,8 +504,10 @@ function read(stream, size, options) {
  * chunk read.  If it returns a negative or falsey value, more data will be
  * read.  If it returns a non-negative number and the stream can be unshifted,
  * that many bytes will be returned and the others will be unshifted into the
- * stream.  Otherwise, all data read will be returned.  Non-numeric,
- * non-boolean values will result in an error.
+ * stream.  Otherwise, all data read will be returned.  If it returns a number
+ * larger than the length of the data read so far, enough data to reach the
+ * requested length will be read before returning.  Non-numeric, non-boolean
+ * values will result in an error.
  * @param {ReadOptions=} options Options.
  * @return {Promise<!Buffer|string|!Array>|
  * CancellableReadPromise<!Buffer|string|!Array>} Promise with the data read
