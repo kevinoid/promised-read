@@ -89,6 +89,7 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
  * @typedef {{
  *   Promise: function(new:Promise)|undefined,
  *   cancellable: boolean|undefined,
+ *   flowing: boolean|undefined,
  *   objectMode: boolean|undefined,
  *   timeout: number|undefined
  * }} ReadOptions
@@ -104,6 +105,9 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
  * require abort/cancel authority should be given a Promise chained from the
  * returned one (e.g. the result of calling <code>.then()</code> on it) to
  * avoid granting abort/cancel authority for the read.
+ * @property {boolean=} flowing Assume that the stream is in flowing mode and
+ * read data using <code>'data'</code> events.  This is the default for streams
+ * without a <code>.read()</code> method.
  * @property {boolean=} objectMode Treat the stream as if it were created with
  * the objectMode option, meaning read results are returned in an Array and
  * are never combined.  (This is always true for non-string, non-Buffer reads.)
@@ -136,6 +140,7 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
 
 function readInternal(stream, size, until, options) {
   var Promise = (options && options.Promise) || AnyPromise;
+  var flowing = options && options.flowing || typeof stream.read !== 'function';
   var numSize = size === null || isNaN(size) ? undefined : Number(size);
   var objectMode = Boolean(options && options.objectMode);
   var timeout = options && options.timeout;
@@ -395,7 +400,7 @@ function readInternal(stream, size, until, options) {
       return;
     }
 
-    if (typeof stream.read === 'function') {
+    if (!flowing) {
       readPending();
     } else {
       stream.on('data', onData);
