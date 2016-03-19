@@ -5,9 +5,28 @@
 'use strict';
 
 var AbortError = require('./lib/abort-error');
-var AnyPromise = require('any-promise');
 var EOFError = require('./lib/eof-error');
 var TimeoutError = require('./lib/timeout-error');
+
+// eslint-disable-next-line no-undef
+var AnyPromise = typeof Promise !== 'undefined' ? Promise : null;
+var SyncPromise;
+(function() {
+  var yakuPath = require.resolve('yaku');
+  var yakuCached = require.cache[yakuPath];
+  delete require.cache[yakuPath];
+
+  SyncPromise = require('yaku');
+  SyncPromise.nextTick = function thisTick(fn) { fn(); };
+
+  if (yakuCached) {
+    require.cache[yakuPath] = yakuCached;
+  } else {
+    delete require.cache[yakuPath];
+  }
+
+  AnyPromise = AnyPromise || yakuCached || require('yaku');
+}());
 
 var bufferIndexOf;
 if (!Buffer.prototype.indexOf) {
@@ -139,11 +158,12 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
 // function CancellableReadPromise() {}
 
 function readInternal(stream, size, until, options) {
-  var Promise = (options && options.Promise) || AnyPromise;
   var flowing = options && options.flowing || typeof stream.read !== 'function';
   var numSize = size === null || isNaN(size) ? undefined : Number(size);
   var objectMode = Boolean(options && options.objectMode);
   var timeout = options && options.timeout;
+  var Promise = (options && options.Promise) ||
+    (flowing ? SyncPromise : AnyPromise);
 
   var abortRead;
   var cancelRead;

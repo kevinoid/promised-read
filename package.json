@@ -38,8 +38,8 @@
     "version-deps": "npm install david depcheck git-branch-is travis-status"
   },
   "dependencies": {
-    "any-promise": "^1.1.0",
-    "buffer-indexof-polyfill": "^1.0.0"
+    "buffer-indexof-polyfill": "^1.0.0",
+    "yaku": "^0.13.7"
   },
   "optionalDependencies": {
     "buffertools": "^2.0.0"

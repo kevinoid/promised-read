@@ -350,6 +350,64 @@ function describePromisedReadWith(PassThrough) {
       });
     }
 
+    it('does not lose sequential writes', function() {
+      var input = new PassThrough();
+      var inputData = [
+        new Buffer('Larry\n'),
+        new Buffer('Curly\n'),
+        new Buffer('Moe\n')
+      ];
+      var readData = [];
+      function readAll(readable) {
+        return read(input, 2).then(function(data) {
+          if (data) {
+            readData.push(data);
+            return readAll(readable);
+          }
+          return Buffer.concat(readData);
+        });
+      }
+      var promise = readAll(input).then(function(result) {
+        assert.deepEqual(result, Buffer.concat(inputData));
+      });
+      inputData.forEach(function(data) {
+        input.write(data);
+      });
+      input.end();
+      return promise;
+    });
+
+    if (!PassThrough.prototype.read) {
+      it('does not lose consecutive synchronous writes', function() {
+        var input = new PassThrough();
+        var inputData = [
+          new Buffer('Larry\n'),
+          new Buffer('Curly\n'),
+          new Buffer('Moe\n')
+        ];
+        var readData = [];
+        function readAll(readable) {
+          return read(input, 2).then(function(data) {
+            console.log('read', data);
+            if (data) {
+              readData.push(data);
+              return readAll(readable);
+            }
+            return Buffer.concat(readData);
+          });
+        }
+        var promise = readAll(input).then(function(result) {
+          assert.deepEqual(result, Buffer.concat(inputData));
+        });
+        inputData.forEach(function(data) {
+          console.log('write', data);
+          input.emit('data', data);
+        });
+        input.emit('end');
+        return promise;
+      });
+    }
+
     it('returns an instance of options.Promise', function() {
       var input = new PassThrough();
       var promise = read(input, {Promise: BBPromise});
