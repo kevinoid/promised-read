@@ -33,7 +33,11 @@ if (!Buffer.prototype.indexOf) {
   try {
     bufferIndexOf = require('buffertools').indexOf;
   } catch (errRequire) {
-    // debug('Unable to require(\'buffertools\')', errRequire);
+    debug(
+      'Unable to require(\'buffertools\').  ' +
+        'Using buffer-indexof-polyfill instead.',
+      errRequire
+    );
     // Do a little dance to un-polyfill and convert method to function
     bufferIndexOf = (function bufferIndexOfClosure() {
       require('buffer-indexof-polyfill');
@@ -44,6 +48,14 @@ if (!Buffer.prototype.indexOf) {
       };
     }());
   }
+}
+
+// Optional debugging.  Install debug module or assign console.error to debug.
+var debug = function dummyDebug() {};
+try {
+  debug = require('debug');
+} catch (errDebug) {
+  debug('Unable to load debug module: ', errDebug);
 }
 
 /** Attempts to unshift result data down to a desired length.
@@ -59,7 +71,7 @@ if (!Buffer.prototype.indexOf) {
  */
 function tryUnshift(stream, result, desiredLength, emptySlice) {
   if (typeof stream.unshift !== 'function') {
-    // debug('stream does not support unshift');
+    debug('Unable to unshift, stream does not have an unshift method.');
     return result;
   }
 
@@ -91,7 +103,9 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
     unshiftErr = err;
   }
 
-  // if (unshiftErr) { debug('error unshifting', unshiftErr); }
+  if (unshiftErr) {
+    debug('Unable to unshift data: ', unshiftErr);
+  }
 
   stream.removeListener('error', onUnshiftError);
   errorListeners.forEach(function(errorListener) {
@@ -194,7 +208,8 @@ function readInternal(stream, size, until, options) {
           // can use the partial result and to avoid losing data.
           err.read = result;
         } else {
-          // debug('Unable to set .read on non-object reject cause');
+          debug('Unable to set .read on non-object reject cause.  ' +
+            'Discarding data.');
         }
       }
       reject(err);
@@ -275,19 +290,24 @@ function readInternal(stream, size, until, options) {
       }
 
       if (typeof desiredLength === 'number') {
-        // debug('until returned a desired length of ' + desiredLength + '.');
         if (desiredLength >= 0) {
-          if (result && desiredLength < result.length && !ended) {
-            // if (ended) {
-            //  debug('Can not unshift after end.');
-            // } else
-            result = tryUnshift(stream, result, desiredLength, true);
+          debug(
+            'until returned a desired length of %d out of %d',
+            desiredLength, result.length
+          );
+          if (result && desiredLength < result.length) {
+            if (ended) {
+              debug('Unable to unshift:  Can not unshift after end.');
+            } else {
+              result = tryUnshift(stream, result, desiredLength, true);
+            }
           }
           doResolve();
           return true;
         }
+        debug('until returned %d, continuing to read', desiredLength);
       } else if (desiredLength === true) {
-        // debug('until returned true, read finished.');
+        debug('until returned true, read finished.');
         doResolve();
         return true;
       } else if (desiredLength !== undefined &&
@@ -300,8 +320,8 @@ function readInternal(stream, size, until, options) {
           'non-numeric, non-boolean until() result: ' + desiredLength,
           true
         ));
-      // } else {
-      //   debug('until returned ' + desiredLength + ', continuing to read.');
+      } else {
+        debug('until returned %s, continuing to read', desiredLength);
       }
 
       return false;
@@ -324,6 +344,7 @@ function readInternal(stream, size, until, options) {
     if (stream &&
         stream._readableState &&
         stream._readableState.endEmitted) {
+      debug('Error:  stream has ended!  Calling read after end is unreliable!');
       onEnd();
       return;
     }
