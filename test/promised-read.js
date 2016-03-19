@@ -1290,6 +1290,25 @@ function describePromisedReadWith(PassThrough) {
       return promise;
     });
 
+    if (PassThrough.prototype.unshift) {
+      it('unshifts on TypeError due to non-numeric/non-boolean', function() {
+        var input = new PassThrough();
+        var inputData = new Buffer('test');
+        function until(buffer, chunk) {
+          return {};
+        }
+        var promise = readUntil(input, until).then(
+          sinon.mock().never(),
+          function(err) {
+            assert.strictEqual(err.name, 'TypeError');
+            assert.deepEqual(input.read(), inputData);
+          }
+        );
+        input.write(inputData);
+        return promise;
+      });
+    }
+
     it('calls the until function on each read', function() {
       var input = new PassThrough();
       var inputData = [

@@ -316,10 +316,12 @@ function readInternal(stream, size, until, options) {
         // Note:  Although this could be allowed, it causes an Error so that
         // future versions may add behavior for these values without causing
         // breakage.
-        doReject(new TypeError(
-          'non-numeric, non-boolean until() result: ' + desiredLength,
+        doReject(
+          new TypeError(
+            'non-numeric, non-boolean until() result: ' + desiredLength
+          ),
           true
-        ));
+        );
       } else {
         debug('until returned %s, continuing to read', desiredLength);
       }
