@@ -389,7 +389,6 @@ function describePromisedReadWith(PassThrough) {
         var readData = [];
         function readAll(readable) {
           return read(input, 2).then(function(data) {
-            console.log('read', data);
             if (data) {
               readData.push(data);
               return readAll(readable);
@@ -401,7 +400,6 @@ function describePromisedReadWith(PassThrough) {
           assert.deepEqual(result, Buffer.concat(inputData));
         });
         inputData.forEach(function(data) {
-          console.log('write', data);
           input.emit('data', data);
         });
         input.emit('end');
