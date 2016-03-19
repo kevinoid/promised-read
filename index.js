@@ -448,7 +448,8 @@ function readInternal(stream, size, until, options) {
  * <code>size</code> if <code>'end'</code> occurs and will be <code>null</code>
  * if no data can be read.  If an error occurs after reading some data, the
  * <code>.read</code> property of the error object will contain the partial
- * read result.
+ * read result.  The promise is resolved synchronously for streams in flowing
+ * mode (see README.md for details).
  */
 function read(stream, size, options) {
   if (!options && typeof size === 'object') {
@@ -475,7 +476,8 @@ function read(stream, size, options) {
  * emitted before <code>until</code> returns a non-negative/true value, an
  * {@link EOFError} is returned.  If an error occurs after reading some data,
  * the <code>.read</code> property of the error object will contain the partial
- * read result.
+ * read result.  The promise is resolved synchronously for streams in flowing
+ * mode (see README.md for details).
  */
 function readUntil(stream, until, options) {
   if (typeof until !== 'function') {
@@ -518,7 +520,8 @@ function readUntil(stream, until, options) {
  * <code>options.endOK</code> is truthy in which case any remaining data is
  * returned or <code>null</code> if none was read.  If an error occurs after
  * reading some data, the <code>.read</code> property of the error object will
- * contain the partial read result.
+ * contain the partial read result.  The promise is resolved synchronously for
+ * streams in flowing mode (see README.md for details).
  */
 function readTo(stream, needle, options) {
   var endOK = Boolean(options && (options.endOK || options.endOk));
