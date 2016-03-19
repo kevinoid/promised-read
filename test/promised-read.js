@@ -1097,6 +1097,16 @@ function describePromisedReadWith(PassThrough) {
       return promise;
     });
 
+    it('reads up to (and including) a non-global RegExp', function() {
+      var input = new PassThrough({encoding: 'utf8'});
+      var inputData = 'Larry\n';
+      var promise = readToMatch(input, /\n/).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+      input.write(inputData);
+      return promise;
+    });
+
     it('reads up to (and including) a string expression', function() {
       var input = new PassThrough({encoding: 'utf8'});
       var inputData = 'Larry\n';
@@ -1104,6 +1114,21 @@ function describePromisedReadWith(PassThrough) {
         assert.deepEqual(data, inputData);
       });
       input.write(inputData);
+      return promise;
+    });
+
+    it('reads up to (and including) a match split across writes', function() {
+      var input = new PassThrough({encoding: 'utf8'});
+      var inputData = [
+        'Larry\n',
+        'Cur',
+        'ly\n',
+        'Moe\n'
+      ];
+      var promise = readToMatch(input, /Curly\n/g).then(function(data) {
+        assert.deepEqual(data, inputData.slice(0, 3).join(''));
+      });
+      writeEachTo(input, inputData);
       return promise;
     });
 
