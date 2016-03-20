@@ -587,7 +587,9 @@ function readTo(stream, needle, options) {
         needleLength = needleForIndexOf.length;
       } else if (result instanceof Buffer) {
         if (typeof needle === 'number') {
-          needleForIndexOf = needle;
+          // buffertools requires a Buffer or string
+          // buffer-indexof-polyfill converts number to Buffer on each call
+          needleForIndexOf = result.indexOf ? needle : new Buffer([needle]);
           needleLength = 1;
         } else if (typeof needle === 'string') {
           needleForIndexOf = needle;
