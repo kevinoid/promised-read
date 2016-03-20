@@ -8,7 +8,7 @@ promised-read
 [![Version on NPM](https://img.shields.io/npm/v/promised-read.svg?style=flat)](https://www.npmjs.com/package/promised-read)
 
 Read from a stream using Promises, with support for timeouts, cancellation,
-and reading up to a given point.
+and several ways to determine how much data to read.
 
 ## Introductory Example
 
@@ -28,9 +28,12 @@ readTo(process.stdin, '\n').then(function(response) {
 - Supports sized reads.
 - Supports reading up to an expected sequence (with unshift for over-reads).
 - Supports reading until a function is satisfied (with unshift for over-reads).
+- Supports reading until a RegExp is matched (with unshift for over-reads).
+- Supports synchronous promise resolution to avoid missing events for pre-0.10
+  streams (see caveats below).
 - Supports read timeout and read cancellation (including [bluebird 3.x
   cancellation integration](http://bluebirdjs.com/docs/api/cancellation.html),
-  when available).
+  when available - see caveats below).
 
 ## Installation
 
