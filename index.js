@@ -127,47 +127,50 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
  *   timeout: number|undefined
  * }} ReadOptions
  * @property {function(new:Promise)=} Promise Promise type to return.  Default
- * is the type returned by the {@link https://www.npmjs.com/package/any-promise
- * any-promise} module.
+ * for non-flowing streams is the global <code>Promise</code> type, when
+ * available, or another Promises/A+ and ES6 compliant promise type.  Default
+ * for flowing streams is a promise type which complies with Promises/A+ and
+ * ES6 with the exception that it calls <code>onResolved</code> and
+ * <code>onRejected</code> synchronously.
  * @property {boolean=} cancellable Provide <code>abortRead</code> and
  * <code>cancelRead</code> methods on the returned Promise which allow the
  * caller to abort or cancel an pending read.  This has no effect on
- * cancellation support provided by the Promise library, if any.
- *
- * <strong>Note:</strong> Any consumers of the read result which which do not
- * require abort/cancel authority should be given a Promise chained from the
- * returned one (e.g. the result of calling <code>.then()</code> on it) to
- * avoid granting abort/cancel authority for the read.
+ * cancellation support provided by the Promise library, if any.  See
+ * {@link CancellableReadPromise} for details.
  * @property {boolean=} flowing Assume that the stream is in flowing mode and
  * read data using <code>'data'</code> events.  This is the default for streams
  * without a <code>.read()</code> method.
  * @property {boolean=} objectMode Treat the stream as if it were created with
- * the objectMode option, meaning read results are returned in an Array and
- * are never combined.  (This is always true for non-string, non-Buffer reads.)
+ * the <code>objectMode</code> option, meaning read results are returned in an
+ * Array and are never combined.  (This is always true for non-string,
+ * non-Buffer reads.)
  * @property {number=} timeout Cause the read to timeout after a given number
- * of milliseconds.  The promise will be rejected with a TimeoutError which
- * will have a <code>.read</code> property with any previously read values.
+ * of milliseconds.  The promise will be rejected with a {@link TimeoutError}
+ * which will have a <code>.read</code> property with any previously read
+ * values.
  */
 // var ReadOptions;
 
 /** Promise type returned by {@link read}, {@link readTo}, and
  * {@link readUntil} for {@link ReadOptions.cancellable cancellable} reads.
  *
- * The returned promise will be an instance of <code>options.Promise</code>,
- * if set, which has the additional methods defined for this type.
+ * <p>The returned promise will be an instance of {@link ReadOptions.Promise},
+ * if set, which has the additional methods defined for this type.</p>
  *
- * Note that the method names were chosen to avoid conflict with the existing
- * promise cancellation methods under consideration (abort, cancel) since they
- * may gain defined semantics which differ from the methods described here.
+ * <p>Note that the method names were chosen to avoid conflict with the
+ * existing promise cancellation methods under consideration (e.g.
+ * <code>abort</code>, and <code>cancel</code>) since they may gain defined
+ * semantics which differ from the methods described here.</p>
  *
- * Any promises chained from the returned promise (e.g. returned from calling
- * <code>.then</code>) will not share the methods defined on this class, which
- * prevents abort/cancel authority from being unintentionally conveyed to other
- * consumers of the read data or its dependencies.
+ * <p>Any promises chained from the returned promise (e.g. returned from
+ * calling <code>.then()</code>) will not share the methods defined on this
+ * class, which prevents abort/cancel authority from being unintentionally
+ * conveyed to other consumers of the read data or its dependencies.</p>
  *
  * @ template ReturnType
  * @constructor
  * @extends Promise<ReturnType>
+ * @name CancellableReadPromise
  */
 // function CancellableReadPromise() {}
 
@@ -223,11 +226,9 @@ function readInternal(stream, size, until, options) {
      *
      * If the read operation is not currently pending, this does nothing.
      *
-     * Note:  This method is only available for
-     * {@link ReadOptions.cancellable cancellable} reads.
-     *
-     * @name {CancellableReadPromise#abortRead}
-     * @see {ReadOptions.cancellable}
+     * @function
+     * @name CancellableReadPromise#abortRead
+     * @see ReadOptions.cancellable
      */
     abortRead = function() {
       if (isDoneReading) { return; }
@@ -239,13 +240,11 @@ function readInternal(stream, size, until, options) {
      *
      * If the read operation is not currently pending, this does nothing.
      *
-     * Note:  This method is only available for
-     * {@link ReadOptions.cancellable cancellable} reads.
-     *
-     * @name {CancellableReadPromise#cancelRead}
-     * @return Buffer|string|Array Any previously read data which could not be
-     * unshifted, or <code>null</code> if all data was unshifted.
-     * @see {ReadOptions.cancellable}
+     * @function
+     * @name CancellableReadPromise#cancelRead
+     * @return {Buffer|string|Array} Any previously read data which could not
+     * be unshifted, or <code>null</code> if all data was unshifted.
+     * @see ReadOptions.cancellable
      */
     cancelRead = function() {
       if (isDoneReading) { return null; }
@@ -530,7 +529,7 @@ function readUntil(stream, until, options) {
 
 /** Reads from a stream.Readable until a given value is found.
  *
- * This function calls {@link readUntil} with an <code>until</code> function
+ * <p>This function calls {@link readUntil} with an <code>until</code> function
  * which uses <code>.indexOf</code> to search for <code>needle</code>.  On
  * Node.js versions before v1.5.0, {@link
  * https://www.npmjs.com/package/buffertools buffertools} is used when
@@ -539,19 +538,19 @@ function readUntil(stream, until, options) {
  * paramount, consider using {@link readUntil} directly with an optional
  * function for the problem (e.g. {@link
  * https://www.npmjs.com/package/buffer-indexof-fast buffer-indexof-fast} for
- * single-character search).
+ * single-character search).</p>
  *
- * Doc note:  options should be a ReadToOptions type which extends ReadOptions,
- * but record types can't currently be extended
- * https://github.com/google/closure-compiler/issues/604
+ * <p>Doc note:  options should be a ReadToOptions type which extends
+ * {@link ReadOptions}, but record types can't currently be extended.
+ * See {@link https://github.com/google/closure-compiler/issues/604}.</p>
  *
  * @param {stream.Readable} stream Stream from which to read.
  * @param {!Buffer|string|*} needle Value to search for in the read result.
  * The stream will be read until this value is found or <code>'end'</code> or
  * <code>'error'</code> is emitted.
  * @param {ReadOptions=} options Options.  This function additionally supports
- * an <code>endOK</code> option which causes <code>'end'</code> not to be
- * considered an error.
+ * an <code>endOK</code> option which prevents {@link EOFError} on
+ * <code>'end'</code>.
  * @return {Promise<Buffer|string|Array>|
  * CancellableReadPromise<Buffer|string|Array>} Promise with the data read, up
  * to and including <code>needle</code>, or an Error if one occurs.  If
@@ -626,23 +625,21 @@ function readTo(stream, needle, options) {
 
 /** Reads from a stream.Readable until a given expression is matched.
  *
- * This function calls {@link readUntil} with an <code>until</code> function
- * which applies <code>regexp</code> to the data read.  This works well for
- * long and complex expressions, but can be significantly slower than
- * {@link readTo} due to expression matching and re-searching previous chunks.
+ * <p>This function calls {@link readUntil} with an <code>until</code> function
+ * which applies <code>regexp</code> to the data read.</p>
  *
- * Doc note:  options should be a ReadToMatchOptions type which extends
- * ReadToOptions, but record types can't currently be extended
- * https://github.com/google/closure-compiler/issues/604
+ * <p>Doc note:  options should be a ReadToMatchOptions type which extends
+ * ReadToOptions, but record types can't currently be extended.
+ * See {@link https://github.com/google/closure-compiler/issues/604}.</p>
  *
  * @param {stream.Readable<string>} stream Stream from which to read.  This
  * stream must produce strings (so call <code>.setEncoding</code> if necessary).
- * @param {!RegExp|string} regexp Expression to search for in the read result.
+ * @param {!RegExp|string} regexp Expression to find in the read result.
  * The stream will be read until this value is matched or <code>'end'</code> or
  * <code>'error'</code> is emitted.
  * @param {ReadOptions=} options Options.  This function additionally supports
- * an <code>endOK</code> option which causes <code>'end'</code> not to be
- * considered an error and a <code>maxMatchLen</code> option which specifies
+ * an <code>endOK</code> option which prevents {@link EOFError} on
+ * <code>'end'</code> and a <code>maxMatchLen</code> option which specifies
  * the maximum length of a match, which allow additional search optimizations.
  * @return {Promise<string>|CancellableReadPromise<string>} Promise with the
  * data read, up to and including the data matched by <code>regexp</code>, or
