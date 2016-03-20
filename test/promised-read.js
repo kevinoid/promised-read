@@ -253,12 +253,16 @@ function describeWithStreamType(PassThrough) {
         // This only works for proper instances of stream.Readable and is not
         // guaranteed to work (due to use of Readable implementation details).
         var input = new PassThrough();
-        input.end();
-        process.nextTick(function() {
-          read(input).then(function(data) {
-            assert.strictEqual(data, null);
-          }).then(done, done);
+        input.once('end', function() {
+          process.nextTick(function() {
+            read(input).then(function(data) {
+              assert.strictEqual(data, null);
+            }).then(done, done);
+          });
         });
+        input.end();
+        // Note:  Must read after .end() for 'end' to be emitted
+        input.read();
       });
     }
 
@@ -1173,6 +1177,16 @@ function describeWithStreamType(PassThrough) {
       input.write(inputData);
       return promise;
     });
+
+    it('resolves with null when no data if options.endOK', function() {
+      var input = new PassThrough();
+      var promise = readToMatch(input, /\n/g, {endOK: true})
+        .then(function(data) {
+          assert.strictEqual(data, null);
+        });
+      input.end();
+      return promise;
+    });
   });
 
   describe('.readUntil()', function() {
@@ -1232,6 +1246,21 @@ function describeWithStreamType(PassThrough) {
           assert.deepEqual(data, inputData.slice(0, 2));
         });
         input.write(inputData);
+        return promise;
+      });
+
+      it('stops reading and unshifts for objectMode stream', function() {
+        var input = new PassThrough({objectMode: true});
+        var inputData = [0, 1, 2, 3, 4];
+        function until(buffer, chunk) {
+          return buffer.length === inputData.length - 1 ? 2 : -1;
+        }
+        var promise = readUntil(input, until).then(function(data) {
+          assert.deepEqual(data, inputData.slice(0, 2));
+        });
+        inputData.forEach(function(data) {
+          input.write(data);
+        });
         return promise;
       });
 
@@ -1389,6 +1418,30 @@ function describeWithStreamType(PassThrough) {
       return promise;
     });
 
+    // This is a test that the internals for buffer resizing aren't broken
+    it('can handle unexpectedly large reads', function() {
+      var input = new PassThrough();
+      var inputData = [
+        new Buffer('Larry\n'),
+        new Buffer(512)
+      ];
+      inputData[1].fill(0);
+      var bigInputData = new Buffer(4 * 1024);
+      for (var i = 0; i < bigInputData.length; ++i) {
+        bigInputData[i] = i % 256;
+      }
+      inputData.push(bigInputData);
+      // TODO:  Some way to test buffer is a slice of a much larger buffer?
+      function untilBig(buffer, chunk) {
+        return chunk.length === bigInputData.length;
+      }
+      var promise = readUntil(input, untilBig).then(function(data) {
+        assert.deepEqual(data, Buffer.concat(inputData));
+      });
+      writeEachTo(input, inputData);
+      return promise;
+    });
+
     it('treats Buffers as objects if options.objectMode', function() {
       var input = new PassThrough();
       var inputData = [
@@ -1458,15 +1511,19 @@ function describeWithStreamType(PassThrough) {
         // This only works for proper instances of stream.Readable and is not
         // guaranteed to work (due to use of Readable implementation details).
         var input = new PassThrough();
-        input.end();
-        process.nextTick(function() {
-          readUntil(input, untilNever).then(
-            sinon.mock().never(),
-            function(err) {
-              assert.strictEqual(err.name, 'EOFError');
-            }
-          ).then(done, done);
+        input.once('end', function() {
+          process.nextTick(function() {
+            readUntil(input, untilNever).then(
+              sinon.mock().never(),
+              function(err) {
+                assert.strictEqual(err.name, 'EOFError');
+              }
+            ).then(done, done);
+          });
         });
+        input.end();
+        // Note:  Must read after .end() for 'end' to be emitted
+        input.read();
       });
     }
 
