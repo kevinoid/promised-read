@@ -12,7 +12,9 @@
       "coverage",
       "doc",
       "node_modules",
-      "test"
+      "test",
+      "test-bin",
+      "test-lib"
     ]
   },
   "tags": {
