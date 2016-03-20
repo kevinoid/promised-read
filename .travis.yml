@@ -5,7 +5,8 @@ node_js:
   - node
   - iojs
   - 0.10
-  - 0.1
+# Note:  Travis appears to interpret 0.1 as 0.10, so test against 0.2 instead
+  - 0.2
 
 # If the package has OS-dependent features, uncomment this.
 #os:
