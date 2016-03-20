@@ -165,7 +165,7 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
  * prevents abort/cancel authority from being unintentionally conveyed to other
  * consumers of the read data or its dependencies.
  *
- * @template ReturnType
+ * @ template ReturnType
  * @constructor
  * @extends Promise<ReturnType>
  */
@@ -499,7 +499,7 @@ function read(stream, size, options) {
 
 /** Reads from a stream.Readable until a given test is satisfied.
  * @param {stream.Readable} stream Stream from which to read.
- * @param {function(!Buffer|string|!Array, Buffer|string|*): number|boolean}
+ * @param {function((!Buffer|string|!Array), (Buffer|string|*)): number|boolean}
  * test Test function called with the data read so far and the most recent
  * chunk read.  If it returns a negative or falsey value, more data will be
  * read.  If it returns a non-negative number and the stream can be unshifted,
@@ -552,7 +552,7 @@ function readUntil(stream, until, options) {
  * @param {ReadOptions=} options Options.  This function additionally supports
  * an <code>endOK</code> option which causes <code>'end'</code> not to be
  * considered an error.
- * @return {Promise<Buffer|string|Array}|
+ * @return {Promise<Buffer|string|Array>|
  * CancellableReadPromise<Buffer|string|Array>} Promise with the data read, up
  * to and including <code>needle</code>, or an Error if one occurs.  If
  * <code>stream</code> does not support <code>unshift</code>, the result may
@@ -644,7 +644,7 @@ function readTo(stream, needle, options) {
  * an <code>endOK</code> option which causes <code>'end'</code> not to be
  * considered an error and a <code>maxMatchLen</code> option which specifies
  * the maximum length of a match, which allow additional search optimizations.
- * @return {Promise<string}|CancellableReadPromise<string>} Promise with the
+ * @return {Promise<string>|CancellableReadPromise<string>} Promise with the
  * data read, up to and including the data matched by <code>regexp</code>, or
  * an Error if one occurs.  If <code>stream</code> does not support
  * <code>unshift</code>, the result may include additional data.  If
