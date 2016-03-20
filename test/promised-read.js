@@ -7,6 +7,7 @@
 var BBPromise = require('bluebird');
 var PassThroughEmitter = require('../test-lib/pass-through-emitter');
 var assert = require('assert');
+var fork = require('child_process').fork;
 var promisedRead = require('..');
 var sinon = require('sinon');
 var stream = require('stream');
@@ -38,7 +39,7 @@ function writeEachTo(writable, inputData, cb) {
 }
 
 /** Describes the promisedRead behavior for a given stream type. */
-function describePromisedReadWith(PassThrough) {
+function describeWithStreamType(PassThrough) {
   describe('.read()', function() {
     it('returns a Promise with read data', function() {
       var input = new PassThrough();
@@ -1600,19 +1601,32 @@ function describePromisedReadWith(PassThrough) {
   });
 }
 
-/** Describes this module's behavior for a given stream type. */
-function describeWithStreamType(PassThrough) {
-  describe('promisedRead', function() {
-    describePromisedReadWith(PassThrough);
+describe('promisedRead', function() {
+  it('has proper sync/async when loaded after yaku', function(done) {
+    fork('./test-bin/after-yaku-ok')
+      .on('error', done)
+      .on('exit', function(code) {
+        assert.strictEqual(code, 0);
+        done();
+      });
   });
-}
 
-describe('with pre-0.10 streams', function() {
-  describeWithStreamType(PassThroughEmitter);
+  it('has proper sync/async when loaded before yaku', function(done) {
+    fork('./test-bin/before-yaku-ok')
+      .on('error', done)
+      .on('exit', function(code) {
+        assert.strictEqual(code, 0);
+        done();
+      });
+  });
+
+  describe('with pre-0.10 streams', function() {
+    describeWithStreamType(PassThroughEmitter);
+  });
+
+  if (stream.PassThrough) {
+    describe('with 0.10 streams', function() {
+      describeWithStreamType(stream.PassThrough);
+    });
+  }
 });
-
-if (stream.PassThrough) {
-  describe('with 0.10 streams', function() {
-    describeWithStreamType(stream.PassThrough);
-  });
-}
