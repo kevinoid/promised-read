@@ -259,10 +259,12 @@ function readInternal(stream, size, until, options) {
 
     // bluebird 3.x supports cancellation (when explicitly enabled by the
     // user).  It does not provide a way to query whether it is enabled
-    // (AFAICT).  The third argument could be when.js notify or something else.
-    // The presence of the cancel method is used to deduce its function.
+    // (AFAICT).  The third argument could be notify or something else.
+    // Check for cancel method and config function to add certainty.
+    // TODO:  Find a more reliable check.
     if (typeof cancelled === 'function' &&
-        typeof Promise.prototype.cancel === 'function') {
+        typeof Promise.prototype.cancel === 'function' &&
+        typeof Promise.config === 'function') {
       cancelled(cancelRead);
     }
 
