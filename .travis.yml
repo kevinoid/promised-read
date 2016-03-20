@@ -3,12 +3,11 @@ language: node_js
 # Update engines.node in package.json if removing old versions.
 node_js:
   - node
+  - 0.12
   - 0.10
-  - 0.8
-# Note1:  Travis appears to interpret 0.1 as 0.10
-# Note2:  Travis has to build Node versions before 0.8.
-#         So to be a good netizen, we normally disable it.
-# - 0.2
+# Note:  The npm version which ships with 0.8 does not support carat versions,
+# which makes it difficult to use (it would require removing tilde from both
+# direct and transitive dependencies).
 
 # If the package has OS-dependent features, uncomment this.
 #os:
