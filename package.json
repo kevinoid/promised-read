@@ -38,22 +38,22 @@
     "version-deps": "npm install david depcheck git-branch-is travis-status"
   },
   "dependencies": {
-    "buffer-indexof-polyfill": "^1.0.0",
-    "yaku": "^0.13.7"
+    "buffer-indexof-polyfill": ">=1.0.0 <2.0.0",
+    "yaku": ">=0.13.7 <0.14.0"
   },
   "optionalDependencies": {
-    "buffertools": "^2.0.0"
+    "buffertools": ">=2.0.0 <3.0.0"
   },
   "devDependencies": {
-    "bluebird": "^3.0.0",
-    "codecov": "^1.0.1",
-    "coveralls": "^2.11.6",
-    "eslint": "^2.3.0",
-    "eslint-config-airbnb": "^6.0.1",
-    "istanbul": "^0.4.1",
-    "jsdoc": "^3.4.0",
-    "mocha": "^2.3.4",
-    "sinon": "^1.17.3"
+    "bluebird": ">=3.0.0 <4.0.0",
+    "codecov": ">=1.0.1 <2.0.0",
+    "coveralls": ">=2.11.6 <3.0.0",
+    "eslint": ">=2.3.0 <3.0.0",
+    "eslint-config-airbnb": ">=6.0.1 <7.0.0",
+    "istanbul": ">=0.4.1 <0.5.0",
+    "jsdoc": ">=3.4.0 <4.0.0",
+    "mocha": ">=2.3.4 <3.0.0",
+    "sinon": ">=1.17.3 <2.0.0"
   },
   "engines": {
     "node": "*"
