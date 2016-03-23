@@ -28,6 +28,14 @@ var SyncPromise;
   AnyPromise = AnyPromise || yakuCached || require('yaku');
 }());
 
+// Optional debugging.  Install debug module or assign console.error to debug.
+var debug = function dummyDebug() {};
+try {
+  debug = require('debug');
+} catch (errDebug) {
+  debug('Unable to load debug module: ', errDebug);
+}
+
 var bufferIndexOf;
 if (!Buffer.prototype.indexOf) {
   try {
@@ -48,14 +56,6 @@ if (!Buffer.prototype.indexOf) {
       };
     }());
   }
-}
-
-// Optional debugging.  Install debug module or assign console.error to debug.
-var debug = function dummyDebug() {};
-try {
-  debug = require('debug');
-} catch (errDebug) {
-  debug('Unable to load debug module: ', errDebug);
 }
 
 /** Attempts to unshift result data down to a desired length.
