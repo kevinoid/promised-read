@@ -3,4 +3,8 @@
 /doc/
 /scripts
 /test
+/test-bin
+/test-lib
+TODO.txt
 jsdoc*.conf.json
+sync-promises.md
