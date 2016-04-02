@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>promised-read</h1><p><a href="https://travis-ci.org/kevinoid/promised-read"><img src="https://img.shields.io/travis/kevinoid/promised-read.svg?style=flat" alt="Build status"></a>
+<a href="https://codecov.io/github/kevinoid/promised-read?branch=master"><img src="https://img.shields.io/codecov/c/github/kevinoid/promised-read.svg?style=flat" alt="Coverage"></a>
+<a href="https://david-dm.org/kevinoid/promised-read"><img src="https://img.shields.io/david/kevinoid/promised-read.svg?style=flat" alt="Dependency Status"></a>
+<a href="https://www.npmjs.com/package/promised-read"><img src="https://img.shields.io/node/v/promised-read.svg?style=flat" alt="Supported Node Version"></a>
+<a href="https://www.npmjs.com/package/promised-read"><img src="https://img.shields.io/npm/v/promised-read.svg?style=flat" alt="Version on NPM"></a></p>
+<p>Read from a stream using Promises, with support for timeouts, cancellation,
+and several ways to determine how much data to read.</p>
+<h2>Introductory Example</h2><pre class="prettyprint source lang-js"><code>var readTo = require('promised-read').readTo;
+process.stderr.write('What is your name? ');
+readTo(process.stdin, '\n').then(function(response) {
+  process.stderr.write('Hello ' + response);
+});</code></pre><h2>Features</h2><ul>
+<li>Supports pre-0.10 (v1) streams and post-0.10 (v2) streams.</li>
+<li>Supports <code>objectMode</code> streams and decoded string streams in addition to byte
+(<code>Buffer</code>) streams.</li>
+<li>Supports sized reads.</li>
+<li>Supports reading up to an expected sequence (with unshift for over-reads).</li>
+<li>Supports reading until a function is satisfied (with unshift for over-reads).</li>
+<li>Supports reading until a RegExp is matched (with unshift for over-reads).</li>
+<li>Supports synchronous promise resolution to avoid missing events for pre-0.10
+streams (see caveats below).</li>
+<li>Supports read timeout and read cancellation (including <a href="http://bluebirdjs.com/docs/api/cancellation.html">bluebird 3.x
+cancellation integration</a>,
+when available - see caveats below).</li>
+</ul>
+<h2>Installation</h2><p><a href="https://www.npmjs.com/package/promised-read">This package</a> can be
+installed using <a href="https://www.npmjs.com/">npm</a>, either globally or locally, by
+running:</p>
+<pre class="prettyprint source lang-sh"><code>npm install promised-read</code></pre><h2>Recipes</h2><h3>Sized read</h3><pre class="prettyprint source lang-js"><code>var fs = require('fs');
+var read = require('promised-read').read;
+var input = fs.createReadStream('input.dat');
+read(input, 1024).then(function(data) {
+  if (data === null) {
+    console.error('Stream ended without data.');
+  } else if (data.length &lt; 1024) {
+    console.error('Stream ended before 1024 bytes could be read.');
+  } else if (data.length > 1024) {
+    console.error('Stream without .read() or .unshift() emitted too much data');
+  } else {
+    console.log('Common case.  Read requested amount.');
+  }
+});</code></pre><h3>Read lines</h3><pre class="prettyprint source lang-js"><code>var fs = require('fs');
+var readToMatch = require('promised-read').readToMatch;
+var file = fs.createReadStream('numbers.txt', {encoding: 'utf8'});
+function readLine(readable) {
+  return readToMatch(
+    readable,
+    /\r\n|\r|\n/g,
+    {
+      // endOK returns the data (or null) at end without matching the RegExp
+      endOK: true,
+      // maxMatchLen specifies the maximum length of a match.  It is optional,
+      // but can increase performance for reads across multiple chunks.
+      maxMatchLen: 2
+    }
+  );
+}
+function readNumbers(readable) {
+  var numbers = [];
+  var ended = false;
+  file.once('end', function() { ended = true; });
+  return readLine(file).then(function(line) {
+    // line will be null if no data is read on last read before 'end'
+    if (line !== null) {
+      line = line.trim();
+      if (/^[0-9]+$/.test(line)) {
+        numbers.push(Number(line));
+      }
+    }
+    return ended ? numbers : readLine(file);
+  });
+}
+readNumbers(file).then(function(numbers) {
+  numbers.sort();
+  console.log(numbers.join('\n'));
+});</code></pre><h3>Read Until</h3><pre class="prettyprint source lang-js"><code>var fs = require('fs');
+var readUntil = require('promised-read').readUntil;
+var input = fs.createReadStream('input.jsons', {encoding: 'utf8'});
+// Don't use this without handling '{' and '}' in strings
+function untilObject(data) {
+  var depth = 0;
+  for (var i = 0; i &lt; data.length; ++i) {
+    var ch = data[i];
+    if (ch === '{') {
+      ++depth;
+    } else if (ch === '}') {
+      --depth;
+      if (depth === 0) {
+        // Length including closing bracket.  Additional data will be unshifted.
+        return i + 1;
+      }
+    }
+  }
+  return -1;
+}
+readUntil(input, untilObject).then(function(jsonObject) {
+  JSON.parse(jsonObject);
+});</code></pre><h3>Read Until (incremental, faster)</h3><p>The <code>until</code> function can also operate on the individual chunks read, which are
+passed as the second argument.  This avoids re-processing data which was
+previously checked.  The previous example can be made more efficient with:</p>
+<pre class="prettyprint source lang-js"><code>var fs = require('fs');
+var readUntil = require('promised-read').readUntil;
+var input = fs.createReadStream('input.jsons', {encoding: 'utf8'});
+var depth = 0;
+// Don't use this without handling '{' and '}' in strings
+function untilObject(data, chunk, ended) {
+  if (!chunk) {
+    // chunk === null and ended === true when called for the 'end' event
+    // (chunk === null could also happen on pre-0.10 streams in objectMode)
+    return -1;
+  }
+
+  for (var i = 0; i &lt; chunk.length; ++i) {
+    var ch = chunk[i];
+    if (ch === '{') {
+      ++depth;
+    } else if (ch === '}') {
+      --depth;
+      if (depth === 0) {
+        // Length including closing bracket.  Additional data will be unshifted.
+        return data.length - chunk.length + i + 1;
+      }
+    }
+  }
+  return -1;
+}
+readUntil(input, untilObject).then(function(jsonObject) {
+  JSON.parse(jsonObject);
+});</code></pre><h3>Read with Timeout</h3><pre class="prettyprint source lang-js"><code>var readTo = require('promised-read').readTo;
+process.stderr.write('Pop Quiz: What\'s the square root of 3,448,449? ');
+var promise = readTo(process.stdin, '\n', {timeout: 5000});
+promise.then(
+  function(response) {
+    response = String(response).replace(/[^0-9]+/g, '');
+    console.error(Number(response) === 1857 ? 'Impressive.' : 'Nope.');
+  },
+  function(err) {
+    console.error(err.name === 'TimeoutError' ? 'Too slow.' : String(err));
+  }
+);</code></pre><p><strong>Note:</strong> Several promise libraries provide a <code>.timeout()</code> method which
+creates a chained promise which is rejected after a delay.  Although this
+works for the read consumer, it won't cancel the read operation, causing any
+data read from the stream (even after the timeout) to be discarded.  A notable
+exception is <a href="http://bluebirdjs.com/docs/api/timeout.html">bluebird</a> when
+<a href="http://bluebirdjs.com/docs/api/cancellation.html">cancellation</a> is enabled,
+which behaves as if <code>.cancel()</code> was called on the original promise (see
+caveats below).</p>
+<h2>Abort/Cancel Support</h2><p>Although generic Promise cancellation support is still far from being
+standardized (see
+<a href="https://github.com/promises-aplus/cancellation-spec/issues">cancellation-spec</a>,
+<a href="https://github.com/tc39/ecmascript-asyncawait/issues/27">async cancel</a>, and
+<a href="https://github.com/whatwg/fetch/issues/27">fetch abort</a> for discussion), this
+module provides an optional module-specific mechanism for callers to abort or
+cancel a pending read operation.  Passing a truthy value for
+<code>options.cancellation</code> causes the returned <code>Promise</code> to provide two additional
+methods:</p>
+<ul>
+<li><code>.abortRead()</code> causes reading to cease, the promise to be rejected with an
+<code>AbortError</code>, and any previously read data to be unshifted.  If unshift is
+not supported or causes an error, the data is set as the <code>.read</code>
+property of the <code>AbortError</code>.</li>
+<li><code>.cancelRead()</code> causes the reading to cease and any previously read data to
+be unshifted.  The promise will never be resolved or rejected.  If unshift is
+not supported or causes an error, the data will be returned from
+<code>.cancelRead()</code>.</li>
+</ul>
+<p><strong>Note:</strong> These methods grant all promise holders the authority to abort or
+cancel the read operation for all observers (including the unshift
+side-effects).  Any consumers of the read result which which do not require
+abort/cancel authority should be given a Promise chained from the returned one
+(e.g. the result of calling <code>.then()</code> on it) to avoid granting
+abort/cancel authority for the read.</p>
+<h3>Abort reading</h3><pre class="prettyprint source lang-js"><code>var assert = require('assert');
+var read = require('promised-read').read;
+var stream = require('stream');
+var input = new stream.PassThrough();
+var promise = read(input);
+promise.catch(function(err) {
+  console.log(err.name);    // AbortError
+});
+promise.abortRead();
+// reading is stopped immediately, so any future writes are unaffected
+input.write('hello');
+console.log(input.read());</code></pre><h3>Cancel reading</h3><pre class="prettyprint source lang-js"><code>var assert = require('assert');
+var read = require('promised-read').read;
+var stream = require('stream');
+var input = new stream.PassThrough();
+var promise = read(input);
+promise.then(
+  function(data) { throw new Error('never called'); },
+  function(err) { throw new Error('never called'); }
+);
+promise.cancelRead();
+// reading is stopped immediately, so any future writes are unaffected
+input.write('hello');
+console.log(input.read());</code></pre><h3>Abort from <code>until</code></h3><p>The <code>until</code> argument to <code>readUntil</code> can also cause read to be aborted by
+throwing an exception.  In this case, the promise is rejected with the
+exception thrown by <code>until</code> rather than an <code>AbortError</code>.</p>
+<pre class="prettyprint source lang-js"><code>var fs = require('fs');
+var readUntil = require('promised-read').readUntil;
+var zlib = require('zlib');
+var input = fs.createReadStream('archive.tar');
+function untilGzipMember(data) {
+  if (data.length >= 2 && data[0] !== 0x1f && data[1] !== 0x8b) {
+    throw new Error('invalid gzip header');
+  }
+}
+readUntil(input, untilGzipMember).catch(function(err) {
+  console.log(err); // Error: invalid gzip header
+});</code></pre><h3><code>bluebird</code> 3.x Cancellation</h3><p>This module also cancels the read operation when the returned promise is
+cancelled via <a href="http://bluebirdjs.com/docs/api/cancellation.html">bluebird 3.x
+cancellation</a>.  However, use
+of this method is not recommended due to a delay between when <code>.cancel()</code> is
+called and when the <code>onCancel</code> listener is called which can lead to lost data
+(see <a href="https://github.com/petkaantonov/bluebird/issues/1041">#1041</a>).</p>
+<pre class="prettyprint source lang-js"><code>var bluebird = require('bluebird');
+var readTo = require('promised-read').readTo;
+bluebird.config({cancellation: true});
+process.stderr.write('How does Jim spell his name?\n');
+var promise = readTo(process.stdin, '\n', {Promise: bluebird});
+promise.then(function(response) {
+  throw new Error('never called');
+});
+process.stderr.write('Nevermind.\n');
+// Note1:  Only use .cancel() if the stream supports unshift or it would be
+// safe to discard any data which has already been read
+// Note2:  Due to the delay between .cancel() and the onCancel listener,
+// callers should either delay writing for at least one tick or watch for
+// 'data' events during that tick to avoid losing data.
+// See https://github.com/petkaantonov/bluebird/issues/1041
+promise.cancel();</code></pre><p>More examples can be found in the <a href="https://kevinoid.github.io/promised-read/specs">test
+specifications</a>.</p>
+<h2>API Docs</h2><p>To use this module as a library, see the <a href="https://kevinoid.github.io/promised-read/api">API
+Documentation</a>.</p>
+<h2>API Warnings</h2><h3>Reading after end</h3><p>The <a href="https://nodejs.org/api/stream.html">stream API</a> does not provide a way to
+differentiate between a stream which has ended and one which does not
+currently have data available.  For this reason, the <code>read</code> functions should
+not be called after a stream emits <code>'end'</code> or <code>'error'</code>.  It is the caller's
+responsibility to ensure that <code>read</code> is only called on streams in a readable
+state.</p>
+<h3>Synchronous resolution for flowing streams</h3><p>When reading from streams which lack a <code>.read()</code> method, or when
+<code>options.flowing</code> is <code>true</code>, the <code>onFulfilled</code> and <code>onRejected</code> functions
+(i.e. functions added with <code>.then()</code> or <code>.catch()</code>) will be called
+synchronously upon promise resolution or rejection.  This is necessary to
+prevent missing stream events between resolution and the handler being called,
+when another read can be started.</p>
+<p>This behavior may be surprising, since it conflicts with <a href="https://promisesaplus.com/#point-34">point 2.2.4 of the
+Promises/A+ spec</a> (for an example, see <a href="https://github.com/domenic/promise-tests#always-async">A
+Promises/A Test
+Suite</a>).  However,
+since read promises are only resolved synchronously when an argument error
+occurs, one of the most common pitfalls is avoided.  Additionally, once the
+synchronous behavior is not necessary (e.g. after the next read has started)
+asynchronous behavior can be restored by chaining to another promise class
+(e.g. <code>Promise.resolve(readPromise)</code>).</p>
+<p>Synchronous promises can also be avoided by specifying an asynchronous promise
+constructor via <code>options.Promise</code>.  However, this is likely to cause missed
+events if the writer is not synchronized with with reader.</p>
+<h2>Contributing</h2><p>Contributions are welcome and very much appreciated!  Please add tests to
+cover any changes and ensure <code>npm test</code> passes.</p>
+<p>If the desired change is large, complex, backwards-incompatible, can have
+significantly differing implementations, or may not be in scope for this
+project, opening an issue before writing the code can avoid frustration and
+save a lot of time and effort.</p>
+<h2>License</h2><p>This package is available under the terms of the
+<a href="https://opensource.org/licenses/MIT">MIT License</a>.</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AbortError.html">AbortError</a></li><li><a href="CancellableReadPromise.html">CancellableReadPromise</a></li><li><a href="EOFError.html">EOFError</a></li><li><a href="TimeoutError.html">TimeoutError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#read">read</a></li><li><a href="global.html#readTo">readTo</a></li><li><a href="global.html#readToMatch">readToMatch</a></li><li><a href="global.html#readUntil">readUntil</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Apr 01 2016 23:41:21 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

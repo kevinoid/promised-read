@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: index.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: index.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @copyright Copyright 2016 Kevin Locke &lt;kevin@kevinlocke.name>
+ * @license MIT
+ */
+'use strict';
+
+var AbortError = require('./lib/abort-error');
+var EOFError = require('./lib/eof-error');
+var TimeoutError = require('./lib/timeout-error');
+
+// eslint-disable-next-line no-undef
+var AnyPromise = typeof Promise !== 'undefined' ? Promise : null;
+var SyncPromise;
+(function() {
+  var yakuPath = require.resolve('yaku');
+  var yakuCached = require.cache[yakuPath];
+  delete require.cache[yakuPath];
+
+  SyncPromise = require('yaku');
+  SyncPromise.nextTick = function thisTick(fn) { fn(); };
+
+  if (yakuCached) {
+    require.cache[yakuPath] = yakuCached;
+  } else {
+    delete require.cache[yakuPath];
+  }
+
+  AnyPromise = AnyPromise || yakuCached || require('yaku');
+}());
+
+// Optional debugging.  Install debug module or assign console.error to debug.
+var debug = function dummyDebug() {};
+try {
+  debug = require('debug');
+} catch (errDebug) {
+  debug('Unable to load debug module: ', errDebug);
+}
+
+var bufferIndexOf;
+if (!Buffer.prototype.indexOf) {
+  try {
+    bufferIndexOf = require('buffertools').indexOf;
+  } catch (errRequire) {
+    debug(
+      'Unable to require(\'buffertools\').  ' +
+        'Using buffer-indexof-polyfill instead.',
+      errRequire
+    );
+    // Do a little dance to un-polyfill and convert method to function
+    bufferIndexOf = (function bufferIndexOfClosure() {
+      require('buffer-indexof-polyfill');
+      var bufferIndexOfMethod = Buffer.prototype.indexOf;
+      delete Buffer.prototype.indexOf;
+      return function bufferIndexOfFunction(buffer, needle, fromIndex) {
+        return bufferIndexOfMethod.call(buffer, needle, fromIndex);
+      };
+    }());
+  }
+}
+
+/** Attempts to unshift result data down to a desired length.
+ * @param {stream.Readable} stream Stream into which to unshift data.
+ * @param {!Buffer|string|!Array} result Read result data.
+ * @param {number} desiredLength Desired length of result after unshifting.
+ * @param {boolean=} emptySlice Return an empty slice when all data is
+ * unshifted, rather than &lt;code>null&lt;/code>.
+ * @return {Buffer|string|Array} Result data after unshifting, or
+ * &lt;code>null&lt;/code> if all data was unshifted and &lt;code>emptySlice&lt;/code> is
+ * falsey.
+ * @private
+ */
+function tryUnshift(stream, result, desiredLength, emptySlice) {
+  if (typeof stream.unshift !== 'function') {
+    debug('Unable to unshift, stream does not have an unshift method.');
+    return result;
+  }
+
+  var errorListeners = stream.listeners('error');
+  stream.removeAllListeners('error');
+
+  // Note:  Don't rely on the EventEmitter throwing on 'error' without
+  // listeners, since it may be thrown in the stream's attached domain.
+  var unshiftErr;
+  function onUnshiftError(err) { unshiftErr = err; }
+  stream.on('error', onUnshiftError);
+
+  var resultLength = result.length;
+  try {
+    if (Array.isArray(result)) {
+      while (resultLength > desiredLength &amp;&amp; !unshiftErr) {
+        stream.unshift(result[resultLength - 1]);
+        if (!unshiftErr) {
+          --resultLength;
+        }
+      }
+    } else {
+      stream.unshift(result.slice(desiredLength));
+      if (!unshiftErr) {
+        resultLength = desiredLength;
+      }
+    }
+  } catch (err) {
+    unshiftErr = err;
+  }
+
+  if (unshiftErr) {
+    debug('Unable to unshift data: ', unshiftErr);
+  }
+
+  stream.removeListener('error', onUnshiftError);
+  errorListeners.forEach(function(errorListener) {
+    stream.on('error', errorListener);
+  });
+
+  return resultLength === 0 &amp;&amp; !emptySlice ? null :
+    resultLength &lt; result.length ? result.slice(0, resultLength) :
+    result;
+}
+
+/** Options for {@link read}, {@link readTo}, and {@link readUntil}.
+ *
+ * @typedef {{
+ *   Promise: function(new:Promise)|undefined,
+ *   cancellable: boolean|undefined,
+ *   flowing: boolean|undefined,
+ *   objectMode: boolean|undefined,
+ *   timeout: number|undefined
+ * }} ReadOptions
+ * @property {function(new:Promise)=} Promise Promise type to return.  Default
+ * for non-flowing streams is the global &lt;code>Promise&lt;/code> type, when
+ * available, or another Promises/A+ and ES6 compliant promise type.  Default
+ * for flowing streams is a promise type which complies with Promises/A+ and
+ * ES6 with the exception that it calls &lt;code>onResolved&lt;/code> and
+ * &lt;code>onRejected&lt;/code> synchronously.
+ * @property {boolean=} cancellable Provide &lt;code>abortRead&lt;/code> and
+ * &lt;code>cancelRead&lt;/code> methods on the returned Promise which allow the
+ * caller to abort or cancel an pending read.  This has no effect on
+ * cancellation support provided by the Promise library, if any.  See
+ * {@link CancellableReadPromise} for details.
+ * @property {boolean=} flowing Assume that the stream is in flowing mode and
+ * read data using &lt;code>'data'&lt;/code> events.  This is the default for streams
+ * without a &lt;code>.read()&lt;/code> method.
+ * @property {boolean=} objectMode Treat the stream as if it were created with
+ * the &lt;code>objectMode&lt;/code> option, meaning read results are returned in an
+ * Array and are never combined.  (This is always true for non-string,
+ * non-Buffer reads.)
+ * @property {number=} timeout Cause the read to timeout after a given number
+ * of milliseconds.  The promise will be rejected with a {@link TimeoutError}
+ * which will have a &lt;code>.read&lt;/code> property with any previously read
+ * values.
+ */
+// var ReadOptions;
+
+/** Promise type returned by {@link read}, {@link readTo}, and
+ * {@link readUntil} for {@link ReadOptions.cancellable cancellable} reads.
+ *
+ * &lt;p>The returned promise will be an instance of {@link ReadOptions.Promise},
+ * if set, which has the additional methods defined for this type.&lt;/p>
+ *
+ * &lt;p>Note that the method names were chosen to avoid conflict with the
+ * existing promise cancellation methods under consideration (e.g.
+ * &lt;code>abort&lt;/code>, and &lt;code>cancel&lt;/code>) since they may gain defined
+ * semantics which differ from the methods described here.&lt;/p>
+ *
+ * &lt;p>Any promises chained from the returned promise (e.g. returned from
+ * calling &lt;code>.then()&lt;/code>) will not share the methods defined on this
+ * class, which prevents abort/cancel authority from being unintentionally
+ * conveyed to other consumers of the read data or its dependencies.&lt;/p>
+ *
+ * @ template ReturnType
+ * @constructor
+ * @extends Promise&lt;ReturnType>
+ * @name CancellableReadPromise
+ */
+// function CancellableReadPromise() {}
+
+function readInternal(stream, size, until, options) {
+  var flowing = options &amp;&amp; options.flowing || typeof stream.read !== 'function';
+  var numSize = size === null || isNaN(size) ? undefined : Number(size);
+  var objectMode = Boolean(options &amp;&amp; options.objectMode);
+  var timeout = options &amp;&amp; options.timeout;
+  var Promise = (options &amp;&amp; options.Promise) ||
+    (flowing ? SyncPromise : AnyPromise);
+
+  var abortRead;
+  var cancelRead;
+
+  var promise = new Promise(function(resolve, reject, cancelled) {
+    var isDoneReading = false;
+    var result = null;
+    var timeoutID;
+    function doneReading() {
+      if (isDoneReading) { return; }
+      isDoneReading = true;
+      stream.removeListener('data', onData);
+      stream.removeListener('end', onEnd);
+      stream.removeListener('error', doReject);
+      stream.removeListener('readable', readPending);
+      if (timeoutID) { clearTimeout(timeoutID); }
+    }
+    function doReject(err, unshiftResult) {
+      doneReading();
+
+      if (unshiftResult &amp;&amp; result !== null &amp;&amp; result.length > 0) {
+        result = tryUnshift(stream, result, 0);
+      }
+
+      if (result !== null) {
+        if (typeof err === 'object' &amp;&amp; err !== null) {
+          // If we have read some data, include it on the error so the caller
+          // can use the partial result and to avoid losing data.
+          err.read = result;
+        } else {
+          debug('Unable to set .read on non-object reject cause.  ' +
+            'Discarding data.');
+        }
+      }
+      reject(err);
+    }
+    function doResolve() {
+      doneReading();
+      resolve(result);
+    }
+
+    /** Aborts a pending read operation, causing the Promise to be rejected.
+     *
+     * If the read operation is not currently pending, this does nothing.
+     *
+     * @function
+     * @name CancellableReadPromise#abortRead
+     * @see ReadOptions.cancellable
+     */
+    abortRead = function() {
+      if (isDoneReading) { return; }
+      doReject(new AbortError('read aborted'), true);
+    };
+
+    /** Cancels a pending read operation, causing the Promise never to be
+     * resolved or rejected.
+     *
+     * If the read operation is not currently pending, this does nothing.
+     *
+     * @function
+     * @name CancellableReadPromise#cancelRead
+     * @return {Buffer|string|Array} Any previously read data which could not
+     * be unshifted, or &lt;code>null&lt;/code> if all data was unshifted.
+     * @see ReadOptions.cancellable
+     */
+    cancelRead = function() {
+      if (isDoneReading) { return null; }
+      // Note:  Must stop reading before unshifting to avoid emitting a
+      // 'readable' event and immediately re-reading unshifted data.
+      doneReading();
+      if (result &amp;&amp; result.length > 0) {
+        result = tryUnshift(stream, result, 0);
+      }
+      return result;
+    };
+
+    // bluebird 3.x supports cancellation (when explicitly enabled by the
+    // user).  It does not provide a way to query whether it is enabled
+    // (AFAICT).  The third argument could be notify or something else.
+    // Check for cancel method and config function to add certainty.
+    // TODO:  Find a more reliable check.
+    if (typeof cancelled === 'function' &amp;&amp;
+        typeof Promise.prototype.cancel === 'function' &amp;&amp;
+        typeof Promise.config === 'function') {
+      cancelled(cancelRead);
+    }
+
+    stream.once('error', doReject);
+
+    if (timeout !== undefined &amp;&amp; timeout !== null) {
+      timeoutID = setTimeout(function onTimeout() {
+        doReject(new TimeoutError(), true);
+      }, timeout);
+    }
+
+    /** Calls the until function and handles its result.
+     * @return {boolean} &lt;code>true&lt;/code> if done reading, &lt;code>false&lt;/code>
+     * otherwise.
+     * @private
+     */
+    function checkUntil(resultWithData, data, ended) {
+      var desiredLength;
+      try {
+        desiredLength = until(resultWithData, data, ended);
+      } catch (errUntil) {
+        doReject(errUntil, true);
+        return true;
+      }
+
+      var resultLength = result ? result.length : 0;
+      if (typeof desiredLength === 'number') {
+        if (desiredLength > resultLength) {
+          debug(
+            'until returned a desired length of %d.  ' +
+              'Only have %d.  Reading up to %d.',
+            desiredLength, resultLength, desiredLength
+          );
+          numSize = desiredLength;
+          size = desiredLength - resultLength;
+        } else if (desiredLength >= 0) {
+          debug(
+            'until returned a desired length of %d out of %d',
+            desiredLength, resultLength
+          );
+          if (desiredLength &lt; resultLength) {
+            if (ended) {
+              debug('Unable to unshift:  Can not unshift after end.');
+            } else {
+              result = tryUnshift(stream, result, desiredLength, true);
+            }
+          }
+          doResolve();
+          return true;
+        } else {
+          debug('until returned %d, continuing to read', desiredLength);
+        }
+      } else if (desiredLength === true) {
+        debug('until returned true, read finished.');
+        doResolve();
+        return true;
+      } else if (desiredLength !== undefined &amp;&amp;
+          desiredLength !== null &amp;&amp;
+          desiredLength !== false) {
+        // Note:  Although this could be allowed, it causes an Error so that
+        // future versions may add behavior for these values without causing
+        // breakage.
+        doReject(
+          new TypeError(
+            'non-numeric, non-boolean until() result: ' + desiredLength
+          ),
+          true
+        );
+      } else {
+        debug('until returned %s, continuing to read', desiredLength);
+      }
+
+      return false;
+    }
+
+    function onEnd() {
+      if (until) {
+        if (!checkUntil(result, null, true)) {
+          doReject(new EOFError());
+        }
+      } else {
+        doResolve();
+      }
+    }
+    stream.once('end', onEnd);
+
+    // Although reading stream internals is distasteful, it is less distasteful
+    // than waiting endlessly for data that will never come because the caller
+    // was not careful about handling the 'end' event.
+    if (stream &amp;&amp;
+        stream._readableState &amp;&amp;
+        stream._readableState.endEmitted) {
+      debug('Error:  stream has ended!  Calling read after end is unreliable!');
+      onEnd();
+      return;
+    }
+
+    var resultBuf;
+    function onData(data) {
+      if (result === null) {
+        objectMode = objectMode ||
+          (typeof data !== 'string' &amp;&amp; !(data instanceof Buffer));
+        result = objectMode ? [data] : data;
+      } else if (typeof result === 'string' &amp;&amp; typeof data === 'string') {
+        result += data;
+      } else if (result instanceof Buffer &amp;&amp; data instanceof Buffer) {
+        // To avoid copying result on every read, make result a slice of
+        // resultBuf which grows geometrically as necessary.
+        var newResultSize = data.length + result.length;
+        if (!resultBuf || newResultSize > resultBuf.length) {
+          var newResultBufSize = resultBuf ? resultBuf.length : 128;
+          while (newResultBufSize &lt; newResultSize) {
+            // Growth factor is a time/space tradeoff.  3/2 seems reasonable.
+            // https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
+            // Use right-shift for division to avoid unnecessary float+round
+            newResultBufSize = (newResultBufSize * 3) >>> 1;
+          }
+          resultBuf = new Buffer(newResultBufSize);
+          result.copy(resultBuf);
+        }
+        data.copy(resultBuf, result.length);
+        result = resultBuf.slice(0, newResultSize);
+      } else if (Array.isArray(result)) {
+        result.push(data);
+      // result/data mismatch, must be in objectMode.  result becomes an Array.
+      // This case is really ugly.  Well-behaved streams shouldn't use it.
+      } else {
+        objectMode = true;
+        result = [result, data];
+      }
+
+      // When doing a single read in objectMode, behave like stream.read(size):
+      // ignore size and don't wrap the result in an Array.
+      if (objectMode &amp;&amp; !until) {
+        // Since resolving to null indicates EOF, we do not permit returning
+        // null if it was emitted by a 'data' event.  If there is a use-case
+        // for this, I'd be open to adding an option to allow it.
+        // Note:  Users can use readUntil(stream, untilTrue) to get [null].
+        if (result[0] === null) {
+          result.shift();
+          return;
+        }
+        if (result.length > 1) {
+          result = tryUnshift(stream, result, 1);
+        }
+        if (result.length === 1) {
+          result = result[0];
+        }
+        doResolve();
+        return;
+      }
+
+      // If we know the target read size, check if it has been reached
+      if (numSize) {
+        if (result.length >= numSize) {
+          if (result.length > numSize) {
+            result = tryUnshift(stream, result, numSize);
+          }
+          doResolve();
+        }
+        return;
+      }
+
+      if (!until) {
+        doResolve();
+        return;
+      }
+
+      checkUntil(result, data, false);
+    }
+
+    function readPending() {
+      while (!isDoneReading) {
+        var data = stream.read(size);
+        if (data === null) {
+          if (!isDoneReading) {
+            stream.once('readable', readPending);
+          }
+          return;
+        }
+
+        onData(data);
+      }
+    }
+
+    if (numSize !== undefined &amp;&amp; numSize &lt;= 0) {
+      // .read(size) will always return null.  Do it once, then done.
+      if (typeof stream.read === 'function') {
+        result = stream.read(size);
+      }
+      doResolve();
+      return;
+    }
+
+    if (!flowing) {
+      readPending();
+    } else {
+      stream.on('data', onData);
+    }
+  });
+
+  if (options &amp;&amp; (options.cancellable || options.cancelable)) {
+    promise.abortRead = abortRead;
+    promise.cancelRead = cancelRead;
+  }
+
+  return promise;
+}
+
+/** Reads from a stream.Readable.
+ * @param {stream.Readable} stream Stream from which to read.
+ * @param {number=} size Number of bytes to read.  If &lt;code>stream.read&lt;/code>
+ * is a function, &lt;code>size&lt;/code> is passed to it, guaranteeing maximum
+ * result size.  Otherwise, &lt;code>'data'&lt;/code> events will be consumed until
+ * &lt;code>size&lt;/code> bytes are read, making it a minimum rather than an exact
+ * value.
+ * @param {ReadOptions=} options Options.
+ * @return {Promise&lt;Buffer|string|*>|CancellableReadPromise&lt;Buffer|string|*>}
+ * Promise with result of read or Error.  Result may be shorter than
+ * &lt;code>size&lt;/code> if &lt;code>'end'&lt;/code> occurs and will be &lt;code>null&lt;/code>
+ * if no data can be read.  If an error occurs after reading some data, the
+ * &lt;code>.read&lt;/code> property of the error object will contain the partial
+ * read result.  The promise is resolved synchronously for streams in flowing
+ * mode (see README.md for details).
+ */
+function read(stream, size, options) {
+  if (!options &amp;&amp; typeof size === 'object') {
+    options = size;
+    size = null;
+  }
+  return readInternal(stream, size, undefined, options);
+}
+
+/** Reads from a stream.Readable until a given test is satisfied.
+ * @param {stream.Readable} stream Stream from which to read.
+ * @param {function((!Buffer|string|!Array), (Buffer|string|*)): number|boolean}
+ * test Test function called with the data read so far and the most recent
+ * chunk read.  If it returns a negative or falsey value, more data will be
+ * read.  If it returns a non-negative number and the stream can be unshifted,
+ * that many bytes will be returned and the others will be unshifted into the
+ * stream.  Otherwise, all data read will be returned.  If it returns a number
+ * larger than the length of the data read so far, enough data to reach the
+ * requested length will be read before returning.  Non-numeric, non-boolean
+ * values will result in an error.
+ * @param {ReadOptions=} options Options.
+ * @return {Promise&lt;!Buffer|string|!Array>|
+ * CancellableReadPromise&lt;!Buffer|string|!Array>} Promise with the data read
+ * and not unshifted, or an Error if one occurred.  If &lt;code>'end'&lt;/code> is
+ * emitted before &lt;code>until&lt;/code> returns a non-negative/true value, an
+ * {@link EOFError} is returned.  If an error occurs after reading some data,
+ * the &lt;code>.read&lt;/code> property of the error object will contain the partial
+ * read result.  The promise is resolved synchronously for streams in flowing
+ * mode (see README.md for details).
+ */
+function readUntil(stream, until, options) {
+  if (typeof until !== 'function') {
+    // Note:  Synchronous Yaku emits unhandledRejection before returning.
+    // Best current option is to use an async promise, even when flowing
+    var Promise = (options &amp;&amp; options.Promise) || AnyPromise;
+    return Promise.reject(new TypeError('until must be a function'));
+  }
+  return readInternal(stream, undefined, until, options);
+}
+
+/** Reads from a stream.Readable until a given value is found.
+ *
+ * &lt;p>This function calls {@link readUntil} with an &lt;code>until&lt;/code> function
+ * which uses &lt;code>.indexOf&lt;/code> to search for &lt;code>needle&lt;/code>.  On
+ * Node.js versions before v1.5.0, {@link
+ * https://www.npmjs.com/package/buffertools buffertools} is used when
+ * available and {@link https://www.npmjs.com/package/buffer-indexof-polyfill
+ * buffer-indexof-polyfill} otherwise.  When reading Buffers and performance is
+ * paramount, consider using {@link readUntil} directly with an optional
+ * function for the problem (e.g. {@link
+ * https://www.npmjs.com/package/buffer-indexof-fast buffer-indexof-fast} for
+ * single-character search).&lt;/p>
+ *
+ * &lt;p>Doc note:  options should be a ReadToOptions type which extends
+ * {@link ReadOptions}, but record types can't currently be extended.
+ * See {@link https://github.com/google/closure-compiler/issues/604}.&lt;/p>
+ *
+ * @param {stream.Readable} stream Stream from which to read.
+ * @param {!Buffer|string|*} needle Value to search for in the read result.
+ * The stream will be read until this value is found or &lt;code>'end'&lt;/code> or
+ * &lt;code>'error'&lt;/code> is emitted.
+ * @param {ReadOptions=} options Options.  This function additionally supports
+ * an &lt;code>endOK&lt;/code> option which prevents {@link EOFError} on
+ * &lt;code>'end'&lt;/code>.
+ * @return {Promise&lt;Buffer|string|Array>|
+ * CancellableReadPromise&lt;Buffer|string|Array>} Promise with the data read, up
+ * to and including &lt;code>needle&lt;/code>, or an Error if one occurs.  If
+ * &lt;code>stream&lt;/code> does not support &lt;code>unshift&lt;/code>, the result may
+ * include additional data.  If &lt;code>'end'&lt;/code> is emitted before
+ * &lt;code>needle&lt;/code> is found, an {@link EOFError} is returned, unless
+ * &lt;code>options.endOK&lt;/code> is truthy in which case any remaining data is
+ * returned or &lt;code>null&lt;/code> if none was read.  If an error occurs after
+ * reading some data, the &lt;code>.read&lt;/code> property of the error object will
+ * contain the partial read result.  The promise is resolved synchronously for
+ * streams in flowing mode (see README.md for details).
+ */
+function readTo(stream, needle, options) {
+  var endOK = Boolean(options &amp;&amp; (options.endOK || options.endOk));
+  var needleForIndexOf;
+  var needleLength;
+  function until(result, chunk, ended) {
+    if (ended) {
+      return endOK ? (result ? result.length : 0) : -1;
+    }
+
+    if (Array.isArray(result)) {
+      // objectMode.  Use strict equality, like Array.prototype.indexOf
+      return chunk === needle ? result.length : -1;
+    }
+
+    // Calculate the length of the needle, as used by indexOf and perform the
+    // type conversion done by indexOf once, to avoid converting on every call
+    if (needleLength === undefined) {
+      if (typeof result === 'string') {
+        needleForIndexOf = String(needle);
+        needleLength = needleForIndexOf.length;
+      } else if (result instanceof Buffer) {
+        if (typeof needle === 'number') {
+          // buffertools requires a Buffer or string
+          // buffer-indexof-polyfill converts number to Buffer on each call
+          needleForIndexOf = result.indexOf ? needle : new Buffer([needle]);
+          needleLength = 1;
+        } else if (typeof needle === 'string') {
+          needleForIndexOf = needle;
+          needleLength = Buffer.byteLength(needle);
+        } else if (needle instanceof Buffer) {
+          needleForIndexOf = needle;
+          needleLength = needle.length;
+        }
+      }
+
+      if (needleLength === undefined) {
+        throw new TypeError('Unsupported indexOf argument types: ' +
+            Object.prototype.toString.call(result) + '.indexOf(' +
+            Object.prototype.toString.call(needle) + ')');
+      }
+
+      // Buffer.prototype.indexOf returns -1 for 0-length string/Buffer.
+      // To be consistent with string, we return 0.
+      // Note:  If removing this check, remove + 1 from start calc when 0.
+      if (needleLength === 0) {
+        return 0;
+      }
+    }
+
+    var start = Math.max(result.length - chunk.length - needleLength + 1, 0);
+    var needleIndex =
+      result.indexOf ? result.indexOf(needleForIndexOf, start) :
+      bufferIndexOf(result, needleForIndexOf, start);
+    if (needleIndex &lt; 0) {
+      return -1;
+    }
+
+    return needleIndex + needleLength;
+  }
+  return readInternal(stream, undefined, until, options);
+}
+
+/** Reads from a stream.Readable until a given expression is matched.
+ *
+ * &lt;p>This function calls {@link readUntil} with an &lt;code>until&lt;/code> function
+ * which applies &lt;code>regexp&lt;/code> to the data read.&lt;/p>
+ *
+ * &lt;p>Doc note:  options should be a ReadToMatchOptions type which extends
+ * ReadToOptions, but record types can't currently be extended.
+ * See {@link https://github.com/google/closure-compiler/issues/604}.&lt;/p>
+ *
+ * @param {stream.Readable&lt;string>} stream Stream from which to read.  This
+ * stream must produce strings (so call &lt;code>.setEncoding&lt;/code> if necessary).
+ * @param {!RegExp|string} regexp Expression to find in the read result.
+ * The stream will be read until this value is matched or &lt;code>'end'&lt;/code> or
+ * &lt;code>'error'&lt;/code> is emitted.
+ * @param {ReadOptions=} options Options.  This function additionally supports
+ * an &lt;code>endOK&lt;/code> option which prevents {@link EOFError} on
+ * &lt;code>'end'&lt;/code> and a &lt;code>maxMatchLen&lt;/code> option which specifies
+ * the maximum length of a match, which allow additional search optimizations.
+ * @return {Promise&lt;string>|CancellableReadPromise&lt;string>} Promise with the
+ * data read, up to and including the data matched by &lt;code>regexp&lt;/code>, or
+ * an Error if one occurs.  If &lt;code>stream&lt;/code> does not support
+ * &lt;code>unshift&lt;/code>, the result may include additional data.  If
+ * &lt;code>'end'&lt;/code> is emitted before &lt;code>regexp&lt;/code> is matched, an
+ * {@link EOFError} is returned, unless &lt;code>options.endOK&lt;/code> is truthy in
+ * which case any remaining data is returned or &lt;code>null&lt;/code> if none was
+ * read.  If an error occurs after reading some data, the &lt;code>.read&lt;/code>
+ * property of the error object will contain the partial read result.  The
+ * promise is resolved synchronously for streams in flowing mode (see README.md
+ * for details).
+ */
+function readToMatch(stream, regexp, options) {
+  var endOK = Boolean(options &amp;&amp; (options.endOK || options.endOk));
+  var maxMatchLen = Number(options &amp;&amp; options.maxMatchLen);
+  // Convert to RegExp where necessary, like String.prototype.match
+  // Make sure RegExp has global flag so lastIndex will be set
+  if (!(regexp instanceof RegExp)) {
+    try {
+      regexp = new RegExp(regexp, 'g');
+    } catch (errRegExp) {
+      // Note:  Synchronous Yaku emits unhandledRejection before returning.
+      // Best current option is to use an async promise, even when flowing
+      var Promise = (options &amp;&amp; options.Promise) || AnyPromise;
+      return Promise.reject(errRegExp);
+    }
+  } else if (!regexp.global) {
+    regexp = new RegExp(regexp.source, (regexp.flags || '') + 'g');
+  }
+  function until(result, chunk, ended) {
+    if (ended) {
+      return endOK ? (result ? result.length : 0) : -1;
+    }
+
+    if (typeof result !== 'string') {
+      throw new TypeError('readToMatch requires a string stream' +
+          ' (use constructor options.encoding or .setEncoding method)');
+    }
+
+    regexp.lastIndex = maxMatchLen ?
+      Math.max(result.length - chunk.length - maxMatchLen + 1, 0) :
+      0;
+    if (regexp.test(result)) {
+      return regexp.lastIndex;
+    }
+
+    return -1;
+  }
+  return readInternal(stream, undefined, until, options);
+}
+
+module.exports = {
+  AbortError: AbortError,
+  EOFError: EOFError,
+  TimeoutError: TimeoutError,
+  read: read,
+  readUntil: readUntil,
+  readTo: readTo,
+  readToMatch: readToMatch
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AbortError.html">AbortError</a></li><li><a href="CancellableReadPromise.html">CancellableReadPromise</a></li><li><a href="EOFError.html">EOFError</a></li><li><a href="TimeoutError.html">TimeoutError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#read">read</a></li><li><a href="global.html#readTo">readTo</a></li><li><a href="global.html#readToMatch">readToMatch</a></li><li><a href="global.html#readUntil">readUntil</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Apr 01 2016 23:41:21 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
