@@ -697,6 +697,9 @@ function readToMatch(stream, regexp, options) {
 }
 
 module.exports = {
+  AbortError: AbortError,
+  EOFError: EOFError,
+  TimeoutError: TimeoutError,
   read: read,
   readUntil: readUntil,
   readTo: readTo,
