@@ -351,7 +351,9 @@ function describeWithStreamType(PassThrough) {
         var input = new PassThrough();
         var readArg = {};
         var mock = sinon.mock(input)
-          .expects('read').once().withExactArgs(readArg);
+          .expects('read')
+            .once()
+            .withExactArgs(readArg);
         read(input, readArg, {});
         mock.verify();
       });

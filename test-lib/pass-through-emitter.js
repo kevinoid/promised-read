@@ -15,8 +15,8 @@ var inherits = require('util').inherits;
  */
 function PassThroughEmitter(options) {
   EventEmitter.call(this);
-  this._encoding = (options && options.encoding) || null;
-  this._objectMode = Boolean(options && options.objectMode);
+  this.encoding = (options && options.encoding) || null;
+  this.objectMode = Boolean(options && options.objectMode);
 }
 inherits(PassThroughEmitter, EventEmitter);
 
@@ -44,12 +44,12 @@ PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
     callback = encoding;
     encoding = null;
   }
-  if (!self._objectMode && typeof chunk === 'string') {
+  if (!self.objectMode && typeof chunk === 'string') {
     chunk = new Buffer(chunk, encoding);
   }
   var data =
-    self._objectMode || !self._encoding || !(chunk instanceof Buffer) ? chunk :
-    chunk.toString(self._encoding);
+    self.objectMode || !self.encoding || !(chunk instanceof Buffer) ? chunk :
+    chunk.toString(self.encoding);
   process.nextTick(function() {
     self.emit('data', data);
     if (callback) {

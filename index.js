@@ -11,7 +11,11 @@ var TimeoutError = require('./lib/timeout-error');
 // eslint-disable-next-line no-undef
 var AnyPromise = typeof Promise !== 'undefined' ? Promise : null;
 var SyncPromise;
-(function() {
+// Import a synchronous version of Yaku which can be used for flowing streams
+// (to avoid missing events, as discussed in README.md) without converting all
+// instances of yaku to synchronous (in case other modules are using it).
+/* eslint-disable global-require */
+(function requireYakuSync() {
   var yakuPath = require.resolve('yaku');
   var yakuCached = require.cache[yakuPath];
   delete require.cache[yakuPath];
@@ -27,15 +31,21 @@ var SyncPromise;
 
   AnyPromise = AnyPromise || yakuCached || require('yaku');
 }());
+/* eslint-enable global-require */
 
 // Optional debugging.  Install debug module or assign console.error to debug.
+/* eslint-disable global-require */
 var debug = function dummyDebug() {};
 try {
   debug = require('debug');
 } catch (errDebug) {
   debug('Unable to load debug module: ', errDebug);
 }
+/* eslint-enable global-require */
 
+// Require best Buffer.prototype.indexOf polyfill available
+// (buffertools is prone to install issues due to native compilation)
+/* eslint-disable global-require */
 var bufferIndexOf;
 if (!Buffer.prototype.indexOf) {
   try {
@@ -57,6 +67,7 @@ if (!Buffer.prototype.indexOf) {
     }());
   }
 }
+/* eslint-enable global-require */
 
 /** Attempts to unshift result data down to a desired length.
  * @param {stream.Readable} stream Stream into which to unshift data.
@@ -354,6 +365,7 @@ function readInternal(stream, size, until, options) {
     // Although reading stream internals is distasteful, it is less distasteful
     // than waiting endlessly for data that will never come because the caller
     // was not careful about handling the 'end' event.
+    /* eslint-disable no-underscore-dangle */
     if (stream &&
         stream._readableState &&
         stream._readableState.endEmitted) {
@@ -361,6 +373,7 @@ function readInternal(stream, size, until, options) {
       onEnd();
       return;
     }
+    /* eslint-enable no-underscore-dangle */
 
     var resultBuf;
     function onData(data) {
