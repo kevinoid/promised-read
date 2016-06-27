@@ -10,6 +10,6 @@
 /test
 /test-bin
 /test-lib
-TODO.txt
+TODO.*
 jsdoc*.conf.json
 sync-promises.md
