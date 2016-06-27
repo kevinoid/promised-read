@@ -14,6 +14,7 @@ var stream = require('stream');
 
 var read = promisedRead.read;
 var readTo = promisedRead.readTo;
+var readToEnd = promisedRead.readToEnd;
 var readToMatch = promisedRead.readToMatch;
 var readUntil = promisedRead.readUntil;
 
@@ -1087,6 +1088,66 @@ function describeWithStreamType(PassThrough) {
         );
       });
     }
+  });
+
+  describe('.readToEnd()', function() {
+    it('reads to stream end', function() {
+      var input = new PassThrough();
+      var inputData = [
+        new Buffer('Larry\n'),
+        new Buffer('Curly\n'),
+        new Buffer('Moe\n')
+      ];
+      var promise = readToEnd(input).then(function(data) {
+        assert.deepEqual(data, Buffer.concat(inputData));
+      });
+      writeEachTo(input, inputData, input.end.bind(input));
+      return promise;
+    });
+
+    it('reads to stream end (encoded)', function() {
+      var input = new PassThrough({encoding: 'utf8'});
+      var inputData = [
+        'Larry\n',
+        'Curly\n',
+        'Moe\n'
+      ];
+      var promise = readToEnd(input).then(function(data) {
+        assert.deepEqual(data, inputData.join(''));
+      });
+      writeEachTo(input, inputData, input.end.bind(input));
+      return promise;
+    });
+
+    it('reads to stream end (objectMode)', function() {
+      var input = new PassThrough({objectMode: true});
+      var inputData = [0, 1, 2, 3, 4];
+      var promise = readToEnd(input).then(function(data) {
+        assert.deepEqual(data, inputData);
+      });
+      writeEachTo(input, inputData, input.end.bind(input));
+      return promise;
+    });
+
+    it('resolves with null when no data', function() {
+      var input = new PassThrough();
+      var promise = readToEnd(input).then(function(data) {
+        assert.strictEqual(data, null);
+      });
+      input.end();
+      return promise;
+    });
+
+    it('rejects with stream error', function() {
+      var input = new PassThrough();
+      var errTest = new Error('test');
+      var promise = readToEnd(input).then(
+        sinon.mock().never(),
+        function(err) { assert.strictEqual(err, errTest); }
+      );
+      input.emit('error', errTest);
+      return promise;
+    });
   });
 
   describe('.readToMatch()', function() {

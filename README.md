@@ -26,6 +26,7 @@ readTo(process.stdin, '\n').then(function(response) {
 - Supports `objectMode` streams and decoded string streams in addition to byte
   (`Buffer`) streams.
 - Supports sized reads.
+- Supports reading to the end of stream.
 - Supports reading up to an expected sequence (with unshift for over-reads).
 - Supports reading until a function is satisfied (with unshift for over-reads).
 - Supports reading until a RegExp is matched (with unshift for over-reads).
@@ -64,6 +65,19 @@ read(input, 1024).then(function(data) {
     console.log('Common case.  Read requested amount.');
   }
 });
+```
+
+### Read to end
+
+```js
+var fs = require('fs');
+var readToEnd = require('promised-read').readToEnd;
+var input = fs.createReadStream('input.json', {encoding: 'utf8'});
+readToEnd(input)
+  .then(JSON.parse)
+  .then(function(json) {
+    console.log('input.json contents:', json);
+  });
 ```
 
 ### Read lines

@@ -627,6 +627,24 @@ function readTo(stream, needle, options) {
   return readInternal(stream, undefined, until, options);
 }
 
+/** Reads from a stream.Readable until 'end' is emitted.
+ * @param {stream.Readable} stream Stream from which to read.
+ * @param {ReadOptions=} options Options.
+ * @return {Promise<!Buffer|string|!Array>|
+ * CancellableReadPromise<!Buffer|string|!Array>} Promise with the data read,
+ * <code>null</code> if no data was read, or an <code>Error</code> if one
+ * occurred.  If an error occurs after reading some data, the
+ * <code>.read</code> property of the error object will contain the partial
+ * read result.  The promise is resolved synchronously for streams in flowing
+ * mode (see README.md for details).
+ */
+function readToEnd(stream, options) {
+  function until(result, chunk, ended) {
+    return ended;
+  }
+  return readInternal(stream, undefined, until, options);
+}
+
 /** Reads from a stream.Readable until a given expression is matched.
  *
  * <p>This function calls {@link readUntil} with an <code>until</code> function
@@ -703,5 +721,6 @@ module.exports = {
   read: read,
   readUntil: readUntil,
   readTo: readTo,
+  readToEnd: readToEnd,
   readToMatch: readToMatch
 };
