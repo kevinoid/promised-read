@@ -34,18 +34,18 @@ var SyncPromise;
 /* eslint-enable global-require */
 
 // Optional debugging.  Install debug module or assign console.error to debug.
-/* eslint-disable global-require */
+/* eslint-disable global-require, import/no-unresolved */
 var debug = function dummyDebug() {};
 try {
   debug = require('debug');
 } catch (errDebug) {
   debug('Unable to load debug module: ', errDebug);
 }
-/* eslint-enable global-require */
+/* eslint-enable global-require, import/no-unresolved */
 
 // Require best Buffer.prototype.indexOf polyfill available
 // (buffertools is prone to install issues due to native compilation)
-/* eslint-disable global-require */
+/* eslint-disable global-require, import/no-unresolved */
 var bufferIndexOf;
 if (!Buffer.prototype.indexOf) {
   try {
@@ -67,7 +67,7 @@ if (!Buffer.prototype.indexOf) {
     }());
   }
 }
-/* eslint-enable global-require */
+/* eslint-enable global-require, import/no-unresolved */
 
 /** Attempts to unshift result data down to a desired length.
  * @param {stream.Readable} stream Stream into which to unshift data.
