@@ -281,7 +281,7 @@ value.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line493">line 493</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line506">line 506</a>
     </li></ul></dd>
     
 
@@ -538,7 +538,7 @@ an <code>endOK</code> option which prevents <a href="EOFError.html">EOFError</a>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line568">line 568</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line581">line 581</a>
     </li></ul></dd>
     
 
@@ -589,6 +589,210 @@ streams in flowing mode (see README.md for details).
 |
 
 <span class="param-type"><a href="CancellableReadPromise.html">CancellableReadPromise</a>.&lt;(Buffer|string|Array)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="readToEnd"><span class="type-signature"></span>readToEnd<span class="signature">(stream, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(!Buffer|string|!Array)>|<a href="CancellableReadPromise.html">CancellableReadPromise</a>.&lt;(!Buffer|string|!Array)>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Reads from a stream.Readable until 'end' is emitted.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>stream</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">stream.Readable</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Stream from which to read.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#ReadOptions">ReadOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Options.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line654">line 654</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Promise with the data read,
+<code>null</code> if no data was read, or an <code>Error</code> if one
+occurred.  If an error occurs after reading some data, the
+<code>.read</code> property of the error object will contain the partial
+read result.  The promise is resolved synchronously for streams in flowing
+mode (see README.md for details).
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(!Buffer|string|!Array)></span>
+|
+
+<span class="param-type"><a href="CancellableReadPromise.html">CancellableReadPromise</a>.&lt;(!Buffer|string|!Array)></span>
 
 
     </dd>
@@ -793,7 +997,7 @@ the maximum length of a match, which allow additional search optimizations.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line660">line 660</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line691">line 691</a>
     </li></ul></dd>
     
 
@@ -1040,7 +1244,7 @@ values will result in an error.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line522">line 522</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line535">line 535</a>
     </li></ul></dd>
     
 
@@ -1362,7 +1566,7 @@ values.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line120">line 120</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line131">line 131</a>
     </li></ul></dd>
     
 
@@ -1392,13 +1596,13 @@ values.</td>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AbortError.html">AbortError</a></li><li><a href="CancellableReadPromise.html">CancellableReadPromise</a></li><li><a href="EOFError.html">EOFError</a></li><li><a href="TimeoutError.html">TimeoutError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#read">read</a></li><li><a href="global.html#readTo">readTo</a></li><li><a href="global.html#readToMatch">readToMatch</a></li><li><a href="global.html#readUntil">readUntil</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AbortError.html">AbortError</a></li><li><a href="CancellableReadPromise.html">CancellableReadPromise</a></li><li><a href="EOFError.html">EOFError</a></li><li><a href="TimeoutError.html">TimeoutError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#read">read</a></li><li><a href="global.html#readTo">readTo</a></li><li><a href="global.html#readToEnd">readToEnd</a></li><li><a href="global.html#readToMatch">readToMatch</a></li><li><a href="global.html#readUntil">readUntil</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Apr 01 2016 23:41:21 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Jun 27 2016 12:38:15 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -846,6 +846,59 @@ return promise;</code></pre></dd>
               </dl>
             </section>
             <section class="suite">
+              <h1>.readToEnd()</h1>
+              <dl>
+                <dt>reads to stream end</dt>
+                <dd><pre><code>var input = new PassThrough();
+var inputData = [
+  new Buffer('Larry\n'),
+  new Buffer('Curly\n'),
+  new Buffer('Moe\n')
+];
+var promise = readToEnd(input).then(function(data) {
+  assert.deepEqual(data, Buffer.concat(inputData));
+});
+writeEachTo(input, inputData, input.end.bind(input));
+return promise;</code></pre></dd>
+                <dt>reads to stream end (encoded)</dt>
+                <dd><pre><code>var input = new PassThrough({encoding: 'utf8'});
+var inputData = [
+  'Larry\n',
+  'Curly\n',
+  'Moe\n'
+];
+var promise = readToEnd(input).then(function(data) {
+  assert.deepEqual(data, inputData.join(''));
+});
+writeEachTo(input, inputData, input.end.bind(input));
+return promise;</code></pre></dd>
+                <dt>reads to stream end (objectMode)</dt>
+                <dd><pre><code>var input = new PassThrough({objectMode: true});
+var inputData = [0, 1, 2, 3, 4];
+var promise = readToEnd(input).then(function(data) {
+  assert.deepEqual(data, inputData);
+});
+writeEachTo(input, inputData, input.end.bind(input));
+return promise;</code></pre></dd>
+                <dt>resolves with null when no data</dt>
+                <dd><pre><code>var input = new PassThrough();
+var promise = readToEnd(input).then(function(data) {
+  assert.strictEqual(data, null);
+});
+input.end();
+return promise;</code></pre></dd>
+                <dt>rejects with stream error</dt>
+                <dd><pre><code>var input = new PassThrough();
+var errTest = new Error('test');
+var promise = readToEnd(input).then(
+  sinon.mock().never(),
+  function(err) { assert.strictEqual(err, errTest); }
+);
+input.emit('error', errTest);
+return promise;</code></pre></dd>
+              </dl>
+            </section>
+            <section class="suite">
               <h1>.readToMatch()</h1>
               <dl>
                 <dt>reads up to (and including) a RegExp</dt>
@@ -1438,7 +1491,9 @@ return promise;</code></pre></dd>
                 <dd><pre><code>var input = new PassThrough();
 var readArg = {};
 var mock = sinon.mock(input)
-  .expects('read').once().withExactArgs(readArg);
+  .expects('read')
+    .once()
+    .withExactArgs(readArg);
 read(input, readArg, {});
 mock.verify();</code></pre></dd>
                 <dt>does not lose sequential writes</dt>
@@ -2022,6 +2077,59 @@ input.write(inputData);
 return promise;</code></pre></dd>
                   </dl>
                 </section>
+              </dl>
+            </section>
+            <section class="suite">
+              <h1>.readToEnd()</h1>
+              <dl>
+                <dt>reads to stream end</dt>
+                <dd><pre><code>var input = new PassThrough();
+var inputData = [
+  new Buffer('Larry\n'),
+  new Buffer('Curly\n'),
+  new Buffer('Moe\n')
+];
+var promise = readToEnd(input).then(function(data) {
+  assert.deepEqual(data, Buffer.concat(inputData));
+});
+writeEachTo(input, inputData, input.end.bind(input));
+return promise;</code></pre></dd>
+                <dt>reads to stream end (encoded)</dt>
+                <dd><pre><code>var input = new PassThrough({encoding: 'utf8'});
+var inputData = [
+  'Larry\n',
+  'Curly\n',
+  'Moe\n'
+];
+var promise = readToEnd(input).then(function(data) {
+  assert.deepEqual(data, inputData.join(''));
+});
+writeEachTo(input, inputData, input.end.bind(input));
+return promise;</code></pre></dd>
+                <dt>reads to stream end (objectMode)</dt>
+                <dd><pre><code>var input = new PassThrough({objectMode: true});
+var inputData = [0, 1, 2, 3, 4];
+var promise = readToEnd(input).then(function(data) {
+  assert.deepEqual(data, inputData);
+});
+writeEachTo(input, inputData, input.end.bind(input));
+return promise;</code></pre></dd>
+                <dt>resolves with null when no data</dt>
+                <dd><pre><code>var input = new PassThrough();
+var promise = readToEnd(input).then(function(data) {
+  assert.strictEqual(data, null);
+});
+input.end();
+return promise;</code></pre></dd>
+                <dt>rejects with stream error</dt>
+                <dd><pre><code>var input = new PassThrough();
+var errTest = new Error('test');
+var promise = readToEnd(input).then(
+  sinon.mock().never(),
+  function(err) { assert.strictEqual(err, errTest); }
+);
+input.emit('error', errTest);
+return promise;</code></pre></dd>
               </dl>
             </section>
             <section class="suite">
