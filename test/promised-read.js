@@ -2,6 +2,7 @@
  * @copyright Copyright 2016 Kevin Locke <kevin@kevinlocke.name>
  * @license MIT
  */
+
 'use strict';
 
 var BBPromise = require('bluebird');
@@ -29,7 +30,7 @@ function writeEachTo(writable, inputData, cb) {
   var written = 0;
   function writeOne() {
     writable.write(inputData[written]);
-    ++written;
+    written += 1;
     if (written < inputData.length) {
       process.nextTick(writeOne);
     } else if (cb) {
@@ -1261,7 +1262,8 @@ function describeWithStreamType(PassThrough) {
       function until(buffer, chunk) {
         assert(Array.isArray(buffer));
         assert(typeof chunk === 'number');
-        return returnValues[callNum++];
+        callNum += 1;
+        return returnValues[callNum - 1];
       }
       var promise = readUntil(input, until).then(function(data) {
         assert.deepEqual(data, inputData);
@@ -1406,7 +1408,7 @@ function describeWithStreamType(PassThrough) {
           new Buffer('test2')
         ];
         function until(buffer, chunk) {
-          return inputData[0].length + inputData[1].length - 2;
+          return (inputData[0].length + inputData[1].length) - 2;
         }
         var promise = readUntil(input, until).then(function(data) {
           assert.deepEqual(data, Buffer.concat(inputData).slice(0, -2));
@@ -1490,7 +1492,7 @@ function describeWithStreamType(PassThrough) {
       ];
       inputData[1].fill(0);
       var bigInputData = new Buffer(4 * 1024);
-      for (var i = 0; i < bigInputData.length; ++i) {
+      for (var i = 0; i < bigInputData.length; i += 1) {
         bigInputData[i] = i % 256;
       }
       inputData.push(bigInputData);

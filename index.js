@@ -102,7 +102,7 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
       while (resultLength > desiredLength && !unshiftErr) {
         stream.unshift(result[resultLength - 1]);
         if (!unshiftErr) {
-          --resultLength;
+          resultLength -= 1;
         }
       }
     } else {
@@ -187,7 +187,8 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
 // function CancellableReadPromise() {}
 
 function readInternal(stream, size, until, options) {
-  var flowing = options && options.flowing || typeof stream.read !== 'function';
+  var flowing =
+    (options && options.flowing) || typeof stream.read !== 'function';
   var numSize = size === null || isNaN(size) ? undefined : Number(size);
   var objectMode = Boolean(options && options.objectMode);
   var timeout = options && options.timeout;
@@ -394,6 +395,7 @@ function readInternal(stream, size, until, options) {
             // Growth factor is a time/space tradeoff.  3/2 seems reasonable.
             // https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
             // Use right-shift for division to avoid unnecessary float+round
+            // eslint-disable-next-line no-bitwise
             newResultBufSize = (newResultBufSize * 3) >>> 1;
           }
           resultBuf = new Buffer(newResultBufSize);
@@ -628,7 +630,7 @@ function readTo(stream, needle, options) {
       }
     }
 
-    var start = Math.max(result.length - chunk.length - needleLength + 1, 0);
+    var start = Math.max((result.length - chunk.length - needleLength) + 1, 0);
     var needleIndex =
       result.indexOf ? result.indexOf(needleForIndexOf, start) :
       bufferIndexOf(result, needleForIndexOf, start);
@@ -717,7 +719,7 @@ function readToMatch(stream, regexp, options) {
     }
 
     regexp.lastIndex = maxMatchLen ?
-      Math.max(result.length - chunk.length - maxMatchLen + 1, 0) :
+      Math.max((result.length - chunk.length - maxMatchLen) + 1, 0) :
       0;
     if (regexp.test(result)) {
       return regexp.lastIndex;
