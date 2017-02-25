@@ -1,8 +1,16 @@
 # Change Log
 
-## [v0.1.1](https://github.com/kevinoid/promised-read/tree/v0.1.1) (2016-06-27)
+## [1.0.0](https://github.com/kevinoid/promised-read/tree/1.0.0) (2017-02-24)
+[Full Changelog](https://github.com/kevinoid/promised-read/compare/v0.1.1...1.0.0)
 
-- Added `readToEnd` to the public API.
+- **No API Changes**  Bump to 1.0 is declaration of stability rather than an
+  indication of API changes.
+- Code style updates.
+- Add AppVeyor CI.
+- Dependency updates.
+
+## [v0.1.1](https://github.com/kevinoid/promised-read/tree/v0.1.1) (2016-06-27)
+[Full Changelog](https://github.com/kevinoid/promised-read/compare/v0.1.0...v0.1.1)
 
 ## [v0.1.0](https://github.com/kevinoid/promised-read/tree/v0.1.0) (2016-04-02)
 
