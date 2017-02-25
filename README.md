@@ -1,6 +1,8 @@
 promised-read
 =============
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/kevinoid/promised-read.svg)](https://greenkeeper.io/)
+
 [![Build Status: Linux](https://img.shields.io/travis/kevinoid/promised-read/master.svg?style=flat&label=build+on+linux)](https://travis-ci.org/kevinoid/promised-read)
 [![Build Status: Windows](https://img.shields.io/appveyor/ci/kevinoid/promised-read/master.svg?style=flat&label=build+on+windows)](https://ci.appveyor.com/project/kevinoid/promised-read)
 [![Coverage](https://img.shields.io/codecov/c/github/kevinoid/promised-read.svg?style=flat)](https://codecov.io/github/kevinoid/promised-read?branch=master)
