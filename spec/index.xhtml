@@ -23,6 +23,69 @@ section section section section {
 <body>
   <div class="container">
     <section class="suite">
+      <h1>AbortError</h1>
+      <dl>
+        <dt>sets .message from argument</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = new AbortError(testMsg);
+assert.strictEqual(a.message, testMsg);</code></pre></dd>
+        <dt>can be instantiated without arguments</dt>
+        <dd><pre><code>var a = new AbortError();
+assert(a.message, 'has default message');</code></pre></dd>
+        <dt>can be instantiated without new</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = AbortError(testMsg);
+assert(a instanceof AbortError);
+assert.strictEqual(a.message, testMsg);</code></pre></dd>
+        <dt>inherits from Error</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = new AbortError(testMsg);
+assert(a instanceof Error);</code></pre></dd>
+      </dl>
+    </section>
+    <section class="suite">
+      <h1>EOFError</h1>
+      <dl>
+        <dt>sets .message from argument</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = new EOFError(testMsg);
+assert.strictEqual(a.message, testMsg);</code></pre></dd>
+        <dt>can be instantiated without arguments</dt>
+        <dd><pre><code>var a = new EOFError();
+assert(a.message, 'has default message');</code></pre></dd>
+        <dt>can be instantiated without new</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = EOFError(testMsg);
+assert(a instanceof EOFError);
+assert.strictEqual(a.message, testMsg);</code></pre></dd>
+        <dt>inherits from Error</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = new EOFError(testMsg);
+assert(a instanceof Error);</code></pre></dd>
+      </dl>
+    </section>
+    <section class="suite">
+      <h1>TimeoutError</h1>
+      <dl>
+        <dt>sets .message from argument</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = new TimeoutError(testMsg);
+assert.strictEqual(a.message, testMsg);</code></pre></dd>
+        <dt>can be instantiated without arguments</dt>
+        <dd><pre><code>var a = new TimeoutError();
+assert(a.message, 'has default message');</code></pre></dd>
+        <dt>can be instantiated without new</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = TimeoutError(testMsg);
+assert(a instanceof TimeoutError);
+assert.strictEqual(a.message, testMsg);</code></pre></dd>
+        <dt>inherits from Error</dt>
+        <dd><pre><code>var testMsg = 'test message';
+var a = new TimeoutError(testMsg);
+assert(a instanceof Error);</code></pre></dd>
+      </dl>
+    </section>
+    <section class="suite">
       <h1>promisedRead</h1>
       <dl>
         <dt>has proper sync/async when loaded after yaku</dt>
@@ -996,7 +1059,8 @@ var returnValues = [undefined, null, false, -5, true];
 function until(buffer, chunk) {
   assert(Array.isArray(buffer));
   assert(typeof chunk === 'number');
-  return returnValues[callNum++];
+  callNum += 1;
+  return returnValues[callNum - 1];
 }
 var promise = readUntil(input, until).then(function(data) {
   assert.deepEqual(data, inputData);
@@ -1113,7 +1177,7 @@ var inputData = [
 ];
 inputData[1].fill(0);
 var bigInputData = new Buffer(4 * 1024);
-for (var i = 0; i &lt; bigInputData.length; ++i) {
+for (var i = 0; i &lt; bigInputData.length; i += 1) {
   bigInputData[i] = i % 256;
 }
 inputData.push(bigInputData);
@@ -2230,7 +2294,8 @@ var returnValues = [undefined, null, false, -5, true];
 function until(buffer, chunk) {
   assert(Array.isArray(buffer));
   assert(typeof chunk === 'number');
-  return returnValues[callNum++];
+  callNum += 1;
+  return returnValues[callNum - 1];
 }
 var promise = readUntil(input, until).then(function(data) {
   assert.deepEqual(data, inputData);
@@ -2329,7 +2394,7 @@ var inputData = [
   new Buffer('test2')
 ];
 function until(buffer, chunk) {
-  return inputData[0].length + inputData[1].length - 2;
+  return (inputData[0].length + inputData[1].length) - 2;
 }
 var promise = readUntil(input, until).then(function(data) {
   assert.deepEqual(data, Buffer.concat(inputData).slice(0, -2));
@@ -2401,7 +2466,7 @@ var inputData = [
 ];
 inputData[1].fill(0);
 var bigInputData = new Buffer(4 * 1024);
-for (var i = 0; i &lt; bigInputData.length; ++i) {
+for (var i = 0; i &lt; bigInputData.length; i += 1) {
   bigInputData[i] = i % 256;
 }
 inputData.push(bigInputData);
