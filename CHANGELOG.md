@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.0.1](https://github.com/kevinoid/promised-read/tree/1.0.1) (2017-05-02)
+[Full Changelog](https://github.com/kevinoid/promised-read/compare/v1.0.0...1.0.1)
+
+- Dependency updates.
+
 ## [1.0.0](https://github.com/kevinoid/promised-read/tree/1.0.0) (2017-02-24)
 [Full Changelog](https://github.com/kevinoid/promised-read/compare/v0.1.1...1.0.0)
 
