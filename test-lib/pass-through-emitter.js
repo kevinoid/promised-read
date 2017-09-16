@@ -5,6 +5,9 @@
 
 'use strict';
 
+// Use safe-buffer as Buffer until support for Node < 4 is dropped
+// eslint-disable-next-line no-shadow
+var Buffer = require('safe-buffer').Buffer;
 var EventEmitter = require('events').EventEmitter;
 var inherits = require('util').inherits;
 
@@ -46,10 +49,10 @@ PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
     encoding = null;
   }
   if (!self.objectMode && typeof chunk === 'string') {
-    chunk = new Buffer(chunk, encoding);
+    chunk = Buffer.from(chunk, encoding);
   }
   var data =
-    self.objectMode || !self.encoding || !(chunk instanceof Buffer) ? chunk :
+    self.objectMode || !self.encoding || !Buffer.isBuffer(chunk) ? chunk :
       chunk.toString(self.encoding);
   process.nextTick(function() {
     self.emit('data', data);
