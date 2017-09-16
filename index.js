@@ -126,7 +126,7 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
 
   return resultLength === 0 && !emptySlice ? null :
     resultLength < result.length ? result.slice(0, resultLength) :
-    result;
+      result;
 }
 
 /** Options for {@link read}, {@link readTo}, and {@link readUntil}.
@@ -189,7 +189,8 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
 function readInternal(stream, size, until, options) {
   var flowing =
     (options && options.flowing) || typeof stream.read !== 'function';
-  var numSize = size === null || isNaN(size) ? undefined : Number(size);
+  var numSize =
+    size === null || Number.isNaN(Number(size)) ? undefined : Number(size);
   var objectMode = Boolean(options && options.objectMode);
   var timeout = options && options.timeout;
   var Promise = (options && options.Promise) ||
@@ -398,7 +399,10 @@ function readInternal(stream, size, until, options) {
             // eslint-disable-next-line no-bitwise
             newResultBufSize = (newResultBufSize * 3) >>> 1;
           }
-          resultBuf = new Buffer(newResultBufSize);
+          resultBuf = Buffer.allocUnsafe ?
+            Buffer.allocUnsafe(newResultBufSize) :
+            // eslint-disable-next-line no-buffer-constructor
+            new Buffer(newResultBufSize);
           result.copy(resultBuf);
         }
         data.copy(resultBuf, result.length);
@@ -605,7 +609,10 @@ function readTo(stream, needle, options) {
         if (typeof needle === 'number') {
           // buffertools requires a Buffer or string
           // buffer-indexof-polyfill converts number to Buffer on each call
-          needleForIndexOf = result.indexOf ? needle : new Buffer([needle]);
+          needleForIndexOf = result.indexOf ? needle :
+            Buffer.from ? Buffer.from([needle]) :
+              // eslint-disable-next-line no-buffer-constructor
+              new Buffer([needle]);
           needleLength = 1;
         } else if (typeof needle === 'string') {
           needleForIndexOf = needle;
@@ -633,7 +640,7 @@ function readTo(stream, needle, options) {
     var start = Math.max((result.length - chunk.length - needleLength) + 1, 0);
     var needleIndex =
       result.indexOf ? result.indexOf(needleForIndexOf, start) :
-      bufferIndexOf(result, needleForIndexOf, start);
+        bufferIndexOf(result, needleForIndexOf, start);
     if (needleIndex < 0) {
       return -1;
     }

@@ -50,7 +50,7 @@ PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
   }
   var data =
     self.objectMode || !self.encoding || !(chunk instanceof Buffer) ? chunk :
-    chunk.toString(self.encoding);
+      chunk.toString(self.encoding);
   process.nextTick(function() {
     self.emit('data', data);
     if (callback) {

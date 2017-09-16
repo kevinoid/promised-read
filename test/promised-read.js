@@ -353,8 +353,8 @@ function describeWithStreamType(PassThrough) {
         var readArg = {};
         var mock = sinon.mock(input)
           .expects('read')
-            .once()
-            .withExactArgs(readArg);
+          .once()
+          .withExactArgs(readArg);
         read(input, readArg, {});
         mock.verify();
       });
@@ -1222,10 +1222,10 @@ function describeWithStreamType(PassThrough) {
     it('rejects with SyntaxError for invalid string expressions', function() {
       var input = new PassThrough({encoding: 'utf8'});
       return readToMatch(input, '*').then(
-          sinon.mock().never(),
-          function(err) {
-            assert.strictEqual(err.name, 'SyntaxError');
-          }
+        sinon.mock().never(),
+        function(err) {
+          assert.strictEqual(err.name, 'SyntaxError');
+        }
       );
     });
 
@@ -1233,10 +1233,10 @@ function describeWithStreamType(PassThrough) {
       var input = new PassThrough();
       var inputData = new Buffer('Larry\n');
       var promise = readToMatch(input, /\n/g).then(
-          sinon.mock().never(),
-          function(err) {
-            assert.strictEqual(err.name, 'TypeError');
-          }
+        sinon.mock().never(),
+        function(err) {
+          assert.strictEqual(err.name, 'TypeError');
+        }
       );
       input.write(inputData);
       return promise;
