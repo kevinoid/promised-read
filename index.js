@@ -375,7 +375,7 @@ function readInternal(stream, size, until, options) {
           result = tryUnshift(stream, result, 1);
         }
         if (result.length === 1) {
-          result = result[0];
+          [result] = result;
         }
         doResolve();
         return;
