@@ -7,29 +7,8 @@
 
 const AbortError = require('./lib/abort-error');
 const EOFError = require('./lib/eof-error');
+const SyncPromise = require('./lib/sync-promise');
 const TimeoutError = require('./lib/timeout-error');
-
-// eslint-disable-next-line no-undef
-let SyncPromise;
-// Import a synchronous version of Yaku which can be used for flowing streams
-// (to avoid missing events, as discussed in README.md) without converting all
-// instances of yaku to synchronous (in case other modules are using it).
-/* eslint-disable global-require */
-(function requireYakuSync() {
-  const yakuPath = require.resolve('yaku');
-  const yakuCached = require.cache[yakuPath];
-  delete require.cache[yakuPath];
-
-  SyncPromise = require('yaku');
-  SyncPromise.nextTick = function thisTick(fn) { fn(); };
-
-  if (yakuCached) {
-    require.cache[yakuPath] = yakuCached;
-  } else {
-    delete require.cache[yakuPath];
-  }
-}());
-/* eslint-enable global-require */
 
 // Optional debugging.  Install debug module or assign console.error to debug.
 /* eslint-disable global-require, import/no-unresolved */
