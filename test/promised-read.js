@@ -6,9 +6,6 @@
 'use strict';
 
 const BBPromise = require('bluebird');
-// Use safe-buffer as Buffer until support for Node < 4 is dropped
-// eslint-disable-next-line no-shadow
-const {Buffer} = require('safe-buffer');
 const assert = require('assert');
 const {fork} = require('child_process');
 const promisedRead = require('..');
