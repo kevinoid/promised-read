@@ -4,11 +4,7 @@ language: node_js
 # Update engines.node in package.json if removing old versions.
 node_js:
   - node
-  - 0.12
-  - 0.10
-# Note:  The npm version which ships with 0.8 does not support carat versions,
-# which makes it difficult to use (it would require removing tilde from both
-# direct and transitive dependencies).
+  - 6
 
 # If the package has OS-dependent features, uncomment this.
 #os:
