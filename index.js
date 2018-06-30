@@ -167,13 +167,13 @@ function readInternal(stream, size, until, options) {
     = size === null || Number.isNaN(Number(size)) ? undefined : Number(size);
   let objectMode = Boolean(options && options.objectMode);
   const timeout = options && options.timeout;
-  const Promise = (options && options.Promise)
+  const ReadPromise = (options && options.Promise)
     || (flowing ? SyncPromise : AnyPromise);
 
   let abortRead;
   let cancelRead;
 
-  const promise = new Promise(((resolve, reject, cancelled) => {
+  const promise = new ReadPromise(((resolve, reject, cancelled) => {
     let isDoneReading = false;
     let result = null;
     let timeoutID;
@@ -251,8 +251,8 @@ function readInternal(stream, size, until, options) {
     // Check for cancel method and config function to add certainty.
     // TODO:  Find a more reliable check.
     if (typeof cancelled === 'function'
-        && typeof Promise.prototype.cancel === 'function'
-        && typeof Promise.config === 'function') {
+        && typeof ReadPromise.prototype.cancel === 'function'
+        && typeof ReadPromise.config === 'function') {
       cancelled(cancelRead);
     }
 
@@ -517,8 +517,8 @@ function readUntil(stream, until, options) {
   if (typeof until !== 'function') {
     // Note:  Synchronous Yaku emits unhandledRejection before returning.
     // Best current option is to use an async promise, even when flowing
-    const Promise = (options && options.Promise) || AnyPromise;
-    return Promise.reject(new TypeError('until must be a function'));
+    const ReadPromise = (options && options.Promise) || AnyPromise;
+    return ReadPromise.reject(new TypeError('until must be a function'));
   }
   return readInternal(stream, undefined, until, options);
 }
@@ -679,8 +679,8 @@ function readToMatch(stream, regexp, options) {
     } catch (errRegExp) {
       // Note:  Synchronous Yaku emits unhandledRejection before returning.
       // Best current option is to use an async promise, even when flowing
-      const Promise = (options && options.Promise) || AnyPromise;
-      return Promise.reject(errRegExp);
+      const ReadPromise = (options && options.Promise) || AnyPromise;
+      return ReadPromise.reject(errRegExp);
     }
   } else if (!regexp.global) {
     regexp = new RegExp(regexp.source, `${regexp.flags || ''}g`);
