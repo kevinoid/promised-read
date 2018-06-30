@@ -1,12 +1,21 @@
 # Change Log
 
-## [1.0.1](https://github.com/kevinoid/promised-read/tree/1.0.1) (2017-05-02)
-[Full Changelog](https://github.com/kevinoid/promised-read/compare/v1.0.0...1.0.1)
+## [v2.0.0](https://github.com/kevinoid/promised-read/tree/v2.0.0) (2018-06-29)
+[Full Changelog](https://github.com/kevinoid/promised-read/compare/v1.0.1...v2.0.0)
+
+- **BREAKING** Drop support for Node < 6.
+- Use `util.debuglog` for debug logging.
+- Dependency version updates.
+- Remove unnecessary dependencies.
+- Code style improvements.
+
+## [v1.0.1](https://github.com/kevinoid/promised-read/tree/v1.0.1) (2017-05-02)
+[Full Changelog](https://github.com/kevinoid/promised-read/compare/v1.0.0...v1.0.1)
 
 - Dependency updates.
 
-## [1.0.0](https://github.com/kevinoid/promised-read/tree/1.0.0) (2017-02-24)
-[Full Changelog](https://github.com/kevinoid/promised-read/compare/v0.1.1...1.0.0)
+## [v1.0.0](https://github.com/kevinoid/promised-read/tree/v1.0.0) (2017-02-24)
+[Full Changelog](https://github.com/kevinoid/promised-read/compare/v0.1.1...v1.0.0)
 
 - **No API Changes**  Bump to 1.0 is declaration of stability rather than an
   indication of API changes.
