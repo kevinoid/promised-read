@@ -87,7 +87,9 @@
 
     
 
-     
+    
+
+    
 
     
 
@@ -101,7 +103,9 @@
 
     
 
+    
     <h4 class="name" id="read"><span class="type-signature"></span>read<span class="signature">(stream, size<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(Buffer|string|*)>|<a href="CancellableReadPromise.html">CancellableReadPromise</a>.&lt;(Buffer|string|*)>}</span></h4>
+    
 
     
 
@@ -281,7 +285,7 @@ value.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line509">line 509</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line457">line 457</a>
     </li></ul></dd>
     
 
@@ -337,12 +341,16 @@ mode (see README.md for details).
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="readTo"><span class="type-signature"></span>readTo<span class="signature">(stream, needle, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(Buffer|string|Array)>|<a href="CancellableReadPromise.html">CancellableReadPromise</a>.&lt;(Buffer|string|Array)>}</span></h4>
+    
 
     
 
@@ -352,11 +360,10 @@ mode (see README.md for details).
     Reads from a stream.Readable until a given value is found.
 
 <p>This function calls <a href="global.html#readUntil">readUntil</a> with an <code>until</code> function
-which uses <code>.indexOf</code> to search for <code>needle</code>.  On
-Node.js versions before v1.5.0, <a href="https://www.npmjs.com/package/buffertools">buffertools</a> is used when
-available and <a href="https://www.npmjs.com/package/buffer-indexof-polyfill">buffer-indexof-polyfill</a> otherwise.  When reading Buffers and performance is
-paramount, consider using <a href="global.html#readUntil">readUntil</a> directly with an optional
-function for the problem (e.g. <a href="https://www.npmjs.com/package/buffer-indexof-fast">buffer-indexof-fast</a> for
+which uses <code>.indexOf</code> to search for <code>needle</code>.  When
+reading Buffers and performance is paramount, consider using
+<a href="global.html#readUntil">readUntil</a> directly with an optional function for the problem (e.g.
+<a href="https://www.npmjs.com/package/buffer-indexof-fast">buffer-indexof-fast</a> for
 single-character search).</p>
 
 <p>Doc note:  options should be a ReadToOptions type which extends
@@ -538,7 +545,7 @@ an <code>endOK</code> option which prevents <a href="EOFError.html">EOFError</a>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line584">line 584</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line529">line 529</a>
     </li></ul></dd>
     
 
@@ -598,12 +605,16 @@ streams in flowing mode (see README.md for details).
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="readToEnd"><span class="type-signature"></span>readToEnd<span class="signature">(stream, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(!Buffer|string|!Array)>|<a href="CancellableReadPromise.html">CancellableReadPromise</a>.&lt;(!Buffer|string|!Array)>}</span></h4>
+    
 
     
 
@@ -746,7 +757,7 @@ streams in flowing mode (see README.md for details).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line657">line 657</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line604">line 604</a>
     </li></ul></dd>
     
 
@@ -802,12 +813,16 @@ mode (see README.md for details).
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="readToMatch"><span class="type-signature"></span>readToMatch<span class="signature">(stream, regexp, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;string>|<a href="CancellableReadPromise.html">CancellableReadPromise</a>.&lt;string>}</span></h4>
+    
 
     
 
@@ -997,7 +1012,7 @@ the maximum length of a match, which allow additional search optimizations.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line694">line 694</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line641">line 641</a>
     </li></ul></dd>
     
 
@@ -1058,12 +1073,16 @@ for details).
 
 
 
+
+
         
             
 
     
 
+    
     <h4 class="name" id="readUntil"><span class="type-signature"></span>readUntil<span class="signature">(stream, test, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;(!Buffer|string|!Array)>|<a href="CancellableReadPromise.html">CancellableReadPromise</a>.&lt;(!Buffer|string|!Array)>}</span></h4>
+    
 
     
 
@@ -1244,7 +1263,7 @@ values will result in an error.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line538">line 538</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line486">line 486</a>
     </li></ul></dd>
     
 
@@ -1298,6 +1317,8 @@ mode (see README.md for details).
 </dl>
 
     
+
+
 
 
 
@@ -1566,7 +1587,7 @@ values.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line132">line 132</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -1602,7 +1623,7 @@ values.</td>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue May 02 2017 22:03:50 GMT-0600 (MDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jun 29 2018 19:06:11 GMT-0600 (MDT)
 </footer>
 
 <script> prettyPrint(); </script>
