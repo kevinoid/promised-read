@@ -5,20 +5,14 @@
 
 'use strict';
 
+const util = require('util');
+
 const AbortError = require('./lib/abort-error');
 const EOFError = require('./lib/eof-error');
 const SyncPromise = require('./lib/sync-promise');
 const TimeoutError = require('./lib/timeout-error');
 
-// Optional debugging.  Install debug module or assign console.error to debug.
-/* eslint-disable global-require, import/no-unresolved */
-let debug = function dummyDebug() {};
-try {
-  debug = require('debug');
-} catch (errDebug) {
-  debug('Unable to load debug module: ', errDebug);
-}
-/* eslint-enable global-require, import/no-unresolved */
+const debug = util.debuglog('promised-read');
 
 /** Attempts to unshift result data down to a desired length.
  * @param {stream.Readable} stream Stream into which to unshift data.
