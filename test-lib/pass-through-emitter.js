@@ -7,9 +7,9 @@
 
 // Use safe-buffer as Buffer until support for Node < 4 is dropped
 // eslint-disable-next-line no-shadow
-var Buffer = require('safe-buffer').Buffer;
-var EventEmitter = require('events').EventEmitter;
-var inherits = require('util').inherits;
+const {Buffer} = require('safe-buffer');
+const {EventEmitter} = require('events');
+const {inherits} = require('util');
 
 /** Creates a non-Readable (i.e. pre-0.10) stream similar to
  * {@link stream.PassThrough}.
@@ -25,7 +25,7 @@ function PassThroughEmitter(options) {
 inherits(PassThroughEmitter, EventEmitter);
 
 PassThroughEmitter.prototype.end = function end(chunk, encoding, callback) {
-  var self = this;
+  const self = this;
   if (!callback && typeof encoding === 'function') {
     callback = encoding;
     encoding = null;
@@ -36,14 +36,14 @@ PassThroughEmitter.prototype.end = function end(chunk, encoding, callback) {
   if (callback) {
     self.once('finish', callback);
   }
-  process.nextTick(function() {
+  process.nextTick(() => {
     self.emit('finish');
     self.emit('end');
   });
 };
 
 PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
-  var self = this;
+  const self = this;
   if (!callback && typeof encoding === 'function') {
     callback = encoding;
     encoding = null;
@@ -51,10 +51,10 @@ PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
   if (!self.objectMode && typeof chunk === 'string') {
     chunk = Buffer.from(chunk, encoding);
   }
-  var data =
-    self.objectMode || !self.encoding || !Buffer.isBuffer(chunk) ? chunk :
-      chunk.toString(self.encoding);
-  process.nextTick(function() {
+  const data
+    = self.objectMode || !self.encoding || !Buffer.isBuffer(chunk) ? chunk
+      : chunk.toString(self.encoding);
+  process.nextTick(() => {
     self.emit('data', data);
     if (callback) {
       callback(null);

@@ -7,13 +7,13 @@
 
 'use strict';
 
-var EventEmitter = require('events').EventEmitter;
-var yaku = require('yaku');
-var read = require('..').read;
+const {EventEmitter} = require('events');
+const yaku = require('yaku');
+const {read} = require('..');
 
 /* eslint-disable no-console */
 
-var exitCode = 0;
+let exitCode = 0;
 if (yaku.nextTick !== process.nextTick) {
   console.error('yaku.nextTick !== process.nextTick');
   exitCode = 1;

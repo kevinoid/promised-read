@@ -5,20 +5,20 @@
 
 'use strict';
 
-var AbortError = require('./lib/abort-error');
-var EOFError = require('./lib/eof-error');
-var TimeoutError = require('./lib/timeout-error');
+const AbortError = require('./lib/abort-error');
+const EOFError = require('./lib/eof-error');
+const TimeoutError = require('./lib/timeout-error');
 
 // eslint-disable-next-line no-undef
-var AnyPromise = typeof Promise !== 'undefined' ? Promise : null;
-var SyncPromise;
+let AnyPromise = typeof Promise !== 'undefined' ? Promise : null;
+let SyncPromise;
 // Import a synchronous version of Yaku which can be used for flowing streams
 // (to avoid missing events, as discussed in README.md) without converting all
 // instances of yaku to synchronous (in case other modules are using it).
 /* eslint-disable global-require */
 (function requireYakuSync() {
-  var yakuPath = require.resolve('yaku');
-  var yakuCached = require.cache[yakuPath];
+  const yakuPath = require.resolve('yaku');
+  const yakuCached = require.cache[yakuPath];
   delete require.cache[yakuPath];
 
   SyncPromise = require('yaku');
@@ -36,7 +36,7 @@ var SyncPromise;
 
 // Optional debugging.  Install debug module or assign console.error to debug.
 /* eslint-disable global-require, import/no-unresolved */
-var debug = function dummyDebug() {};
+let debug = function dummyDebug() {};
 try {
   debug = require('debug');
 } catch (errDebug) {
@@ -47,20 +47,20 @@ try {
 // Require best Buffer.prototype.indexOf polyfill available
 // (buffertools is prone to install issues due to native compilation)
 /* eslint-disable global-require, import/no-unresolved */
-var bufferIndexOf;
+let bufferIndexOf;
 if (!Buffer.prototype.indexOf) {
   try {
     bufferIndexOf = require('buffertools').indexOf;
   } catch (errRequire) {
     debug(
-      'Unable to require(\'buffertools\').  ' +
-        'Using buffer-indexof-polyfill instead.',
+      'Unable to require(\'buffertools\').  '
+        + 'Using buffer-indexof-polyfill instead.',
       errRequire
     );
     // Do a little dance to un-polyfill and convert method to function
     bufferIndexOf = (function bufferIndexOfClosure() {
       require('buffer-indexof-polyfill');
-      var bufferIndexOfMethod = Buffer.prototype.indexOf;
+      const bufferIndexOfMethod = Buffer.prototype.indexOf;
       delete Buffer.prototype.indexOf;
       return function bufferIndexOfFunction(buffer, needle, fromIndex) {
         return bufferIndexOfMethod.call(buffer, needle, fromIndex);
@@ -87,16 +87,16 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
     return result;
   }
 
-  var errorListeners = stream.listeners('error');
+  const errorListeners = stream.listeners('error');
   stream.removeAllListeners('error');
 
   // Note:  Don't rely on the EventEmitter throwing on 'error' without
   // listeners, since it may be thrown in the stream's attached domain.
-  var unshiftErr;
+  let unshiftErr;
   function onUnshiftError(err) { unshiftErr = err; }
   stream.on('error', onUnshiftError);
 
-  var resultLength = result.length;
+  let resultLength = result.length;
   try {
     if (Array.isArray(result)) {
       while (resultLength > desiredLength && !unshiftErr) {
@@ -120,13 +120,13 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
   }
 
   stream.removeListener('error', onUnshiftError);
-  errorListeners.forEach(function(errorListener) {
+  errorListeners.forEach((errorListener) => {
     stream.on('error', errorListener);
   });
 
-  return resultLength === 0 && !emptySlice ? null :
-    resultLength < result.length ? result.slice(0, resultLength) :
-      result;
+  return resultLength === 0 && !emptySlice ? null
+    : resultLength < result.length ? result.slice(0, resultLength)
+      : result;
 }
 
 /** Options for {@link read}, {@link readTo}, and {@link readUntil}.
@@ -187,22 +187,22 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
 // function CancellableReadPromise() {}
 
 function readInternal(stream, size, until, options) {
-  var flowing =
-    (options && options.flowing) || typeof stream.read !== 'function';
-  var numSize =
-    size === null || Number.isNaN(Number(size)) ? undefined : Number(size);
-  var objectMode = Boolean(options && options.objectMode);
-  var timeout = options && options.timeout;
-  var Promise = (options && options.Promise) ||
-    (flowing ? SyncPromise : AnyPromise);
+  const flowing
+    = (options && options.flowing) || typeof stream.read !== 'function';
+  let numSize
+    = size === null || Number.isNaN(Number(size)) ? undefined : Number(size);
+  let objectMode = Boolean(options && options.objectMode);
+  const timeout = options && options.timeout;
+  const Promise = (options && options.Promise)
+    || (flowing ? SyncPromise : AnyPromise);
 
-  var abortRead;
-  var cancelRead;
+  let abortRead;
+  let cancelRead;
 
-  var promise = new Promise(function(resolve, reject, cancelled) {
-    var isDoneReading = false;
-    var result = null;
-    var timeoutID;
+  const promise = new Promise(((resolve, reject, cancelled) => {
+    let isDoneReading = false;
+    let result = null;
+    let timeoutID;
     function doneReading() {
       if (isDoneReading) { return; }
       isDoneReading = true;
@@ -225,8 +225,8 @@ function readInternal(stream, size, until, options) {
           // can use the partial result and to avoid losing data.
           err.read = result;
         } else {
-          debug('Unable to set .read on non-object reject cause.  ' +
-            'Discarding data.');
+          debug('Unable to set .read on non-object reject cause.  '
+            + 'Discarding data.');
         }
       }
       reject(err);
@@ -276,16 +276,16 @@ function readInternal(stream, size, until, options) {
     // (AFAICT).  The third argument could be notify or something else.
     // Check for cancel method and config function to add certainty.
     // TODO:  Find a more reliable check.
-    if (typeof cancelled === 'function' &&
-        typeof Promise.prototype.cancel === 'function' &&
-        typeof Promise.config === 'function') {
+    if (typeof cancelled === 'function'
+        && typeof Promise.prototype.cancel === 'function'
+        && typeof Promise.config === 'function') {
       cancelled(cancelRead);
     }
 
     stream.once('error', doReject);
 
     if (timeout !== undefined && timeout !== null) {
-      timeoutID = setTimeout(function onTimeout() {
+      timeoutID = setTimeout(() => {
         doReject(new TimeoutError(), true);
       }, timeout);
     }
@@ -296,7 +296,7 @@ function readInternal(stream, size, until, options) {
      * @private
      */
     function checkUntil(resultWithData, data, ended) {
-      var desiredLength;
+      let desiredLength;
       try {
         desiredLength = until(resultWithData, data, ended);
       } catch (errUntil) {
@@ -304,12 +304,12 @@ function readInternal(stream, size, until, options) {
         return true;
       }
 
-      var resultLength = result ? result.length : 0;
+      const resultLength = result ? result.length : 0;
       if (typeof desiredLength === 'number') {
         if (desiredLength > resultLength) {
           debug(
-            'until returned a desired length of %d.  ' +
-              'Only have %d.  Reading up to %d.',
+            'until returned a desired length of %d.  '
+              + 'Only have %d.  Reading up to %d.',
             desiredLength, resultLength, desiredLength
           );
           numSize = desiredLength;
@@ -335,15 +335,15 @@ function readInternal(stream, size, until, options) {
         debug('until returned true, read finished.');
         doResolve();
         return true;
-      } else if (desiredLength !== undefined &&
-          desiredLength !== null &&
-          desiredLength !== false) {
+      } else if (desiredLength !== undefined
+          && desiredLength !== null
+          && desiredLength !== false) {
         // Note:  Although this could be allowed, it causes an Error so that
         // future versions may add behavior for these values without causing
         // breakage.
         doReject(
           new TypeError(
-            'non-numeric, non-boolean until() result: ' + desiredLength
+            `non-numeric, non-boolean until() result: ${desiredLength}`
           ),
           true
         );
@@ -369,29 +369,29 @@ function readInternal(stream, size, until, options) {
     // than waiting endlessly for data that will never come because the caller
     // was not careful about handling the 'end' event.
     /* eslint-disable no-underscore-dangle */
-    if (stream &&
-        stream._readableState &&
-        stream._readableState.endEmitted) {
+    if (stream
+        && stream._readableState
+        && stream._readableState.endEmitted) {
       debug('Error:  stream has ended!  Calling read after end is unreliable!');
       onEnd();
       return;
     }
     /* eslint-enable no-underscore-dangle */
 
-    var resultBuf;
+    let resultBuf;
     function onData(data) {
       if (result === null) {
-        objectMode = objectMode ||
-          (typeof data !== 'string' && !(data instanceof Buffer));
+        objectMode = objectMode
+          || (typeof data !== 'string' && !(data instanceof Buffer));
         result = objectMode ? [data] : data;
       } else if (typeof result === 'string' && typeof data === 'string') {
         result += data;
       } else if (result instanceof Buffer && data instanceof Buffer) {
         // To avoid copying result on every read, make result a slice of
         // resultBuf which grows geometrically as necessary.
-        var newResultSize = data.length + result.length;
+        const newResultSize = data.length + result.length;
         if (!resultBuf || newResultSize > resultBuf.length) {
-          var newResultBufSize = resultBuf ? resultBuf.length : 128;
+          let newResultBufSize = resultBuf ? resultBuf.length : 128;
           while (newResultBufSize < newResultSize) {
             // Growth factor is a time/space tradeoff.  3/2 seems reasonable.
             // https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
@@ -399,10 +399,10 @@ function readInternal(stream, size, until, options) {
             // eslint-disable-next-line no-bitwise
             newResultBufSize = (newResultBufSize * 3) >>> 1;
           }
-          resultBuf = Buffer.allocUnsafe ?
-            Buffer.allocUnsafe(newResultBufSize) :
+          resultBuf = Buffer.allocUnsafe
+            ? Buffer.allocUnsafe(newResultBufSize)
             // eslint-disable-next-line no-buffer-constructor
-            new Buffer(newResultBufSize);
+            : new Buffer(newResultBufSize);
           result.copy(resultBuf);
         }
         data.copy(resultBuf, result.length);
@@ -458,7 +458,7 @@ function readInternal(stream, size, until, options) {
 
     function readPending() {
       while (!isDoneReading) {
-        var data = stream.read(size);
+        const data = stream.read(size);
         if (data === null) {
           if (!isDoneReading) {
             stream.once('readable', readPending);
@@ -484,7 +484,7 @@ function readInternal(stream, size, until, options) {
     } else {
       stream.on('data', onData);
     }
-  });
+  }));
 
   if (options && (options.cancellable || options.cancelable)) {
     promise.abortRead = abortRead;
@@ -543,7 +543,7 @@ function readUntil(stream, until, options) {
   if (typeof until !== 'function') {
     // Note:  Synchronous Yaku emits unhandledRejection before returning.
     // Best current option is to use an async promise, even when flowing
-    var Promise = (options && options.Promise) || AnyPromise;
+    const Promise = (options && options.Promise) || AnyPromise;
     return Promise.reject(new TypeError('until must be a function'));
   }
   return readInternal(stream, undefined, until, options);
@@ -586,9 +586,9 @@ function readUntil(stream, until, options) {
  * streams in flowing mode (see README.md for details).
  */
 function readTo(stream, needle, options) {
-  var endOK = Boolean(options && (options.endOK || options.endOk));
-  var needleForIndexOf;
-  var needleLength;
+  const endOK = Boolean(options && (options.endOK || options.endOk));
+  let needleForIndexOf;
+  let needleLength;
   function until(result, chunk, ended) {
     if (ended) {
       return endOK ? (result ? result.length : 0) : -1;
@@ -609,10 +609,10 @@ function readTo(stream, needle, options) {
         if (typeof needle === 'number') {
           // buffertools requires a Buffer or string
           // buffer-indexof-polyfill converts number to Buffer on each call
-          needleForIndexOf = result.indexOf ? needle :
-            Buffer.from ? Buffer.from([needle]) :
+          needleForIndexOf = result.indexOf ? needle
+            : Buffer.from ? Buffer.from([needle])
               // eslint-disable-next-line no-buffer-constructor
-              new Buffer([needle]);
+              : new Buffer([needle]);
           needleLength = 1;
         } else if (typeof needle === 'string') {
           needleForIndexOf = needle;
@@ -624,9 +624,9 @@ function readTo(stream, needle, options) {
       }
 
       if (needleLength === undefined) {
-        throw new TypeError('Unsupported indexOf argument types: ' +
-            Object.prototype.toString.call(result) + '.indexOf(' +
-            Object.prototype.toString.call(needle) + ')');
+        throw new TypeError(`Unsupported indexOf argument types: ${
+          Object.prototype.toString.call(result)}.indexOf(${
+          Object.prototype.toString.call(needle)})`);
       }
 
       // Buffer.prototype.indexOf returns -1 for 0-length string/Buffer.
@@ -637,10 +637,11 @@ function readTo(stream, needle, options) {
       }
     }
 
-    var start = Math.max((result.length - chunk.length - needleLength) + 1, 0);
-    var needleIndex =
-      result.indexOf ? result.indexOf(needleForIndexOf, start) :
-        bufferIndexOf(result, needleForIndexOf, start);
+    const start
+      = Math.max((result.length - chunk.length - needleLength) + 1, 0);
+    const needleIndex
+      = result.indexOf ? result.indexOf(needleForIndexOf, start)
+        : bufferIndexOf(result, needleForIndexOf, start);
     if (needleIndex < 0) {
       return -1;
     }
@@ -699,8 +700,8 @@ function readToEnd(stream, options) {
  * for details).
  */
 function readToMatch(stream, regexp, options) {
-  var endOK = Boolean(options && (options.endOK || options.endOk));
-  var maxMatchLen = Number(options && options.maxMatchLen);
+  const endOK = Boolean(options && (options.endOK || options.endOk));
+  const maxMatchLen = Number(options && options.maxMatchLen);
   // Convert to RegExp where necessary, like String.prototype.match
   // Make sure RegExp has global flag so lastIndex will be set
   if (!(regexp instanceof RegExp)) {
@@ -709,11 +710,11 @@ function readToMatch(stream, regexp, options) {
     } catch (errRegExp) {
       // Note:  Synchronous Yaku emits unhandledRejection before returning.
       // Best current option is to use an async promise, even when flowing
-      var Promise = (options && options.Promise) || AnyPromise;
+      const Promise = (options && options.Promise) || AnyPromise;
       return Promise.reject(errRegExp);
     }
   } else if (!regexp.global) {
-    regexp = new RegExp(regexp.source, (regexp.flags || '') + 'g');
+    regexp = new RegExp(regexp.source, `${regexp.flags || ''}g`);
   }
   function until(result, chunk, ended) {
     if (ended) {
@@ -721,13 +722,13 @@ function readToMatch(stream, regexp, options) {
     }
 
     if (typeof result !== 'string') {
-      throw new TypeError('readToMatch requires a string stream' +
-          ' (use constructor options.encoding or .setEncoding method)');
+      throw new TypeError('readToMatch requires a string stream'
+          + ' (use constructor options.encoding or .setEncoding method)');
     }
 
-    regexp.lastIndex = maxMatchLen ?
-      Math.max((result.length - chunk.length - maxMatchLen) + 1, 0) :
-      0;
+    regexp.lastIndex = maxMatchLen
+      ? Math.max((result.length - chunk.length - maxMatchLen) + 1, 0)
+      : 0;
     if (regexp.test(result)) {
       return regexp.lastIndex;
     }
@@ -738,12 +739,12 @@ function readToMatch(stream, regexp, options) {
 }
 
 module.exports = {
-  AbortError: AbortError,
-  EOFError: EOFError,
-  TimeoutError: TimeoutError,
-  read: read,
-  readUntil: readUntil,
-  readTo: readTo,
-  readToEnd: readToEnd,
-  readToMatch: readToMatch
+  AbortError,
+  EOFError,
+  TimeoutError,
+  read,
+  readUntil,
+  readTo,
+  readToEnd,
+  readToMatch
 };
