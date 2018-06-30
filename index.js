@@ -10,7 +10,6 @@ const EOFError = require('./lib/eof-error');
 const TimeoutError = require('./lib/timeout-error');
 
 // eslint-disable-next-line no-undef
-let AnyPromise = typeof Promise !== 'undefined' ? Promise : null;
 let SyncPromise;
 // Import a synchronous version of Yaku which can be used for flowing streams
 // (to avoid missing events, as discussed in README.md) without converting all
@@ -29,8 +28,6 @@ let SyncPromise;
   } else {
     delete require.cache[yakuPath];
   }
-
-  AnyPromise = AnyPromise || yakuCached || require('yaku');
 }());
 /* eslint-enable global-require */
 
@@ -168,7 +165,7 @@ function readInternal(stream, size, until, options) {
   let objectMode = Boolean(options && options.objectMode);
   const timeout = options && options.timeout;
   const ReadPromise = (options && options.Promise)
-    || (flowing ? SyncPromise : AnyPromise);
+    || (flowing ? SyncPromise : Promise);
 
   let abortRead;
   let cancelRead;
@@ -517,7 +514,7 @@ function readUntil(stream, until, options) {
   if (typeof until !== 'function') {
     // Note:  Synchronous Yaku emits unhandledRejection before returning.
     // Best current option is to use an async promise, even when flowing
-    const ReadPromise = (options && options.Promise) || AnyPromise;
+    const ReadPromise = (options && options.Promise) || Promise;
     return ReadPromise.reject(new TypeError('until must be a function'));
   }
   return readInternal(stream, undefined, until, options);
@@ -679,7 +676,7 @@ function readToMatch(stream, regexp, options) {
     } catch (errRegExp) {
       // Note:  Synchronous Yaku emits unhandledRejection before returning.
       // Best current option is to use an async promise, even when flowing
-      const ReadPromise = (options && options.Promise) || AnyPromise;
+      const ReadPromise = (options && options.Promise) || Promise;
       return ReadPromise.reject(errRegExp);
     }
   } else if (!regexp.global) {
