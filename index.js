@@ -44,32 +44,6 @@ try {
 }
 /* eslint-enable global-require, import/no-unresolved */
 
-// Require best Buffer.prototype.indexOf polyfill available
-// (buffertools is prone to install issues due to native compilation)
-/* eslint-disable global-require, import/no-unresolved */
-let bufferIndexOf;
-if (!Buffer.prototype.indexOf) {
-  try {
-    bufferIndexOf = require('buffertools').indexOf;
-  } catch (errRequire) {
-    debug(
-      'Unable to require(\'buffertools\').  '
-        + 'Using buffer-indexof-polyfill instead.',
-      errRequire
-    );
-    // Do a little dance to un-polyfill and convert method to function
-    bufferIndexOf = (function bufferIndexOfClosure() {
-      require('buffer-indexof-polyfill');
-      const bufferIndexOfMethod = Buffer.prototype.indexOf;
-      delete Buffer.prototype.indexOf;
-      return function bufferIndexOfFunction(buffer, needle, fromIndex) {
-        return bufferIndexOfMethod.call(buffer, needle, fromIndex);
-      };
-    }());
-  }
-}
-/* eslint-enable global-require, import/no-unresolved */
-
 /** Attempts to unshift result data down to a desired length.
  * @param {stream.Readable} stream Stream into which to unshift data.
  * @param {!Buffer|string|!Array} result Read result data.
@@ -552,13 +526,10 @@ function readUntil(stream, until, options) {
 /** Reads from a stream.Readable until a given value is found.
  *
  * <p>This function calls {@link readUntil} with an <code>until</code> function
- * which uses <code>.indexOf</code> to search for <code>needle</code>.  On
- * Node.js versions before v1.5.0, {@link
- * https://www.npmjs.com/package/buffertools buffertools} is used when
- * available and {@link https://www.npmjs.com/package/buffer-indexof-polyfill
- * buffer-indexof-polyfill} otherwise.  When reading Buffers and performance is
- * paramount, consider using {@link readUntil} directly with an optional
- * function for the problem (e.g. {@link
+ * which uses <code>.indexOf</code> to search for <code>needle</code>.  When
+ * reading Buffers and performance is paramount, consider using
+ * {@link readUntil} directly with an optional function for the problem (e.g.
+ * {@link
  * https://www.npmjs.com/package/buffer-indexof-fast buffer-indexof-fast} for
  * single-character search).</p>
  *
@@ -639,9 +610,7 @@ function readTo(stream, needle, options) {
 
     const start
       = Math.max((result.length - chunk.length - needleLength) + 1, 0);
-    const needleIndex
-      = result.indexOf ? result.indexOf(needleForIndexOf, start)
-        : bufferIndexOf(result, needleForIndexOf, start);
+    const needleIndex = result.indexOf(needleForIndexOf, start);
     if (needleIndex < 0) {
       return -1;
     }
