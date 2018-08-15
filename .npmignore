@@ -14,5 +14,6 @@
 CHANGELOG.*
 TODO.*
 appveyor.yml
+audit-resolv.json
 jsdoc*.conf.json
 sync-promises.md
