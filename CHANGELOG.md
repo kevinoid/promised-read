@@ -1,5 +1,11 @@
 # Change Log
 
+## [v2.0.1](https://github.com/kevinoid/promised-read/tree/v2.0.1) (2018-08-15)
+[Full Changelog](https://github.com/kevinoid/promised-read/compare/v2.0.0...v2.0.1)
+
+- Update yaku to the latest version [\#24](https://github.com/kevinoid/promised-read/pull/24)
+- Update devDependencies to latest versions.
+
 ## [v2.0.0](https://github.com/kevinoid/promised-read/tree/v2.0.0) (2018-06-29)
 [Full Changelog](https://github.com/kevinoid/promised-read/compare/v1.0.1...v2.0.0)
 
