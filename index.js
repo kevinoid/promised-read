@@ -131,10 +131,10 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
 // function CancellableReadPromise() {}
 
 function readInternal(stream, size, until, options) {
-  const flowing
-    = (options && options.flowing) || typeof stream.read !== 'function';
-  let numSize
-    = size === null || Number.isNaN(Number(size)) ? undefined : Number(size);
+  const flowing =
+    (options && options.flowing) || typeof stream.read !== 'function';
+  let numSize =
+    size === null || Number.isNaN(Number(size)) ? undefined : Number(size);
   let objectMode = Boolean(options && options.objectMode);
   const timeout = options && options.timeout;
   const ReadPromise = (options && options.Promise)
@@ -578,8 +578,8 @@ function readTo(stream, needle, options) {
       }
     }
 
-    const start
-      = Math.max((result.length - chunk.length - needleLength) + 1, 0);
+    const start =
+      Math.max((result.length - chunk.length - needleLength) + 1, 0);
     const needleIndex = result.indexOf(needleForIndexOf, start);
     if (needleIndex < 0) {
       return -1;

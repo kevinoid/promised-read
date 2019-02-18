@@ -48,8 +48,8 @@ PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
   if (!self.objectMode && typeof chunk === 'string') {
     chunk = Buffer.from(chunk, encoding);
   }
-  const data
-    = self.objectMode || !self.encoding || !Buffer.isBuffer(chunk) ? chunk
+  const data =
+    self.objectMode || !self.encoding || !Buffer.isBuffer(chunk) ? chunk
       : chunk.toString(self.encoding);
   process.nextTick(() => {
     self.emit('data', data);
