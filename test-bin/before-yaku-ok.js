@@ -8,8 +8,9 @@
 'use strict';
 
 const {EventEmitter} = require('events');
-const {read} = require('..');
 const yaku = require('yaku');
+
+const {read} = require('..');
 
 /* eslint-disable no-console */
 

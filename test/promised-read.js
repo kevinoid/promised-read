@@ -8,9 +8,10 @@
 const BBPromise = require('bluebird');
 const assert = require('assert');
 const {fork} = require('child_process');
-const promisedRead = require('..');
 const sinon = require('sinon');
 const stream = require('stream');
+
+const promisedRead = require('..');
 const PassThroughEmitter = require('../test-lib/pass-through-emitter');
 
 const {
