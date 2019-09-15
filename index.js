@@ -143,7 +143,7 @@ function readInternal(stream, size, until, options) {
   let abortRead;
   let cancelRead;
 
-  const promise = new ReadPromise(((resolve, reject, cancelled) => {
+  const promise = new ReadPromise((resolve, reject, cancelled) => {
     let isDoneReading = false;
     let result = null;
     let timeoutID;
@@ -254,14 +254,14 @@ function readInternal(stream, size, until, options) {
           debug(
             'until returned a desired length of %d.  '
               + 'Only have %d.  Reading up to %d.',
-            desiredLength, resultLength, desiredLength
+            desiredLength, resultLength, desiredLength,
           );
           numSize = desiredLength;
           size = desiredLength - resultLength;
         } else if (desiredLength >= 0) {
           debug(
             'until returned a desired length of %d out of %d',
-            desiredLength, resultLength
+            desiredLength, resultLength,
           );
           if (desiredLength < resultLength) {
             if (ended) {
@@ -287,9 +287,9 @@ function readInternal(stream, size, until, options) {
         // breakage.
         doReject(
           new TypeError(
-            `non-numeric, non-boolean until() result: ${desiredLength}`
+            `non-numeric, non-boolean until() result: ${desiredLength}`,
           ),
-          true
+          true,
         );
       } else {
         debug('until returned %s, continuing to read', desiredLength);
@@ -346,7 +346,7 @@ function readInternal(stream, size, until, options) {
           resultBuf = Buffer.allocUnsafe
             ? Buffer.allocUnsafe(newResultBufSize)
             // eslint-disable-next-line no-buffer-constructor
-            : new Buffer(newResultBufSize);
+            : Buffer.from(newResultBufSize);
           result.copy(resultBuf);
         }
         data.copy(resultBuf, result.length);
@@ -428,7 +428,7 @@ function readInternal(stream, size, until, options) {
     } else {
       stream.on('data', onData);
     }
-  }));
+  });
 
   if (options && (options.cancellable || options.cancelable)) {
     promise.abortRead = abortRead;
@@ -532,7 +532,7 @@ function readTo(stream, needle, options) {
   let needleLength;
   function until(result, chunk, ended) {
     if (ended) {
-      return endOK ? (result ? result.length : 0) : -1;
+      return endOK ? result ? result.length : 0 : -1;
     }
 
     if (Array.isArray(result)) {
@@ -553,7 +553,7 @@ function readTo(stream, needle, options) {
           needleForIndexOf = result.indexOf ? needle
             : Buffer.from ? Buffer.from([needle])
               // eslint-disable-next-line no-buffer-constructor
-              : new Buffer([needle]);
+              : Buffer.from([needle]);
           needleLength = 1;
         } else if (typeof needle === 'string') {
           needleForIndexOf = needle;
@@ -657,7 +657,7 @@ function readToMatch(stream, regexp, options) {
   }
   function until(result, chunk, ended) {
     if (ended) {
-      return endOK ? (result ? result.length : 0) : -1;
+      return endOK ? result ? result.length : 0 : -1;
     }
 
     if (typeof result !== 'string') {
@@ -685,5 +685,5 @@ module.exports = {
   readUntil,
   readTo,
   readToEnd,
-  readToMatch
+  readToMatch,
 };

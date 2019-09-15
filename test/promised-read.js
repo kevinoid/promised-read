@@ -7,7 +7,7 @@
 
 const BBPromise = require('bluebird');
 const assert = require('assert');
-const {fork} = require('child_process');
+const { fork } = require('child_process');
 const sinon = require('sinon');
 const stream = require('stream');
 
@@ -19,13 +19,13 @@ const {
   readTo,
   readToEnd,
   readToMatch,
-  readUntil
+  readUntil,
 } = promisedRead;
 
 // eslint-disable-next-line no-shadow
 const setImmediate = global.setImmediate || setTimeout;
 
-BBPromise.config({cancellation: true});
+BBPromise.config({ cancellation: true });
 
 function untilNever() { return false; }
 
@@ -58,7 +58,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('returns a Promise with read object', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = {};
       input.write(inputData);
       return read(input).then((data) => {
@@ -78,7 +78,7 @@ function describeWithStreamType(PassThrough) {
               assert.deepEqual(data, inputData);
               done();
             },
-            done
+            done,
           );
         });
       });
@@ -176,7 +176,7 @@ function describeWithStreamType(PassThrough) {
             assert.deepEqual(data, inputData);
             done();
           },
-          done
+          done,
         );
         input.write(inputData);
       });
@@ -196,7 +196,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('can read an empty Array in objectMode', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [];
       const promise = read(input).then((data) => {
         assert.strictEqual(data, inputData);
@@ -207,7 +207,7 @@ function describeWithStreamType(PassThrough) {
 
     // Just like stream.Readable.prototype.read when in objectMode
     it('reads at most one non-Buffer/string', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [1, 2, 3];
       const promise = read(input, 2).then((data) => {
         assert.strictEqual(data, inputData[0]);
@@ -219,9 +219,9 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads at most one Buffer/string if options.objectMode', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [Buffer.from('Larry'), Buffer.from('Curly')];
-      const promise = read(input, 2, {objectMode: true}).then((data) => {
+      const promise = read(input, 2, { objectMode: true }).then((data) => {
         assert.strictEqual(data, inputData[0]);
       });
       inputData.forEach((data) => {
@@ -242,7 +242,7 @@ function describeWithStreamType(PassThrough) {
     if (!PassThrough.prototype.read) {
       // Note:  I would be open to adding an option to allow this, if needed.
       it('does not resolve with null for null \'data\' event', () => {
-        const input = new PassThrough({objectMode: true});
+        const input = new PassThrough({ objectMode: true });
         const inputData = Buffer.from('test');
         const promise = read(input).then((data) => {
           assert.strictEqual(data, inputData);
@@ -276,7 +276,7 @@ function describeWithStreamType(PassThrough) {
       const errTest = new Error('test');
       const promise = read(input).then(
         sinon.mock().never(),
-        (err) => { assert.strictEqual(err, errTest); }
+        (err) => { assert.strictEqual(err, errTest); },
       );
       input.emit('error', errTest);
       return promise;
@@ -291,7 +291,7 @@ function describeWithStreamType(PassThrough) {
           (err) => {
             assert.strictEqual(err, errTest);
             assert.notEqual(input.read(), null);
-          }
+          },
         );
         input.emit('error', errTest);
         input.write('data');
@@ -311,7 +311,7 @@ function describeWithStreamType(PassThrough) {
           (err) => {
             assert.strictEqual(err, errTest);
             assert.deepEqual(err.read, inputData);
-          }
+          },
         );
         input.write(inputData, () => {
           input.emit('error', errTest);
@@ -368,7 +368,7 @@ function describeWithStreamType(PassThrough) {
       const inputData = [
         Buffer.from('Larry\n'),
         Buffer.from('Curly\n'),
-        Buffer.from('Moe\n')
+        Buffer.from('Moe\n'),
       ];
       const readData = [];
       function readAll(readable) {
@@ -396,7 +396,7 @@ function describeWithStreamType(PassThrough) {
         const inputData = [
           Buffer.from('Larry\n'),
           Buffer.from('Curly\n'),
-          Buffer.from('Moe\n')
+          Buffer.from('Moe\n'),
         ];
         const readData = [];
         function readAll(readable) {
@@ -421,7 +421,7 @@ function describeWithStreamType(PassThrough) {
 
     it('returns an instance of options.Promise', () => {
       const input = new PassThrough();
-      const promise = read(input, {Promise: BBPromise});
+      const promise = read(input, { Promise: BBPromise });
       assert(promise instanceof BBPromise);
     });
 
@@ -435,14 +435,14 @@ function describeWithStreamType(PassThrough) {
     describe('with options.cancellable', () => {
       it('has .abortRead and .cancelRead methods', () => {
         const input = new PassThrough();
-        const promise = read(input, {cancellable: true});
+        const promise = read(input, { cancellable: true });
         assert.strictEqual(typeof promise.abortRead, 'function');
         assert.strictEqual(typeof promise.cancelRead, 'function');
       });
 
       it('supports .cancelable as an alias', () => {
         const input = new PassThrough();
-        const promise = read(input, {cancelable: true});
+        const promise = read(input, { cancelable: true });
         assert.strictEqual(typeof promise.abortRead, 'function');
         assert.strictEqual(typeof promise.cancelRead, 'function');
       });
@@ -451,7 +451,7 @@ function describeWithStreamType(PassThrough) {
         const input = new PassThrough();
         const inputData = Buffer.from('test');
 
-        const promise = read(input, {cancellable: true});
+        const promise = read(input, { cancellable: true });
         promise.then(
           () => {
             done(new Error('then should not be called'));
@@ -462,7 +462,7 @@ function describeWithStreamType(PassThrough) {
             } catch (errAssert) {
               done(errAssert);
             }
-          }
+          },
         );
         promise.abortRead();
 
@@ -481,14 +481,14 @@ function describeWithStreamType(PassThrough) {
         const input = new PassThrough();
         const inputData = Buffer.from('test');
 
-        const promise = read(input, {cancellable: true});
+        const promise = read(input, { cancellable: true });
         promise.then(
           () => {
             done(new Error('then should not be called'));
           },
           () => {
             done(new Error('catch should not be called'));
-          }
+          },
         );
         promise.cancelRead();
 
@@ -507,14 +507,14 @@ function describeWithStreamType(PassThrough) {
         const input = new PassThrough();
         const inputData = Buffer.from('test');
 
-        const promise = read(input, {cancellable: true});
+        const promise = read(input, { cancellable: true });
         promise.then(
           () => {
             done(new Error('then should not be called'));
           },
           () => {
             done(new Error('catch should not be called'));
-          }
+          },
         );
         promise.cancelRead();
         promise.abortRead();
@@ -534,7 +534,7 @@ function describeWithStreamType(PassThrough) {
         const input = new PassThrough();
         const inputData = Buffer.from('test');
 
-        const promise = read(input, {cancellable: true});
+        const promise = read(input, { cancellable: true });
         promise.then(
           () => {
             done(new Error('then should not be called'));
@@ -545,7 +545,7 @@ function describeWithStreamType(PassThrough) {
             } catch (errAssert) {
               done(errAssert);
             }
-          }
+          },
         );
         promise.abortRead();
         promise.cancelRead();
@@ -566,13 +566,13 @@ function describeWithStreamType(PassThrough) {
       const input = new PassThrough();
       const inputData = Buffer.from('test');
 
-      const promise = read(input, {Promise: BBPromise}).then(
+      const promise = read(input, { Promise: BBPromise }).then(
         () => {
           done(new Error('then should not be called'));
         },
         () => {
           done(new Error('catch should not be called'));
-        }
+        },
       );
       promise.cancel();
 
@@ -594,22 +594,22 @@ function describeWithStreamType(PassThrough) {
     describe('with options.timeout', () => {
       it('rejects with TimeoutError after timeout ms', () => {
         const input = new PassThrough();
-        return read(input, {timeout: 1}).then(
+        return read(input, { timeout: 1 }).then(
           sinon.mock().never(),
           (err) => {
             assert.strictEqual(err.name, 'TimeoutError');
-          }
+          },
         );
       });
 
       it('passes options.timeout of 0 to setTimeout', () => {
         const input = new PassThrough();
         const spy = sinon.spy(global, 'setTimeout');
-        const promise = read(input, {timeout: 0}).then(
+        const promise = read(input, { timeout: 0 }).then(
           sinon.mock().never(),
           (err) => {
             assert.strictEqual(err.name, 'TimeoutError');
-          }
+          },
         );
         setTimeout.restore();
         assert.strictEqual(spy.callCount, 1);
@@ -621,7 +621,7 @@ function describeWithStreamType(PassThrough) {
         it('does not read after timeout', (done) => {
           const input = new PassThrough();
           const inputData = Buffer.from('test');
-          read(input, {timeout: 1}).then(
+          read(input, { timeout: 1 }).then(
             () => {
               done(new Error('then should not be called'));
             },
@@ -632,7 +632,7 @@ function describeWithStreamType(PassThrough) {
                 assert.deepEqual(input.read(), inputData);
                 done();
               });
-            }
+            },
           );
         });
       }
@@ -640,7 +640,7 @@ function describeWithStreamType(PassThrough) {
       it('resolves if read completes before timeout ms', (done) => {
         const input = new PassThrough();
         const inputData = Buffer.from('test');
-        read(input, {timeout: 1}).then((data) => {
+        read(input, { timeout: 1 }).then((data) => {
           assert.deepEqual(data, inputData);
           // Wait until after timeout to catch unhandled error
           setTimeout(done, 2);
@@ -653,7 +653,7 @@ function describeWithStreamType(PassThrough) {
       const input = new PassThrough();
       const inputData = Buffer.from('test');
 
-      read(input, {Promise: BBPromise})
+      read(input, { Promise: BBPromise })
         .timeout(2)
         .then(
           () => {
@@ -674,7 +674,7 @@ function describeWithStreamType(PassThrough) {
             } else {
               done();
             }
-          }
+          },
         );
     });
   });
@@ -691,7 +691,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads up to (and including) the marker with encoding', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = 'Larry\n';
       const promise = readTo(input, '\n').then((data) => {
         assert.deepEqual(data, inputData);
@@ -701,7 +701,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads up to (and including) the marker in objectMode', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = 3;
       const promise = readTo(input, 3).then((data) => {
         // Note:  readTo result is always an Array in objectMode
@@ -715,7 +715,7 @@ function describeWithStreamType(PassThrough) {
       const input = new PassThrough();
       const inputData = [
         Buffer.from('La'),
-        Buffer.from('rry\n')
+        Buffer.from('rry\n'),
       ];
       const promise = readTo(input, Buffer.from('\n')).then((data) => {
         assert.deepEqual(data, Buffer.concat(inputData));
@@ -725,10 +725,10 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads up to the marker across writes with encoding', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = [
         'La',
-        'rry\n'
+        'rry\n',
       ];
       const promise = readTo(input, '\n').then((data) => {
         assert.deepEqual(data, inputData.join(''));
@@ -738,7 +738,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads up to the marker across writes in objectMode', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [1, 2, 3];
       const promise = readTo(input, 3).then((data) => {
         assert.deepEqual(data, inputData);
@@ -748,7 +748,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('does strict equality checks for marker in objectMode', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       // Note:  null and undefined are not supported by stream.PassThrough
       const inputData = [true, 0, '', false];
       const promise = readTo(input, false).then((data) => {
@@ -761,12 +761,12 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads up to the marker split across writes with encoding', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = [
         'Larry\n',
         'Cur',
         'ly\n',
-        'Moe\n'
+        'Moe\n',
       ];
       const promise = readTo(input, 'Curly\n').then((data) => {
         assert.deepEqual(data, inputData.slice(0, 3).join(''));
@@ -797,7 +797,7 @@ function describeWithStreamType(PassThrough) {
       });
 
       it('Buffer marker in string', () => {
-        const input = new PassThrough({encoding: 'utf8'});
+        const input = new PassThrough({ encoding: 'utf8' });
         const inputData = 'Larry\n';
         const promise = readTo(input, Buffer.from('\n')).then((data) => {
           assert.deepEqual(data, inputData);
@@ -813,7 +813,7 @@ function describeWithStreamType(PassThrough) {
           sinon.mock().never(),
           (err) => {
             assert.strictEqual(err.name, 'TypeError');
-          }
+          },
         );
         input.write(inputData);
         return promise;
@@ -846,7 +846,7 @@ function describeWithStreamType(PassThrough) {
     }
 
     it('does not read past the marker in objectMode', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [1, 2, 3, 4, 5];
       const promise = readTo(input, 3).then((data) => {
         const afterMarker = inputData.indexOf(3) + 1;
@@ -870,7 +870,7 @@ function describeWithStreamType(PassThrough) {
       const inputData = [
         Buffer.from('Larry\n'),
         Buffer.from('Curly\n'),
-        Buffer.from('Moe\n')
+        Buffer.from('Moe\n'),
       ];
       const promise = readTo(input, '').then((data) => {
         assert.deepEqual(data, Buffer.concat(inputData).slice(0, data.length));
@@ -893,9 +893,9 @@ function describeWithStreamType(PassThrough) {
     }
 
     it('treats strings as objects if options.objectMode', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = ['Larry', 'Curly', 'Moe'];
-      const promise = readTo(input, 'Moe', {objectMode: true})
+      const promise = readTo(input, 'Moe', { objectMode: true })
         .then((data) => {
           assert.deepEqual(data, inputData);
         });
@@ -909,7 +909,7 @@ function describeWithStreamType(PassThrough) {
       // readTo expects a stream of Buffer objects until it reads a string
       // at which point it realizes the stream is in objectMode and must
       // recover gracefully.
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [Buffer.from('test1'), 'test2'];
       const promise = readTo(input, inputData[1]).then((data) => {
         assert.deepEqual(data, inputData);
@@ -923,7 +923,7 @@ function describeWithStreamType(PassThrough) {
     if (!PassThrough.prototype.read) {
       // Note:  I would be open to adding an option to allow this, if needed.
       it('can read null from \'data\' events', () => {
-        const input = new PassThrough({objectMode: true});
+        const input = new PassThrough({ objectMode: true });
         const promise = readTo(input, null).then((data) => {
           assert(Array.isArray(data));
           assert.strictEqual(data.length, 1);
@@ -943,7 +943,7 @@ function describeWithStreamType(PassThrough) {
         (err) => {
           assert.strictEqual(err, errTest);
           assert.deepEqual(err.read, inputData);
-        }
+        },
       );
       input.write(inputData, () => {
         input.emit('error', errTest);
@@ -957,7 +957,7 @@ function describeWithStreamType(PassThrough) {
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err.name, 'EOFError');
-        }
+        },
       );
       input.end();
       return promise;
@@ -971,7 +971,7 @@ function describeWithStreamType(PassThrough) {
         (err) => {
           assert.strictEqual(err.name, 'EOFError');
           assert.deepEqual(err.read, inputData);
-        }
+        },
       );
       input.end(inputData);
       return promise;
@@ -979,7 +979,7 @@ function describeWithStreamType(PassThrough) {
 
     it('resolves with null when no data if options.endOK', () => {
       const input = new PassThrough();
-      const promise = readTo(input, '\n', {endOK: true}).then((data) => {
+      const promise = readTo(input, '\n', { endOK: true }).then((data) => {
         assert.strictEqual(data, null);
       });
       input.end();
@@ -989,7 +989,7 @@ function describeWithStreamType(PassThrough) {
     it('resolves with data previously read data if options.endOK', () => {
       const input = new PassThrough();
       const inputData = Buffer.from('test');
-      const promise = readTo(input, '\n', {endOK: true}).then((data) => {
+      const promise = readTo(input, '\n', { endOK: true }).then((data) => {
         assert.deepEqual(data, inputData);
       });
       input.end(inputData);
@@ -1001,7 +1001,7 @@ function describeWithStreamType(PassThrough) {
       input.unshift = undefined;
       const inputData = Buffer.from('test');
 
-      const promise = readTo(input, '\n', {cancellable: true});
+      const promise = readTo(input, '\n', { cancellable: true });
       input.write(inputData);
       process.nextTick(() => {
         promise.abortRead();
@@ -1011,7 +1011,7 @@ function describeWithStreamType(PassThrough) {
         (err) => {
           assert.strictEqual(err.name, 'AbortError');
           assert.deepEqual(err.read, inputData);
-        }
+        },
       );
     });
 
@@ -1020,7 +1020,7 @@ function describeWithStreamType(PassThrough) {
       input.unshift = undefined;
       const inputData = Buffer.from('test');
 
-      const promise = readTo(input, '\n', {cancellable: true});
+      const promise = readTo(input, '\n', { cancellable: true });
       input.write(inputData);
       process.nextTick(() => {
         assert.deepEqual(promise.cancelRead(), inputData);
@@ -1033,14 +1033,14 @@ function describeWithStreamType(PassThrough) {
       input.unshift = undefined;
       const inputData = Buffer.from('test');
 
-      const promise = readTo(input, '\n', {timeout: 1});
+      const promise = readTo(input, '\n', { timeout: 1 });
       input.write(inputData);
       return promise.then(
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err.name, 'TimeoutError');
           assert.deepEqual(err.read, inputData);
-        }
+        },
       );
     });
 
@@ -1049,7 +1049,7 @@ function describeWithStreamType(PassThrough) {
         const input = new PassThrough();
         const inputData = Buffer.from('test');
 
-        const promise = readTo(input, '\n', {cancellable: true});
+        const promise = readTo(input, '\n', { cancellable: true });
         input.write(inputData);
         process.nextTick(() => {
           promise.abortRead();
@@ -1060,7 +1060,7 @@ function describeWithStreamType(PassThrough) {
             assert.strictEqual(err.name, 'AbortError');
             assert.strictEqual(err.read, undefined);
             assert.deepEqual(input.read(), inputData);
-          }
+          },
         );
       });
 
@@ -1068,7 +1068,7 @@ function describeWithStreamType(PassThrough) {
         const input = new PassThrough();
         const inputData = Buffer.from('test');
 
-        const promise = readTo(input, '\n', {cancellable: true});
+        const promise = readTo(input, '\n', { cancellable: true });
         input.write(inputData);
         // Wait until data has been read
         process.nextTick(() => {
@@ -1082,7 +1082,7 @@ function describeWithStreamType(PassThrough) {
         const input = new PassThrough();
         const inputData = Buffer.from('test');
 
-        const promise = readTo(input, '\n', {timeout: 1});
+        const promise = readTo(input, '\n', { timeout: 1 });
         input.write(inputData);
         return promise.then(
           sinon.mock().never(),
@@ -1090,7 +1090,7 @@ function describeWithStreamType(PassThrough) {
             assert.strictEqual(err.name, 'TimeoutError');
             assert.strictEqual(err.read, undefined);
             assert.deepEqual(input.read(), inputData);
-          }
+          },
         );
       });
     }
@@ -1102,7 +1102,7 @@ function describeWithStreamType(PassThrough) {
       const inputData = [
         Buffer.from('Larry\n'),
         Buffer.from('Curly\n'),
-        Buffer.from('Moe\n')
+        Buffer.from('Moe\n'),
       ];
       const promise = readToEnd(input).then((data) => {
         assert.deepEqual(data, Buffer.concat(inputData));
@@ -1112,11 +1112,11 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads to stream end (encoded)', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = [
         'Larry\n',
         'Curly\n',
-        'Moe\n'
+        'Moe\n',
       ];
       const promise = readToEnd(input).then((data) => {
         assert.deepEqual(data, inputData.join(''));
@@ -1126,7 +1126,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads to stream end (objectMode)', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [0, 1, 2, 3, 4];
       const promise = readToEnd(input).then((data) => {
         assert.deepEqual(data, inputData);
@@ -1149,7 +1149,7 @@ function describeWithStreamType(PassThrough) {
       const errTest = new Error('test');
       const promise = readToEnd(input).then(
         sinon.mock().never(),
-        (err) => { assert.strictEqual(err, errTest); }
+        (err) => { assert.strictEqual(err, errTest); },
       );
       input.emit('error', errTest);
       return promise;
@@ -1158,7 +1158,7 @@ function describeWithStreamType(PassThrough) {
 
   describe('.readToMatch()', () => {
     it('reads up to (and including) a RegExp', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = 'Larry\n';
       const promise = readToMatch(input, /\n/g).then((data) => {
         assert.deepEqual(data, inputData);
@@ -1168,7 +1168,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads up to (and including) a non-global RegExp', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = 'Larry\n';
       const promise = readToMatch(input, /\n/).then((data) => {
         assert.deepEqual(data, inputData);
@@ -1178,7 +1178,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads up to (and including) a string expression', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = 'Larry\n';
       const promise = readToMatch(input, '\n').then((data) => {
         assert.deepEqual(data, inputData);
@@ -1188,12 +1188,12 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('reads up to (and including) a match split across writes', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = [
         'Larry\n',
         'Cur',
         'ly\n',
-        'Moe\n'
+        'Moe\n',
       ];
       const promise = readToMatch(input, /Curly\n/g).then((data) => {
         assert.deepEqual(data, inputData.slice(0, 3).join(''));
@@ -1203,15 +1203,15 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('optimizes search from options.maxMatchLen', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       const inputData = [
         'Larry\n',
         'Cur',
         'ly\n',
-        'Moe\n'
+        'Moe\n',
       ];
       const regexp = /Curly\n/g;
-      const options = {maxMatchLen: 6};
+      const options = { maxMatchLen: 6 };
       // Note:  We could spy on writes to .lastIndex of regexp, but this would
       // rely too much on implementation details (of readToMatch and RegExp).
       // Instead, this tests it doesn't hurt and coverage shows the codepath.
@@ -1223,12 +1223,12 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('rejects with SyntaxError for invalid string expressions', () => {
-      const input = new PassThrough({encoding: 'utf8'});
+      const input = new PassThrough({ encoding: 'utf8' });
       return readToMatch(input, '*').then(
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err.name, 'SyntaxError');
-        }
+        },
       );
     });
 
@@ -1239,7 +1239,7 @@ function describeWithStreamType(PassThrough) {
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err.name, 'TypeError');
-        }
+        },
       );
       input.write(inputData);
       return promise;
@@ -1247,7 +1247,7 @@ function describeWithStreamType(PassThrough) {
 
     it('resolves with null when no data if options.endOK', () => {
       const input = new PassThrough();
-      const promise = readToMatch(input, /\n/g, {endOK: true})
+      const promise = readToMatch(input, /\n/g, { endOK: true })
         .then((data) => {
           assert.strictEqual(data, null);
         });
@@ -1258,7 +1258,7 @@ function describeWithStreamType(PassThrough) {
 
   describe('.readUntil()', () => {
     it('continues reading when negative or non-numeric falsey', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [0, 1, 2, 3, 4];
       let callNum = 0;
       const returnValues = [undefined, null, false, -5, true];
@@ -1318,7 +1318,7 @@ function describeWithStreamType(PassThrough) {
       });
 
       it('stops reading and unshifts for objectMode stream', () => {
-        const input = new PassThrough({objectMode: true});
+        const input = new PassThrough({ objectMode: true });
         const inputData = [0, 1, 2, 3, 4];
         function until(buffer, chunk) {
           return buffer.length === inputData.length - 1 ? 2 : -1;
@@ -1390,7 +1390,7 @@ function describeWithStreamType(PassThrough) {
       const input = new PassThrough();
       const inputData = [
         Buffer.from('test1'),
-        Buffer.from('test2')
+        Buffer.from('test2'),
       ];
       function until(buffer, chunk) {
         return inputData[0].length + inputData[1].length;
@@ -1408,7 +1408,7 @@ function describeWithStreamType(PassThrough) {
         input.unshift = undefined;
         const inputData = [
           Buffer.from('test1'),
-          Buffer.from('test2')
+          Buffer.from('test2'),
         ];
         function until(buffer, chunk) {
           return (inputData[0].length + inputData[1].length) - 2;
@@ -1431,7 +1431,7 @@ function describeWithStreamType(PassThrough) {
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err.name, 'TypeError');
-        }
+        },
       );
       input.write(inputData);
       return promise;
@@ -1449,7 +1449,7 @@ function describeWithStreamType(PassThrough) {
           (err) => {
             assert.strictEqual(err.name, 'TypeError');
             assert.deepEqual(input.read(), inputData);
-          }
+          },
         );
         input.write(inputData);
         return promise;
@@ -1461,7 +1461,7 @@ function describeWithStreamType(PassThrough) {
       const inputData = [
         Buffer.from('Larry\n'),
         Buffer.from('Curly\n'),
-        Buffer.from('Moe\n')
+        Buffer.from('Moe\n'),
       ];
       const spy = sinon.spy((buffer, chunk) => {
         assert(Buffer.isBuffer(buffer));
@@ -1475,11 +1475,11 @@ function describeWithStreamType(PassThrough) {
         spy.getCall(0).calledWithExactly(inputData[0], inputData[0]);
         spy.getCall(1).calledWithExactly(
           Buffer.concat(inputData.slice(0, 2)),
-          inputData[1]
+          inputData[1],
         );
         spy.getCall(2).calledWithExactly(
           Buffer.concat(inputData),
-          inputData[2]
+          inputData[2],
         );
       });
       writeEachTo(input, inputData);
@@ -1491,7 +1491,7 @@ function describeWithStreamType(PassThrough) {
       const input = new PassThrough();
       const inputData = [
         Buffer.from('Larry\n'),
-        Buffer.alloc(512)
+        Buffer.alloc(512),
       ];
       const bigInputData = Buffer.allocUnsafe(4 * 1024);
       for (let i = 0; i < bigInputData.length; i += 1) {
@@ -1514,13 +1514,13 @@ function describeWithStreamType(PassThrough) {
       const inputData = [
         Buffer.from('Larry\n'),
         Buffer.from('Curly\n'),
-        Buffer.from('Moe\n')
+        Buffer.from('Moe\n'),
       ];
       function until(buffer) {
         assert(Array.isArray(buffer));
         return buffer.length < 2 ? -1 : 2;
       }
-      const promise = readUntil(input, until, {objectMode: true})
+      const promise = readUntil(input, until, { objectMode: true })
         .then((data) => {
           assert.deepEqual(data, inputData.slice(0, 2));
         });
@@ -1529,7 +1529,7 @@ function describeWithStreamType(PassThrough) {
     });
 
     it('does not combine Arrays in objectMode', () => {
-      const input = new PassThrough({objectMode: true});
+      const input = new PassThrough({ objectMode: true });
       const inputData = [['a'], ['b'], []];
       function untilEmpty(arrays) {
         assert(arrays.every(Array.isArray));
@@ -1553,7 +1553,7 @@ function describeWithStreamType(PassThrough) {
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err.name, 'EOFError');
-        }
+        },
       );
       input.end();
       return promise;
@@ -1567,7 +1567,7 @@ function describeWithStreamType(PassThrough) {
         (err) => {
           assert.strictEqual(err.name, 'EOFError');
           assert.deepEqual(err.read, inputData);
-        }
+        },
       );
       input.end(inputData);
       return promise;
@@ -1584,7 +1584,7 @@ function describeWithStreamType(PassThrough) {
               sinon.mock().never(),
               (err) => {
                 assert.strictEqual(err.name, 'EOFError');
-              }
+              },
             ).then(done, done);
           });
         });
@@ -1605,7 +1605,7 @@ function describeWithStreamType(PassThrough) {
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err, errTest);
-        }
+        },
       );
       input.write(inputData);
       return promise;
@@ -1622,7 +1622,7 @@ function describeWithStreamType(PassThrough) {
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err, errTest);
-        }
+        },
       );
       input.write(inputData);
       return promise;
@@ -1650,7 +1650,7 @@ function describeWithStreamType(PassThrough) {
               assert.deepEqual(input.read(), inputData2);
               done();
             });
-          }
+          },
         );
         input.write(inputData);
       });
@@ -1671,7 +1671,7 @@ function describeWithStreamType(PassThrough) {
         (err) => {
           assert.strictEqual(err, errTest);
           assert.deepEqual(err.read, inputData);
-        }
+        },
       );
     });
 
@@ -1691,7 +1691,7 @@ function describeWithStreamType(PassThrough) {
             assert.strictEqual(err, errTest);
             assert.strictEqual(err.read, undefined);
             assert.deepEqual(input.read(), inputData);
-          }
+          },
         );
       });
     }
@@ -1702,7 +1702,7 @@ function describeWithStreamType(PassThrough) {
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err.name, 'TypeError');
-        }
+        },
       );
       return promise;
     });
@@ -1719,7 +1719,7 @@ function describeWithStreamType(PassThrough) {
         sinon.mock().never(),
         (err) => {
           assert.strictEqual(err.name, 'TypeError');
-        }
+        },
       );
     });
   });

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /** Checks that loading promised-read before yaku has proper sync/async.
  *
  * @copyright Copyright 2016 Kevin Locke <kevin@kevinlocke.name>
@@ -7,10 +6,10 @@
 
 'use strict';
 
-const {EventEmitter} = require('events');
+const { EventEmitter } = require('events');
 const yaku = require('yaku');
 
-const {read} = require('..');
+const { read } = require('..');
 
 /* eslint-disable no-console */
 

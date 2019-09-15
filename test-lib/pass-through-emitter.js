@@ -5,8 +5,8 @@
 
 'use strict';
 
-const {EventEmitter} = require('events');
-const {inherits} = require('util');
+const { EventEmitter } = require('events');
+const { inherits } = require('util');
 
 /** Creates a non-Readable (i.e. pre-0.10) stream similar to
  * {@link stream.PassThrough}.
