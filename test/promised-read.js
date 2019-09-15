@@ -877,7 +877,10 @@ function describeWithStreamType(PassThrough) {
         Buffer.from('Moe\n'),
       ];
       const promise = readTo(input, '').then((data) => {
-        assert.deepStrictEqual(data, Buffer.concat(inputData).slice(0, data.length));
+        assert.deepStrictEqual(
+          data,
+          Buffer.concat(inputData).slice(0, data.length),
+        );
       });
       writeEachTo(input, inputData);
       return promise;
