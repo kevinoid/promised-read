@@ -347,7 +347,6 @@ function readInternal(stream, size, until, options) {
           }
           resultBuf = Buffer.allocUnsafe
             ? Buffer.allocUnsafe(newResultBufSize)
-            // eslint-disable-next-line no-buffer-constructor
             : Buffer.from(newResultBufSize);
           result.copy(resultBuf);
         }
@@ -554,7 +553,6 @@ function readTo(stream, needle, options) {
           // buffer-indexof-polyfill converts number to Buffer on each call
           needleForIndexOf = result.indexOf ? needle
             : Buffer.from ? Buffer.from([needle])
-              // eslint-disable-next-line no-buffer-constructor
               : Buffer.from([needle]);
           needleLength = 1;
         } else if (typeof needle === 'string') {
