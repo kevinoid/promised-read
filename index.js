@@ -150,10 +150,12 @@ function readInternal(stream, size, until, options) {
     function doneReading() {
       if (isDoneReading) { return; }
       isDoneReading = true;
+      /* eslint-disable no-use-before-define */
       stream.removeListener('data', onData);
       stream.removeListener('end', onEnd);
       stream.removeListener('error', doReject);
       stream.removeListener('readable', readPending);
+      /* eslint-enable no-use-before-define */
       if (timeoutID) { clearTimeout(timeoutID); }
     }
     function doReject(err, unshiftResult) {
