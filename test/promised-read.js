@@ -25,6 +25,10 @@ const {
 // eslint-disable-next-line no-shadow
 const setImmediate = global.setImmediate || setTimeout;
 
+/* The stream APIs use callbacks instead of Promises.
+ * It is necessary to use callbacks to test.  Ignore lint errors about it. */
+/* eslint-disable promise/catch-or-return, promise/no-callback-in-promise */
+
 BBPromise.config({ cancellation: true });
 
 function untilNever() { return false; }
