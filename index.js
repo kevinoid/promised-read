@@ -590,6 +590,11 @@ function readTo(stream, needle, options) {
   return readInternal(stream, undefined, until, options);
 }
 
+// "until" function which returns true once ended
+function untilEnded(result, chunk, ended) {
+  return ended;
+}
+
 /** Reads from a stream.Readable until 'end' is emitted.
  * @param {stream.Readable} stream Stream from which to read.
  * @param {ReadOptions=} options Options.
@@ -602,10 +607,7 @@ function readTo(stream, needle, options) {
  * mode (see README.md for details).
  */
 function readToEnd(stream, options) {
-  function until(result, chunk, ended) {
-    return ended;
-  }
-  return readInternal(stream, undefined, until, options);
+  return readInternal(stream, undefined, untilEnded, options);
 }
 
 /** Reads from a stream.Readable until a given expression is matched.
