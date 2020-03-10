@@ -39,7 +39,7 @@
     "version-deps": "npm install conventional-changelog-cli david depcheck git-branch-is npm-audit-resolver travis-status"
   },
   "dependencies": {
-    "yaku": "^0.19.0"
+    "yaku": "^1.0.1"
   },
   "devDependencies": {
     "@kevinoid/eslint-config": "^4.0.0",
