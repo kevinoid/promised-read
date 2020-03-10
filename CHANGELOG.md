@@ -1,4 +1,15 @@
-# Change Log
+# [3.0.0](https://github.com/kevinoid/promised-read/compare/v2.0.1...v3.0.0) (2020-03-10)
+
+
+### BREAKING CHANGES
+
+* Require Node.js 10.13 or later.
+
+### Other Changes
+
+* Dependency updates.
+* Code style improvements.
+
 
 ## [v2.0.1](https://github.com/kevinoid/promised-read/tree/v2.0.1) (2018-08-15)
 [Full Changelog](https://github.com/kevinoid/promised-read/compare/v2.0.0...v2.0.1)
