@@ -43,7 +43,8 @@
 
 
     <section>
-        <article><h1>promised-read</h1><p><a href="https://travis-ci.org/kevinoid/promised-read"><img src="https://img.shields.io/travis/kevinoid/promised-read/master.svg?style=flat&amp;label=build+on+linux" alt="Build Status: Linux"></a>
+        <article><h1>promised-read</h1>
+<p><a href="https://travis-ci.org/kevinoid/promised-read"><img src="https://img.shields.io/travis/kevinoid/promised-read/master.svg?style=flat&amp;label=build+on+linux" alt="Build Status: Linux"></a>
 <a href="https://ci.appveyor.com/project/kevinoid/promised-read"><img src="https://img.shields.io/appveyor/ci/kevinoid/promised-read/master.svg?style=flat&amp;label=build+on+windows" alt="Build Status: Windows"></a>
 <a href="https://codecov.io/github/kevinoid/promised-read?branch=master"><img src="https://img.shields.io/codecov/c/github/kevinoid/promised-read.svg?style=flat" alt="Coverage"></a>
 <a href="https://david-dm.org/kevinoid/promised-read"><img src="https://img.shields.io/david/kevinoid/promised-read.svg?style=flat" alt="Dependency Status"></a>
@@ -51,11 +52,15 @@
 <a href="https://www.npmjs.com/package/promised-read"><img src="https://img.shields.io/npm/v/promised-read.svg?style=flat" alt="Version on NPM"></a></p>
 <p>Read from a stream using Promises, with support for timeouts, cancellation,
 and several ways to determine how much data to read.</p>
-<h2>Introductory Example</h2><pre class="prettyprint source lang-js"><code>var readTo = require('promised-read').readTo;
+<h2>Introductory Example</h2>
+<pre class="prettyprint source lang-js"><code>var readTo = require('promised-read').readTo;
 process.stderr.write('What is your name? ');
 readTo(process.stdin, '\n').then(function(response) {
   process.stderr.write('Hello ' + response);
-});</code></pre><h2>Features</h2><ul>
+});
+</code></pre>
+<h2>Features</h2>
+<ul>
 <li>Supports pre-0.10 (v1) streams and post-0.10 (v2) streams.</li>
 <li>Supports <code>objectMode</code> streams and decoded string streams in addition to byte
 (<code>Buffer</code>) streams.</li>
@@ -70,10 +75,15 @@ streams (see caveats below).</li>
 cancellation integration</a>,
 when available - see caveats below).</li>
 </ul>
-<h2>Installation</h2><p><a href="https://www.npmjs.com/package/promised-read">This package</a> can be
+<h2>Installation</h2>
+<p><a href="https://www.npmjs.com/package/promised-read">This package</a> can be
 installed using <a href="https://www.npmjs.com/">npm</a>, either globally or locally, by
 running:</p>
-<pre class="prettyprint source lang-sh"><code>npm install promised-read</code></pre><h2>Recipes</h2><h3>Sized read</h3><pre class="prettyprint source lang-js"><code>var fs = require('fs');
+<pre class="prettyprint source lang-sh"><code>npm install promised-read
+</code></pre>
+<h2>Recipes</h2>
+<h3>Sized read</h3>
+<pre class="prettyprint source lang-js"><code>var fs = require('fs');
 var read = require('promised-read').read;
 var input = fs.createReadStream('input.dat');
 read(input, 1024).then(function(data) {
@@ -86,14 +96,20 @@ read(input, 1024).then(function(data) {
   } else {
     console.log('Common case.  Read requested amount.');
   }
-});</code></pre><h3>Read to end</h3><pre class="prettyprint source lang-js"><code>var fs = require('fs');
+});
+</code></pre>
+<h3>Read to end</h3>
+<pre class="prettyprint source lang-js"><code>var fs = require('fs');
 var readToEnd = require('promised-read').readToEnd;
 var input = fs.createReadStream('input.json', {encoding: 'utf8'});
 readToEnd(input)
   .then(JSON.parse)
   .then(function(json) {
     console.log('input.json contents:', json);
-  });</code></pre><h3>Read lines</h3><pre class="prettyprint source lang-js"><code>var fs = require('fs');
+  });
+</code></pre>
+<h3>Read lines</h3>
+<pre class="prettyprint source lang-js"><code>var fs = require('fs');
 var readToMatch = require('promised-read').readToMatch;
 var file = fs.createReadStream('numbers.txt', {encoding: 'utf8'});
 function readLine(readable) {
@@ -127,7 +143,10 @@ function readNumbers(readable) {
 readNumbers(file).then(function(numbers) {
   numbers.sort();
   console.log(numbers.join('\n'));
-});</code></pre><h3>Read Until</h3><pre class="prettyprint source lang-js"><code>var fs = require('fs');
+});
+</code></pre>
+<h3>Read Until</h3>
+<pre class="prettyprint source lang-js"><code>var fs = require('fs');
 var readUntil = require('promised-read').readUntil;
 var input = fs.createReadStream('input.jsons', {encoding: 'utf8'});
 // Don't use this without handling '{' and '}' in strings
@@ -149,7 +168,10 @@ function untilObject(data) {
 }
 readUntil(input, untilObject).then(function(jsonObject) {
   JSON.parse(jsonObject);
-});</code></pre><h3>Read Until (incremental, faster)</h3><p>The <code>until</code> function can also operate on the individual chunks read, which are
+});
+</code></pre>
+<h3>Read Until (incremental, faster)</h3>
+<p>The <code>until</code> function can also operate on the individual chunks read, which are
 passed as the second argument.  This avoids re-processing data which was
 previously checked.  The previous example can be made more efficient with:</p>
 <pre class="prettyprint source lang-js"><code>var fs = require('fs');
@@ -180,7 +202,10 @@ function untilObject(data, chunk, ended) {
 }
 readUntil(input, untilObject).then(function(jsonObject) {
   JSON.parse(jsonObject);
-});</code></pre><h3>Read with Timeout</h3><pre class="prettyprint source lang-js"><code>var readTo = require('promised-read').readTo;
+});
+</code></pre>
+<h3>Read with Timeout</h3>
+<pre class="prettyprint source lang-js"><code>var readTo = require('promised-read').readTo;
 process.stderr.write('Pop Quiz: What\'s the square root of 3,448,449? ');
 var promise = readTo(process.stdin, '\n', {timeout: 5000});
 promise.then(
@@ -191,7 +216,9 @@ promise.then(
   function(err) {
     console.error(err.name === 'TimeoutError' ? 'Too slow.' : String(err));
   }
-);</code></pre><p><strong>Note:</strong> Several promise libraries provide a <code>.timeout()</code> method which
+);
+</code></pre>
+<p><strong>Note:</strong> Several promise libraries provide a <code>.timeout()</code> method which
 creates a chained promise which is rejected after a delay.  Although this
 works for the read consumer, it won't cancel the read operation, causing any
 data read from the stream (even after the timeout) to be discarded.  A notable
@@ -199,7 +226,8 @@ exception is <a href="http://bluebirdjs.com/docs/api/timeout.html">bluebird</a> 
 <a href="http://bluebirdjs.com/docs/api/cancellation.html">cancellation</a> is enabled,
 which behaves as if <code>.cancel()</code> was called on the original promise (see
 caveats below).</p>
-<h2>Abort/Cancel Support</h2><p>Although generic Promise cancellation support is still far from being
+<h2>Abort/Cancel Support</h2>
+<p>Although generic Promise cancellation support is still far from being
 standardized (see
 <a href="https://github.com/promises-aplus/cancellation-spec/issues">cancellation-spec</a>,
 <a href="https://github.com/tc39/ecmascript-asyncawait/issues/27">async cancel</a>, and
@@ -224,7 +252,8 @@ side-effects).  Any consumers of the read result which which do not require
 abort/cancel authority should be given a Promise chained from the returned one
 (e.g. the result of calling <code>.then()</code> on it) to avoid granting
 abort/cancel authority for the read.</p>
-<h3>Abort reading</h3><pre class="prettyprint source lang-js"><code>var assert = require('assert');
+<h3>Abort reading</h3>
+<pre class="prettyprint source lang-js"><code>var assert = require('assert');
 var read = require('promised-read').read;
 var stream = require('stream');
 var input = new stream.PassThrough();
@@ -235,7 +264,10 @@ promise.catch(function(err) {
 promise.abortRead();
 // reading is stopped immediately, so any future writes are unaffected
 input.write('hello');
-console.log(input.read());</code></pre><h3>Cancel reading</h3><pre class="prettyprint source lang-js"><code>var assert = require('assert');
+console.log(input.read());
+</code></pre>
+<h3>Cancel reading</h3>
+<pre class="prettyprint source lang-js"><code>var assert = require('assert');
 var read = require('promised-read').read;
 var stream = require('stream');
 var input = new stream.PassThrough();
@@ -247,7 +279,10 @@ promise.then(
 promise.cancelRead();
 // reading is stopped immediately, so any future writes are unaffected
 input.write('hello');
-console.log(input.read());</code></pre><h3>Abort from <code>until</code></h3><p>The <code>until</code> argument to <code>readUntil</code> can also cause read to be aborted by
+console.log(input.read());
+</code></pre>
+<h3>Abort from <code>until</code></h3>
+<p>The <code>until</code> argument to <code>readUntil</code> can also cause read to be aborted by
 throwing an exception.  In this case, the promise is rejected with the
 exception thrown by <code>until</code> rather than an <code>AbortError</code>.</p>
 <pre class="prettyprint source lang-js"><code>var fs = require('fs');
@@ -261,7 +296,10 @@ function untilGzipMember(data) {
 }
 readUntil(input, untilGzipMember).catch(function(err) {
   console.log(err); // Error: invalid gzip header
-});</code></pre><h3><code>bluebird</code> 3.x Cancellation</h3><p>This module also cancels the read operation when the returned promise is
+});
+</code></pre>
+<h3><code>bluebird</code> 3.x Cancellation</h3>
+<p>This module also cancels the read operation when the returned promise is
 cancelled via <a href="http://bluebirdjs.com/docs/api/cancellation.html">bluebird 3.x
 cancellation</a>.  However, use
 of this method is not recommended due to a delay between when <code>.cancel()</code> is
@@ -282,17 +320,23 @@ process.stderr.write('Nevermind.\n');
 // callers should either delay writing for at least one tick or watch for
 // 'data' events during that tick to avoid losing data.
 // See https://github.com/petkaantonov/bluebird/issues/1041
-promise.cancel();</code></pre><p>More examples can be found in the <a href="https://kevinoid.github.io/promised-read/spec">test
+promise.cancel();
+</code></pre>
+<p>More examples can be found in the <a href="https://kevinoid.github.io/promised-read/spec">test
 specifications</a>.</p>
-<h2>API Docs</h2><p>To use this module as a library, see the <a href="https://kevinoid.github.io/promised-read/api">API
+<h2>API Docs</h2>
+<p>To use this module as a library, see the <a href="https://kevinoid.github.io/promised-read/api">API
 Documentation</a>.</p>
-<h2>API Warnings</h2><h3>Reading after end</h3><p>The <a href="https://nodejs.org/api/stream.html">stream API</a> does not provide a way to
+<h2>API Warnings</h2>
+<h3>Reading after end</h3>
+<p>The <a href="https://nodejs.org/api/stream.html">stream API</a> does not provide a way to
 differentiate between a stream which has ended and one which does not
 currently have data available.  For this reason, the <code>read</code> functions should
 not be called after a stream emits <code>'end'</code> or <code>'error'</code>.  It is the caller's
 responsibility to ensure that <code>read</code> is only called on streams in a readable
 state.</p>
-<h3>Synchronous resolution for flowing streams</h3><p>When reading from streams which lack a <code>.read()</code> method, or when
+<h3>Synchronous resolution for flowing streams</h3>
+<p>When reading from streams which lack a <code>.read()</code> method, or when
 <code>options.flowing</code> is <code>true</code>, the <code>onFulfilled</code> and <code>onRejected</code> functions
 (i.e. functions added with <code>.then()</code> or <code>.catch()</code>) will be called
 synchronously upon promise resolution or rejection.  This is necessary to
@@ -310,14 +354,21 @@ asynchronous behavior can be restored by chaining to another promise class
 <p>Synchronous promises can also be avoided by specifying an asynchronous promise
 constructor via <code>options.Promise</code>.  However, this is likely to cause missed
 events if the writer is not synchronized with with reader.</p>
-<h2>Contributing</h2><p>Contributions are welcome and very much appreciated!  Please add tests to
-cover any changes and ensure <code>npm test</code> passes.</p>
+<h2>Contributing</h2>
+<p>Contributions are appreciated.  Contributors agree to abide by the <a href="https://www.contributor-covenant.org/version/1/4/code-of-conduct.html">Contributor
+Covenant Code of
+Conduct</a>.
+If this is your first time contributing to a Free and Open Source Software
+project, consider reading <a href="https://opensource.guide/how-to-contribute/">How to Contribute to Open
+Source</a>
+in the Open Source Guides.</p>
 <p>If the desired change is large, complex, backwards-incompatible, can have
 significantly differing implementations, or may not be in scope for this
 project, opening an issue before writing the code can avoid frustration and
 save a lot of time and effort.</p>
-<h2>License</h2><p>This package is available under the terms of the
-<a href="https://opensource.org/licenses/MIT">MIT License</a>.</p></article>
+<h2>License</h2>
+<p>This project is available under the terms of the <a href="LICENSE.txt">MIT License</a>.
+See the <a href="https://tldrlegal.com/license/mit-license">summary at TLDRLegal</a>.</p></article>
     </section>
 
 
@@ -334,7 +385,7 @@ save a lot of time and effort.</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 15 2018 09:14:02 GMT-0600 (MDT)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Mar 10 2020 14:46:40 GMT-0600 (Mountain Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

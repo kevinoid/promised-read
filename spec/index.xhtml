@@ -115,20 +115,20 @@ process.nextTick(() =&#x3E; {
   input.write(inputData);
 });
 return read(input).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });</code></pre></dd>
                 <dt>returns a Promise with read object</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = {};
 input.write(inputData);
 return read(input).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });</code></pre></dd>
                 <dt>can read a chunk larger than writes</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input, 8).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat([inputData, inputData]));
+  assert.deepStrictEqual(data, Buffer.concat([inputData, inputData]));
 });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
@@ -139,7 +139,7 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input, 2).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -147,10 +147,10 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
 input.unshift = function(chunk) {
-  assert.deepEqual(chunk, inputData.slice(2));
+  assert.deepStrictEqual(chunk, inputData.slice(2));
 };
 const promise = read(input, 2).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 2));
+  assert.deepStrictEqual(data, inputData.slice(0, 2));
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -161,7 +161,7 @@ input.unshift = function(chunk) {
 };
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input, 2).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -172,7 +172,7 @@ input.unshift = function(chunk) {
 };
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input, 2).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -185,17 +185,17 @@ input.unshift = function(chunk) {
 const inputData = Buffer.from(&#x27;test&#x27;);
 read(input, 2).then(
   (data) =&#x3E; {
-    assert.deepEqual(data, inputData);
+    assert.deepStrictEqual(data, inputData);
     done();
   },
-  done
+  done,
 );
 input.write(inputData);</code></pre></dd>
                 <dt>can short-read due to end</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input, 8).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
@@ -203,7 +203,7 @@ process.nextTick(() =&#x3E; {
 });
 return promise;</code></pre></dd>
                 <dt>can read an empty Array in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [];
 const promise = read(input).then((data) =&#x3E; {
   assert.strictEqual(data, inputData);
@@ -211,7 +211,7 @@ const promise = read(input).then((data) =&#x3E; {
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads at most one non-Buffer/string</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [1, 2, 3];
 const promise = read(input, 2).then((data) =&#x3E; {
   assert.strictEqual(data, inputData[0]);
@@ -221,9 +221,9 @@ inputData.forEach((data) =&#x3E; {
 });
 return promise;</code></pre></dd>
                 <dt>reads at most one Buffer/string if options.objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [Buffer.from(&#x27;Larry&#x27;), Buffer.from(&#x27;Curly&#x27;)];
-const promise = read(input, 2, {objectMode: true}).then((data) =&#x3E; {
+const promise = read(input, 2, { objectMode: true }).then((data) =&#x3E; {
   assert.strictEqual(data, inputData[0]);
 });
 inputData.forEach((data) =&#x3E; {
@@ -238,7 +238,7 @@ const promise = read(input).then((data) =&#x3E; {
 input.end();
 return promise;</code></pre></dd>
                 <dt>does not resolve with null for null &#x27;data&#x27; event</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input).then((data) =&#x3E; {
   assert.strictEqual(data, inputData);
@@ -251,7 +251,7 @@ return promise;</code></pre></dd>
 const errTest = new Error(&#x27;test&#x27;);
 const promise = read(input).then(
   sinon.mock().never(),
-  (err) =&#x3E; { assert.strictEqual(err, errTest); }
+  (err) =&#x3E; { assert.strictEqual(err, errTest); },
 );
 input.emit(&#x27;error&#x27;, errTest);
 return promise;</code></pre></dd>
@@ -263,8 +263,8 @@ const promise = read(input, 8).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );
 input.write(inputData, () =&#x3E; {
   input.emit(&#x27;error&#x27;, errTest);
@@ -276,7 +276,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -292,7 +292,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -308,7 +308,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -324,7 +324,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -340,7 +340,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -356,7 +356,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -371,7 +371,7 @@ return promise;</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const readData = [];
 function readAll(readable) {
@@ -384,7 +384,7 @@ function readAll(readable) {
   });
 }
 const promise = readAll(input).then((result) =&#x3E; {
-  assert.deepEqual(result, Buffer.concat(inputData));
+  assert.deepStrictEqual(result, Buffer.concat(inputData));
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
@@ -396,7 +396,7 @@ return promise;</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const readData = [];
 function readAll(readable) {
@@ -409,7 +409,7 @@ function readAll(readable) {
   });
 }
 const promise = readAll(input).then((result) =&#x3E; {
-  assert.deepEqual(result, Buffer.concat(inputData));
+  assert.deepStrictEqual(result, Buffer.concat(inputData));
 });
 inputData.forEach((data) =&#x3E; {
   input.emit(&#x27;data&#x27;, data);
@@ -418,7 +418,7 @@ input.emit(&#x27;end&#x27;);
 return promise;</code></pre></dd>
                 <dt>returns an instance of options.Promise</dt>
                 <dd><pre><code>const input = new PassThrough();
-const promise = read(input, {Promise: BBPromise});
+const promise = read(input, { Promise: BBPromise });
 assert(promise instanceof BBPromise);</code></pre></dd>
                 <dt>does not have .abortRead or .cancelRead by default</dt>
                 <dd><pre><code>const input = new PassThrough();
@@ -428,13 +428,13 @@ assert.strictEqual(promise.cancelRead, undefined);</code></pre></dd>
                 <dt>supports bluebird 3.x cancellation</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {Promise: BBPromise}).then(
+const promise = read(input, { Promise: BBPromise }).then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
   },
   () =&#x3E; {
     done(new Error(&#x27;catch should not be called&#x27;));
-  }
+  },
 );
 promise.cancel();
 // Delay so that onCancel is called before write
@@ -444,7 +444,7 @@ setImmediate(() =&#x3E; {
   // Delay long enough to ensure mocks are not called
   setImmediate(() =&#x3E; {
     if (input.read) {
-      assert.deepEqual(input.read(), inputData);
+      assert.deepStrictEqual(input.read(), inputData);
     }
     done();
   });
@@ -452,7 +452,7 @@ setImmediate(() =&#x3E; {
                 <dt>supports bluebird timeout with cancellation</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-read(input, {Promise: BBPromise})
+read(input, { Promise: BBPromise })
   .timeout(2)
   .then(
     () =&#x3E; {
@@ -466,32 +466,32 @@ read(input, {Promise: BBPromise})
         setImmediate(() =&#x3E; {
           input.write(inputData);
           setImmediate(() =&#x3E; {
-            assert.deepEqual(input.read(), inputData);
+            assert.deepStrictEqual(input.read(), inputData);
             done();
           });
         });
       } else {
         done();
       }
-    }
+    },
   );</code></pre></dd>
                 <section class="suite">
                   <h1>with options.cancellable</h1>
                   <dl>
                     <dt>has .abortRead and .cancelRead methods</dt>
                     <dd><pre><code>const input = new PassThrough();
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 assert.strictEqual(typeof promise.abortRead, &#x27;function&#x27;);
 assert.strictEqual(typeof promise.cancelRead, &#x27;function&#x27;);</code></pre></dd>
                     <dt>supports .cancelable as an alias</dt>
                     <dd><pre><code>const input = new PassThrough();
-const promise = read(input, {cancelable: true});
+const promise = read(input, { cancelable: true });
 assert.strictEqual(typeof promise.abortRead, &#x27;function&#x27;);
 assert.strictEqual(typeof promise.cancelRead, &#x27;function&#x27;);</code></pre></dd>
                     <dt>rejects with AbortError on .abortRead</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 promise.then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
@@ -502,49 +502,49 @@ promise.then(
     } catch (errAssert) {
       done(errAssert);
     }
-  }
+  },
 );
 promise.abortRead();
 input.write(inputData);
 // Delay long enough to ensure data is not read
 setImmediate(() =&#x3E; {
   if (input.read) {
-    assert.deepEqual(input.read(), inputData);
+    assert.deepStrictEqual(input.read(), inputData);
   }
   done();
 });</code></pre></dd>
                     <dt>does not resolve, reject, or read after .cancelRead</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 promise.then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
   },
   () =&#x3E; {
     done(new Error(&#x27;catch should not be called&#x27;));
-  }
+  },
 );
 promise.cancelRead();
 input.write(inputData);
 // Delay long enough to ensure mocks are not called
 setImmediate(() =&#x3E; {
   if (input.read) {
-    assert.deepEqual(input.read(), inputData);
+    assert.deepStrictEqual(input.read(), inputData);
   }
   done();
 });</code></pre></dd>
                     <dt>does nothing on .abortRead after .cancelRead</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 promise.then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
   },
   () =&#x3E; {
     done(new Error(&#x27;catch should not be called&#x27;));
-  }
+  },
 );
 promise.cancelRead();
 promise.abortRead();
@@ -552,14 +552,14 @@ input.write(inputData);
 // Delay long enough to ensure mocks are not called
 setImmediate(() =&#x3E; {
   if (input.read) {
-    assert.deepEqual(input.read(), inputData);
+    assert.deepStrictEqual(input.read(), inputData);
   }
   done();
 });</code></pre></dd>
                     <dt>does nothing on .cancelRead after .abortRead</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 promise.then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
@@ -570,7 +570,7 @@ promise.then(
     } catch (errAssert) {
       done(errAssert);
     }
-  }
+  },
 );
 promise.abortRead();
 promise.cancelRead();
@@ -578,7 +578,7 @@ input.write(inputData);
 // Delay long enough to ensure mocks are not called
 setImmediate(() =&#x3E; {
   if (input.read) {
-    assert.deepEqual(input.read(), inputData);
+    assert.deepStrictEqual(input.read(), inputData);
   }
   done();
 });</code></pre></dd>
@@ -589,20 +589,20 @@ setImmediate(() =&#x3E; {
                   <dl>
                     <dt>rejects with TimeoutError after timeout ms</dt>
                     <dd><pre><code>const input = new PassThrough();
-return read(input, {timeout: 1}).then(
+return read(input, { timeout: 1 }).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TimeoutError&#x27;);
-  }
+  },
 );</code></pre></dd>
                     <dt>passes options.timeout of 0 to setTimeout</dt>
                     <dd><pre><code>const input = new PassThrough();
 const spy = sinon.spy(global, &#x27;setTimeout&#x27;);
-const promise = read(input, {timeout: 0}).then(
+const promise = read(input, { timeout: 0 }).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TimeoutError&#x27;);
-  }
+  },
 );
 setTimeout.restore();
 assert.strictEqual(spy.callCount, 1);
@@ -611,8 +611,8 @@ return promise;</code></pre></dd>
                     <dt>resolves if read completes before timeout ms</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-read(input, {timeout: 1}).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+read(input, { timeout: 1 }).then((data) =&#x3E; {
+  assert.deepStrictEqual(data, inputData);
   // Wait until after timeout to catch unhandled error
   setTimeout(done, 2);
 }, done);
@@ -628,24 +628,24 @@ input.write(inputData);</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;Larry\n&#x27;);
 const promise = readTo(input, Buffer.from(&#x27;\n&#x27;)).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) the marker with encoding</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) the marker in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = 3;
 const promise = readTo(input, 3).then((data) =&#x3E; {
   // Note:  readTo result is always an Array in objectMode
-  assert.deepEqual(data, [inputData]);
+  assert.deepStrictEqual(data, [inputData]);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -653,53 +653,53 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = [
   Buffer.from(&#x27;La&#x27;),
-  Buffer.from(&#x27;rry\n&#x27;)
+  Buffer.from(&#x27;rry\n&#x27;),
 ];
 const promise = readTo(input, Buffer.from(&#x27;\n&#x27;)).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to the marker across writes with encoding</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;La&#x27;,
-  &#x27;rry\n&#x27;
+  &#x27;rry\n&#x27;,
 ];
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to the marker across writes in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [1, 2, 3];
 const promise = readTo(input, 3).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>does strict equality checks for marker in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 // Note:  null and undefined are not supported by stream.PassThrough
 const inputData = [true, 0, &#x27;&#x27;, false];
 const promise = readTo(input, false).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
 });
 return promise;</code></pre></dd>
                 <dt>reads up to the marker split across writes with encoding</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;Larry\n&#x27;,
   &#x27;Cur&#x27;,
   &#x27;ly\n&#x27;,
-  &#x27;Moe\n&#x27;
+  &#x27;Moe\n&#x27;,
 ];
 const promise = readTo(input, &#x27;Curly\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
@@ -708,20 +708,20 @@ return promise;</code></pre></dd>
 input.unshift = undefined;
 const inputData = Buffer.from(&#x27;Larry\nCurly&#x27;);
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, data.length));
+  assert.deepStrictEqual(data, inputData.slice(0, data.length));
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>does not read past the marker in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [1, 2, 3, 4, 5];
 const promise = readTo(input, 3).then((data) =&#x3E; {
   const afterMarker = inputData.indexOf(3) + 1;
-  assert.deepEqual(data, inputData.slice(0, afterMarker));
+  assert.deepStrictEqual(data, inputData.slice(0, afterMarker));
   if (input.read) {
     const expectData = inputData.slice(afterMarker);
     while (expectData.length &#x3E; 0) {
-      assert.deepEqual(input.read(), expectData.shift());
+      assert.deepStrictEqual(input.read(), expectData.shift());
     }
   }
 });
@@ -735,19 +735,22 @@ input.unshift = undefined;
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const promise = readTo(input, &#x27;&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData).slice(0, data.length));
+  assert.deepStrictEqual(
+    data,
+    Buffer.concat(inputData).slice(0, data.length),
+  );
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>treats strings as objects if options.objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [&#x27;Larry&#x27;, &#x27;Curly&#x27;, &#x27;Moe&#x27;];
-const promise = readTo(input, &#x27;Moe&#x27;, {objectMode: true})
+const promise = readTo(input, &#x27;Moe&#x27;, { objectMode: true })
   .then((data) =&#x3E; {
-    assert.deepEqual(data, inputData);
+    assert.deepStrictEqual(data, inputData);
   });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
@@ -757,17 +760,17 @@ return promise;</code></pre></dd>
                 <dd><pre><code>// readTo expects a stream of Buffer objects until it reads a string
 // at which point it realizes the stream is in objectMode and must
 // recover gracefully.
-const input = new PassThrough({objectMode: true});
+const input = new PassThrough({ objectMode: true });
 const inputData = [Buffer.from(&#x27;test1&#x27;), &#x27;test2&#x27;];
 const promise = readTo(input, inputData[1]).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
 });
 return promise;</code></pre></dd>
                 <dt>can read null from &#x27;data&#x27; events</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const promise = readTo(input, null).then((data) =&#x3E; {
   assert(Array.isArray(data));
   assert.strictEqual(data.length, 1);
@@ -783,8 +786,8 @@ const promise = readTo(input, &#x27;\n&#x27;).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );
 input.write(inputData, () =&#x3E; {
   input.emit(&#x27;error&#x27;, errTest);
@@ -796,7 +799,7 @@ const promise = readTo(input, &#x27;\n&#x27;).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-  }
+  },
 );
 input.end();
 return promise;</code></pre></dd>
@@ -807,14 +810,14 @@ const promise = readTo(input, &#x27;\n&#x27;).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );
 input.end(inputData);
 return promise;</code></pre></dd>
                 <dt>resolves with null when no data if options.endOK</dt>
                 <dd><pre><code>const input = new PassThrough();
-const promise = readTo(input, &#x27;\n&#x27;, {endOK: true}).then((data) =&#x3E; {
+const promise = readTo(input, &#x27;\n&#x27;, { endOK: true }).then((data) =&#x3E; {
   assert.strictEqual(data, null);
 });
 input.end();
@@ -822,8 +825,8 @@ return promise;</code></pre></dd>
                 <dt>resolves with data previously read data if options.endOK</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {endOK: true}).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+const promise = readTo(input, &#x27;\n&#x27;, { endOK: true }).then((data) =&#x3E; {
+  assert.deepStrictEqual(data, inputData);
 });
 input.end(inputData);
 return promise;</code></pre></dd>
@@ -831,7 +834,7 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 input.unshift = undefined;
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {cancellable: true});
+const promise = readTo(input, &#x27;\n&#x27;, { cancellable: true });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
   promise.abortRead();
@@ -840,31 +843,31 @@ return promise.then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;AbortError&#x27;);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );</code></pre></dd>
                 <dt>without unshift, returns read data from .cancelRead</dt>
                 <dd><pre><code>const input = new PassThrough();
 input.unshift = undefined;
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {cancellable: true});
+const promise = readTo(input, &#x27;\n&#x27;, { cancellable: true });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
-  assert.deepEqual(promise.cancelRead(), inputData);
+  assert.deepStrictEqual(promise.cancelRead(), inputData);
   done();
 });</code></pre></dd>
                 <dt>without unshift, sets read data as .read on timeout</dt>
                 <dd><pre><code>const input = new PassThrough();
 input.unshift = undefined;
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {timeout: 1});
+const promise = readTo(input, &#x27;\n&#x27;, { timeout: 1 });
 input.write(inputData);
 return promise.then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TimeoutError&#x27;);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );</code></pre></dd>
                 <section class="suite">
                   <h1>uses result indexOf conversions</h1>
@@ -873,7 +876,7 @@ return promise.then(
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;Larry\n&#x27;);
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -881,15 +884,15 @@ return promise;</code></pre></dd>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;Larry\n&#x27;);
 const promise = readTo(input, &#x27;\n&#x27;.charCodeAt(0)).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                     <dt>Buffer marker in string</dt>
-                    <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                    <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readTo(input, Buffer.from(&#x27;\n&#x27;)).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -900,7 +903,7 @@ const promise = readTo(input, true).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -916,30 +919,30 @@ return promise;</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const promise = readToEnd(input).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
 });
 writeEachTo(input, inputData, input.end.bind(input));
 return promise;</code></pre></dd>
                 <dt>reads to stream end (encoded)</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;Larry\n&#x27;,
   &#x27;Curly\n&#x27;,
-  &#x27;Moe\n&#x27;
+  &#x27;Moe\n&#x27;,
 ];
 const promise = readToEnd(input).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData, input.end.bind(input));
 return promise;</code></pre></dd>
                 <dt>reads to stream end (objectMode)</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [0, 1, 2, 3, 4];
 const promise = readToEnd(input).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 writeEachTo(input, inputData, input.end.bind(input));
 return promise;</code></pre></dd>
@@ -955,7 +958,7 @@ return promise;</code></pre></dd>
 const errTest = new Error(&#x27;test&#x27;);
 const promise = readToEnd(input).then(
   sinon.mock().never(),
-  (err) =&#x3E; { assert.strictEqual(err, errTest); }
+  (err) =&#x3E; { assert.strictEqual(err, errTest); },
 );
 input.emit(&#x27;error&#x27;, errTest);
 return promise;</code></pre></dd>
@@ -965,67 +968,67 @@ return promise;</code></pre></dd>
               <h1>.readToMatch()</h1>
               <dl>
                 <dt>reads up to (and including) a RegExp</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readToMatch(input, /\n/g).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) a non-global RegExp</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readToMatch(input, /\n/).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) a string expression</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readToMatch(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) a match split across writes</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;Larry\n&#x27;,
   &#x27;Cur&#x27;,
   &#x27;ly\n&#x27;,
-  &#x27;Moe\n&#x27;
+  &#x27;Moe\n&#x27;,
 ];
 const promise = readToMatch(input, /Curly\n/g).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>optimizes search from options.maxMatchLen</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;Larry\n&#x27;,
   &#x27;Cur&#x27;,
   &#x27;ly\n&#x27;,
-  &#x27;Moe\n&#x27;
+  &#x27;Moe\n&#x27;,
 ];
 const regexp = /Curly\n/g;
-const options = {maxMatchLen: 6};
+const options = { maxMatchLen: 6 };
 // Note:  We could spy on writes to .lastIndex of regexp, but this would
 // rely too much on implementation details (of readToMatch and RegExp).
 // Instead, this tests it doesn&#x27;t hurt and coverage shows the codepath.
 const promise = readToMatch(input, regexp, options).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>rejects with SyntaxError for invalid string expressions</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 return readToMatch(input, &#x27;*&#x27;).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;SyntaxError&#x27;);
-  }
+  },
 );</code></pre></dd>
                 <dt>rejects with TypeError for non-string streams</dt>
                 <dd><pre><code>const input = new PassThrough();
@@ -1034,13 +1037,13 @@ const promise = readToMatch(input, /\n/g).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>resolves with null when no data if options.endOK</dt>
                 <dd><pre><code>const input = new PassThrough();
-const promise = readToMatch(input, /\n/g, {endOK: true})
+const promise = readToMatch(input, /\n/g, { endOK: true })
   .then((data) =&#x3E; {
     assert.strictEqual(data, null);
   });
@@ -1052,7 +1055,7 @@ return promise;</code></pre></dd>
               <h1>.readUntil()</h1>
               <dl>
                 <dt>continues reading when negative or non-numeric falsey</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [0, 1, 2, 3, 4];
 let callNum = 0;
 const returnValues = [undefined, null, false, -5, true];
@@ -1063,7 +1066,7 @@ function until(buffer, chunk) {
   return returnValues[callNum - 1];
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
@@ -1076,7 +1079,7 @@ function until(buffer, chunk) {
   return true;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1087,7 +1090,7 @@ function until(buffer, chunk) {
   return buffer.length;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1098,7 +1101,7 @@ function until(buffer, chunk) {
   return 2;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1109,7 +1112,7 @@ function until(buffer, chunk) {
   return 0;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1117,13 +1120,13 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = [
   Buffer.from(&#x27;test1&#x27;),
-  Buffer.from(&#x27;test2&#x27;)
+  Buffer.from(&#x27;test2&#x27;),
 ];
 function until(buffer, chunk) {
   return inputData[0].length + inputData[1].length;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
@@ -1137,7 +1140,7 @@ const promise = readUntil(input, until).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1146,7 +1149,7 @@ return promise;</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const spy = sinon.spy((buffer, chunk) =&#x3E; {
   assert(Buffer.isBuffer(buffer));
@@ -1155,16 +1158,16 @@ const spy = sinon.spy((buffer, chunk) =&#x3E; {
   return String(chunk) === String(inputData[inputData.length - 1]);
 });
 const promise = readUntil(input, spy).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
   assert.strictEqual(spy.callCount, 3);
   spy.getCall(0).calledWithExactly(inputData[0], inputData[0]);
   spy.getCall(1).calledWithExactly(
     Buffer.concat(inputData.slice(0, 2)),
-    inputData[1]
+    inputData[1],
   );
   spy.getCall(2).calledWithExactly(
     Buffer.concat(inputData),
-    inputData[2]
+    inputData[2],
   );
 });
 writeEachTo(input, inputData);
@@ -1173,7 +1176,7 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
-  Buffer.alloc(512)
+  Buffer.alloc(512),
 ];
 const bigInputData = Buffer.allocUnsafe(4 * 1024);
 for (let i = 0; i &#x3C; bigInputData.length; i += 1) {
@@ -1185,7 +1188,7 @@ function untilBig(buffer, chunk) {
   return chunk.length === bigInputData.length;
 }
 const promise = readUntil(input, untilBig).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
@@ -1194,20 +1197,20 @@ return promise;</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 function until(buffer) {
   assert(Array.isArray(buffer));
   return buffer.length &#x3C; 2 ? -1 : 2;
 }
-const promise = readUntil(input, until, {objectMode: true})
+const promise = readUntil(input, until, { objectMode: true })
   .then((data) =&#x3E; {
-    assert.deepEqual(data, inputData.slice(0, 2));
+    assert.deepStrictEqual(data, inputData.slice(0, 2));
   });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>does not combine Arrays in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [[&#x27;a&#x27;], [&#x27;b&#x27;], []];
 function untilEmpty(arrays) {
   assert(arrays.every(Array.isArray));
@@ -1229,7 +1232,7 @@ const promise = readUntil(input, untilNever).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-  }
+  },
 );
 input.end();
 return promise;</code></pre></dd>
@@ -1240,8 +1243,8 @@ const promise = readUntil(input, untilNever).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );
 input.end(inputData);
 return promise;</code></pre></dd>
@@ -1256,7 +1259,7 @@ const promise = readUntil(input, untilExcept).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1271,7 +1274,7 @@ const promise = readUntil(input, untilExcept).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1289,8 +1292,8 @@ return promise.then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );</code></pre></dd>
                 <dt>rejects with TypeError for non-function until</dt>
                 <dd><pre><code>const input = new PassThrough();
@@ -1298,7 +1301,7 @@ const promise = readUntil(input, true).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );
 return promise;</code></pre></dd>
                 <dt>does not cause unhandledRejection for non-function</dt>
@@ -1312,7 +1315,7 @@ readUntil(input, true).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );</code></pre></dd>
               </dl>
             </section>
@@ -1331,14 +1334,14 @@ process.nextTick(() =&#x3E; {
   input.write(inputData);
 });
 return read(input).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });</code></pre></dd>
                 <dt>returns a Promise with read object</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = {};
 input.write(inputData);
 return read(input).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });</code></pre></dd>
                 <dt>returns a Promise with available data</dt>
                 <dd><pre><code>const input = new PassThrough();
@@ -1347,17 +1350,17 @@ input.write(inputData);
 process.nextTick(() =&#x3E; {
   read(input).then(
     (data) =&#x3E; {
-      assert.deepEqual(data, inputData);
+      assert.deepStrictEqual(data, inputData);
       done();
     },
-    done
+    done,
   );
 });</code></pre></dd>
                 <dt>can read a chunk larger than writes</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input, 8).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat([inputData, inputData]));
+  assert.deepStrictEqual(data, Buffer.concat([inputData, inputData]));
 });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
@@ -1368,7 +1371,7 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input, 2).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 2));
+  assert.deepStrictEqual(data, inputData.slice(0, 2));
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1376,7 +1379,7 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
 const promise = read(input, 8).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
@@ -1384,7 +1387,7 @@ process.nextTick(() =&#x3E; {
 });
 return promise;</code></pre></dd>
                 <dt>can read an empty Array in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [];
 const promise = read(input).then((data) =&#x3E; {
   assert.strictEqual(data, inputData);
@@ -1392,7 +1395,7 @@ const promise = read(input).then((data) =&#x3E; {
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads at most one non-Buffer/string</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [1, 2, 3];
 const promise = read(input, 2).then((data) =&#x3E; {
   assert.strictEqual(data, inputData[0]);
@@ -1402,9 +1405,9 @@ inputData.forEach((data) =&#x3E; {
 });
 return promise;</code></pre></dd>
                 <dt>reads at most one Buffer/string if options.objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [Buffer.from(&#x27;Larry&#x27;), Buffer.from(&#x27;Curly&#x27;)];
-const promise = read(input, 2, {objectMode: true}).then((data) =&#x3E; {
+const promise = read(input, 2, { objectMode: true }).then((data) =&#x3E; {
   assert.strictEqual(data, inputData[0]);
 });
 inputData.forEach((data) =&#x3E; {
@@ -1437,7 +1440,7 @@ input.read();</code></pre></dd>
 const errTest = new Error(&#x27;test&#x27;);
 const promise = read(input).then(
   sinon.mock().never(),
-  (err) =&#x3E; { assert.strictEqual(err, errTest); }
+  (err) =&#x3E; { assert.strictEqual(err, errTest); },
 );
 input.emit(&#x27;error&#x27;, errTest);
 return promise;</code></pre></dd>
@@ -1448,8 +1451,8 @@ const promise = read(input).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-    assert.notEqual(input.read(), null);
-  }
+    assert.notStrictEqual(input.read(), null);
+  },
 );
 input.emit(&#x27;error&#x27;, errTest);
 input.write(&#x27;data&#x27;);
@@ -1460,7 +1463,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -1476,7 +1479,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -1492,7 +1495,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -1508,7 +1511,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -1524,7 +1527,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -1540,7 +1543,7 @@ const inputData = Buffer.from(&#x27;test&#x27;);
 const spy = input.read &#x26;&#x26; sinon.spy(input, &#x27;read&#x27;);
 const promise = read(input, readArg).then((data) =&#x3E; {
   if (readsData) {
-    assert.notEqual(data, null);
+    assert.notStrictEqual(data, null);
   } else {
     assert.strictEqual(data, null);
   }
@@ -1564,7 +1567,7 @@ mock.verify();</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const readData = [];
 function readAll(readable) {
@@ -1577,7 +1580,7 @@ function readAll(readable) {
   });
 }
 const promise = readAll(input).then((result) =&#x3E; {
-  assert.deepEqual(result, Buffer.concat(inputData));
+  assert.deepStrictEqual(result, Buffer.concat(inputData));
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
@@ -1586,7 +1589,7 @@ input.end();
 return promise;</code></pre></dd>
                 <dt>returns an instance of options.Promise</dt>
                 <dd><pre><code>const input = new PassThrough();
-const promise = read(input, {Promise: BBPromise});
+const promise = read(input, { Promise: BBPromise });
 assert(promise instanceof BBPromise);</code></pre></dd>
                 <dt>does not have .abortRead or .cancelRead by default</dt>
                 <dd><pre><code>const input = new PassThrough();
@@ -1596,13 +1599,13 @@ assert.strictEqual(promise.cancelRead, undefined);</code></pre></dd>
                 <dt>supports bluebird 3.x cancellation</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {Promise: BBPromise}).then(
+const promise = read(input, { Promise: BBPromise }).then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
   },
   () =&#x3E; {
     done(new Error(&#x27;catch should not be called&#x27;));
-  }
+  },
 );
 promise.cancel();
 // Delay so that onCancel is called before write
@@ -1612,7 +1615,7 @@ setImmediate(() =&#x3E; {
   // Delay long enough to ensure mocks are not called
   setImmediate(() =&#x3E; {
     if (input.read) {
-      assert.deepEqual(input.read(), inputData);
+      assert.deepStrictEqual(input.read(), inputData);
     }
     done();
   });
@@ -1620,7 +1623,7 @@ setImmediate(() =&#x3E; {
                 <dt>supports bluebird timeout with cancellation</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-read(input, {Promise: BBPromise})
+read(input, { Promise: BBPromise })
   .timeout(2)
   .then(
     () =&#x3E; {
@@ -1634,32 +1637,32 @@ read(input, {Promise: BBPromise})
         setImmediate(() =&#x3E; {
           input.write(inputData);
           setImmediate(() =&#x3E; {
-            assert.deepEqual(input.read(), inputData);
+            assert.deepStrictEqual(input.read(), inputData);
             done();
           });
         });
       } else {
         done();
       }
-    }
+    },
   );</code></pre></dd>
                 <section class="suite">
                   <h1>with options.cancellable</h1>
                   <dl>
                     <dt>has .abortRead and .cancelRead methods</dt>
                     <dd><pre><code>const input = new PassThrough();
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 assert.strictEqual(typeof promise.abortRead, &#x27;function&#x27;);
 assert.strictEqual(typeof promise.cancelRead, &#x27;function&#x27;);</code></pre></dd>
                     <dt>supports .cancelable as an alias</dt>
                     <dd><pre><code>const input = new PassThrough();
-const promise = read(input, {cancelable: true});
+const promise = read(input, { cancelable: true });
 assert.strictEqual(typeof promise.abortRead, &#x27;function&#x27;);
 assert.strictEqual(typeof promise.cancelRead, &#x27;function&#x27;);</code></pre></dd>
                     <dt>rejects with AbortError on .abortRead</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 promise.then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
@@ -1670,49 +1673,49 @@ promise.then(
     } catch (errAssert) {
       done(errAssert);
     }
-  }
+  },
 );
 promise.abortRead();
 input.write(inputData);
 // Delay long enough to ensure data is not read
 setImmediate(() =&#x3E; {
   if (input.read) {
-    assert.deepEqual(input.read(), inputData);
+    assert.deepStrictEqual(input.read(), inputData);
   }
   done();
 });</code></pre></dd>
                     <dt>does not resolve, reject, or read after .cancelRead</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 promise.then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
   },
   () =&#x3E; {
     done(new Error(&#x27;catch should not be called&#x27;));
-  }
+  },
 );
 promise.cancelRead();
 input.write(inputData);
 // Delay long enough to ensure mocks are not called
 setImmediate(() =&#x3E; {
   if (input.read) {
-    assert.deepEqual(input.read(), inputData);
+    assert.deepStrictEqual(input.read(), inputData);
   }
   done();
 });</code></pre></dd>
                     <dt>does nothing on .abortRead after .cancelRead</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 promise.then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
   },
   () =&#x3E; {
     done(new Error(&#x27;catch should not be called&#x27;));
-  }
+  },
 );
 promise.cancelRead();
 promise.abortRead();
@@ -1720,14 +1723,14 @@ input.write(inputData);
 // Delay long enough to ensure mocks are not called
 setImmediate(() =&#x3E; {
   if (input.read) {
-    assert.deepEqual(input.read(), inputData);
+    assert.deepStrictEqual(input.read(), inputData);
   }
   done();
 });</code></pre></dd>
                     <dt>does nothing on .cancelRead after .abortRead</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = read(input, {cancellable: true});
+const promise = read(input, { cancellable: true });
 promise.then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
@@ -1738,7 +1741,7 @@ promise.then(
     } catch (errAssert) {
       done(errAssert);
     }
-  }
+  },
 );
 promise.abortRead();
 promise.cancelRead();
@@ -1746,7 +1749,7 @@ input.write(inputData);
 // Delay long enough to ensure mocks are not called
 setImmediate(() =&#x3E; {
   if (input.read) {
-    assert.deepEqual(input.read(), inputData);
+    assert.deepStrictEqual(input.read(), inputData);
   }
   done();
 });</code></pre></dd>
@@ -1757,20 +1760,20 @@ setImmediate(() =&#x3E; {
                   <dl>
                     <dt>rejects with TimeoutError after timeout ms</dt>
                     <dd><pre><code>const input = new PassThrough();
-return read(input, {timeout: 1}).then(
+return read(input, { timeout: 1 }).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TimeoutError&#x27;);
-  }
+  },
 );</code></pre></dd>
                     <dt>passes options.timeout of 0 to setTimeout</dt>
                     <dd><pre><code>const input = new PassThrough();
 const spy = sinon.spy(global, &#x27;setTimeout&#x27;);
-const promise = read(input, {timeout: 0}).then(
+const promise = read(input, { timeout: 0 }).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TimeoutError&#x27;);
-  }
+  },
 );
 setTimeout.restore();
 assert.strictEqual(spy.callCount, 1);
@@ -1779,7 +1782,7 @@ return promise;</code></pre></dd>
                     <dt>does not read after timeout</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-read(input, {timeout: 1}).then(
+read(input, { timeout: 1 }).then(
   () =&#x3E; {
     done(new Error(&#x27;then should not be called&#x27;));
   },
@@ -1787,16 +1790,16 @@ read(input, {timeout: 1}).then(
     assert.strictEqual(err.name, &#x27;TimeoutError&#x27;);
     input.write(inputData);
     setImmediate(() =&#x3E; {
-      assert.deepEqual(input.read(), inputData);
+      assert.deepStrictEqual(input.read(), inputData);
       done();
     });
-  }
+  },
 );</code></pre></dd>
                     <dt>resolves if read completes before timeout ms</dt>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-read(input, {timeout: 1}).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+read(input, { timeout: 1 }).then((data) =&#x3E; {
+  assert.deepStrictEqual(data, inputData);
   // Wait until after timeout to catch unhandled error
   setTimeout(done, 2);
 }, done);
@@ -1812,24 +1815,24 @@ input.write(inputData);</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;Larry\n&#x27;);
 const promise = readTo(input, Buffer.from(&#x27;\n&#x27;)).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) the marker with encoding</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) the marker in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = 3;
 const promise = readTo(input, 3).then((data) =&#x3E; {
   // Note:  readTo result is always an Array in objectMode
-  assert.deepEqual(data, [inputData]);
+  assert.deepStrictEqual(data, [inputData]);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1837,53 +1840,53 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = [
   Buffer.from(&#x27;La&#x27;),
-  Buffer.from(&#x27;rry\n&#x27;)
+  Buffer.from(&#x27;rry\n&#x27;),
 ];
 const promise = readTo(input, Buffer.from(&#x27;\n&#x27;)).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to the marker across writes with encoding</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;La&#x27;,
-  &#x27;rry\n&#x27;
+  &#x27;rry\n&#x27;,
 ];
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to the marker across writes in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [1, 2, 3];
 const promise = readTo(input, 3).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>does strict equality checks for marker in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 // Note:  null and undefined are not supported by stream.PassThrough
 const inputData = [true, 0, &#x27;&#x27;, false];
 const promise = readTo(input, false).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
 });
 return promise;</code></pre></dd>
                 <dt>reads up to the marker split across writes with encoding</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;Larry\n&#x27;,
   &#x27;Cur&#x27;,
   &#x27;ly\n&#x27;,
-  &#x27;Moe\n&#x27;
+  &#x27;Moe\n&#x27;,
 ];
 const promise = readTo(input, &#x27;Curly\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
@@ -1892,7 +1895,7 @@ return promise;</code></pre></dd>
 input.unshift = undefined;
 const inputData = Buffer.from(&#x27;Larry\nCurly&#x27;);
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, data.length));
+  assert.deepStrictEqual(data, inputData.slice(0, data.length));
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -1901,21 +1904,21 @@ return promise;</code></pre></dd>
 const inputData = Buffer.from(&#x27;Larry\nCurly&#x27;);
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
   const afterMarker = String(inputData).indexOf(&#x27;\n&#x27;) + 1;
-  assert.deepEqual(data, inputData.slice(0, afterMarker));
-  assert.deepEqual(input.read(), inputData.slice(afterMarker));
+  assert.deepStrictEqual(data, inputData.slice(0, afterMarker));
+  assert.deepStrictEqual(input.read(), inputData.slice(afterMarker));
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>does not read past the marker in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [1, 2, 3, 4, 5];
 const promise = readTo(input, 3).then((data) =&#x3E; {
   const afterMarker = inputData.indexOf(3) + 1;
-  assert.deepEqual(data, inputData.slice(0, afterMarker));
+  assert.deepStrictEqual(data, inputData.slice(0, afterMarker));
   if (input.read) {
     const expectData = inputData.slice(afterMarker);
     while (expectData.length &#x3E; 0) {
-      assert.deepEqual(input.read(), expectData.shift());
+      assert.deepStrictEqual(input.read(), expectData.shift());
     }
   }
 });
@@ -1929,10 +1932,13 @@ input.unshift = undefined;
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const promise = readTo(input, &#x27;&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData).slice(0, data.length));
+  assert.deepStrictEqual(
+    data,
+    Buffer.concat(inputData).slice(0, data.length),
+  );
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
@@ -1940,17 +1946,17 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;Larry\n&#x27;);
 const promise = readTo(input, Buffer.alloc(0)).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.alloc(0));
-  assert.deepEqual(input.read(), inputData);
+  assert.deepStrictEqual(data, Buffer.alloc(0));
+  assert.deepStrictEqual(input.read(), inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>treats strings as objects if options.objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [&#x27;Larry&#x27;, &#x27;Curly&#x27;, &#x27;Moe&#x27;];
-const promise = readTo(input, &#x27;Moe&#x27;, {objectMode: true})
+const promise = readTo(input, &#x27;Moe&#x27;, { objectMode: true })
   .then((data) =&#x3E; {
-    assert.deepEqual(data, inputData);
+    assert.deepStrictEqual(data, inputData);
   });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
@@ -1960,10 +1966,10 @@ return promise;</code></pre></dd>
                 <dd><pre><code>// readTo expects a stream of Buffer objects until it reads a string
 // at which point it realizes the stream is in objectMode and must
 // recover gracefully.
-const input = new PassThrough({objectMode: true});
+const input = new PassThrough({ objectMode: true });
 const inputData = [Buffer.from(&#x27;test1&#x27;), &#x27;test2&#x27;];
 const promise = readTo(input, inputData[1]).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
@@ -1977,8 +1983,8 @@ const promise = readTo(input, &#x27;\n&#x27;).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );
 input.write(inputData, () =&#x3E; {
   input.emit(&#x27;error&#x27;, errTest);
@@ -1990,7 +1996,7 @@ const promise = readTo(input, &#x27;\n&#x27;).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-  }
+  },
 );
 input.end();
 return promise;</code></pre></dd>
@@ -2001,14 +2007,14 @@ const promise = readTo(input, &#x27;\n&#x27;).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );
 input.end(inputData);
 return promise;</code></pre></dd>
                 <dt>resolves with null when no data if options.endOK</dt>
                 <dd><pre><code>const input = new PassThrough();
-const promise = readTo(input, &#x27;\n&#x27;, {endOK: true}).then((data) =&#x3E; {
+const promise = readTo(input, &#x27;\n&#x27;, { endOK: true }).then((data) =&#x3E; {
   assert.strictEqual(data, null);
 });
 input.end();
@@ -2016,8 +2022,8 @@ return promise;</code></pre></dd>
                 <dt>resolves with data previously read data if options.endOK</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {endOK: true}).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+const promise = readTo(input, &#x27;\n&#x27;, { endOK: true }).then((data) =&#x3E; {
+  assert.deepStrictEqual(data, inputData);
 });
 input.end(inputData);
 return promise;</code></pre></dd>
@@ -2025,7 +2031,7 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 input.unshift = undefined;
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {cancellable: true});
+const promise = readTo(input, &#x27;\n&#x27;, { cancellable: true });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
   promise.abortRead();
@@ -2034,36 +2040,36 @@ return promise.then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;AbortError&#x27;);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );</code></pre></dd>
                 <dt>without unshift, returns read data from .cancelRead</dt>
                 <dd><pre><code>const input = new PassThrough();
 input.unshift = undefined;
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {cancellable: true});
+const promise = readTo(input, &#x27;\n&#x27;, { cancellable: true });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
-  assert.deepEqual(promise.cancelRead(), inputData);
+  assert.deepStrictEqual(promise.cancelRead(), inputData);
   done();
 });</code></pre></dd>
                 <dt>without unshift, sets read data as .read on timeout</dt>
                 <dd><pre><code>const input = new PassThrough();
 input.unshift = undefined;
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {timeout: 1});
+const promise = readTo(input, &#x27;\n&#x27;, { timeout: 1 });
 input.write(inputData);
 return promise.then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TimeoutError&#x27;);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );</code></pre></dd>
                 <dt>with unshift, unshifts read data on .abortRead</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {cancellable: true});
+const promise = readTo(input, &#x27;\n&#x27;, { cancellable: true });
 input.write(inputData);
 process.nextTick(() =&#x3E; {
   promise.abortRead();
@@ -2073,32 +2079,32 @@ return promise.then(
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;AbortError&#x27;);
     assert.strictEqual(err.read, undefined);
-    assert.deepEqual(input.read(), inputData);
-  }
+    assert.deepStrictEqual(input.read(), inputData);
+  },
 );</code></pre></dd>
                 <dt>with unshift, unshifts read data on .cancelRead</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {cancellable: true});
+const promise = readTo(input, &#x27;\n&#x27;, { cancellable: true });
 input.write(inputData);
 // Wait until data has been read
 process.nextTick(() =&#x3E; {
   promise.cancelRead();
-  assert.deepEqual(input.read(), inputData);
+  assert.deepStrictEqual(input.read(), inputData);
   done();
 });</code></pre></dd>
                 <dt>with unshift, unshifts read data on timeout</dt>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;test&#x27;);
-const promise = readTo(input, &#x27;\n&#x27;, {timeout: 1});
+const promise = readTo(input, &#x27;\n&#x27;, { timeout: 1 });
 input.write(inputData);
 return promise.then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TimeoutError&#x27;);
     assert.strictEqual(err.read, undefined);
-    assert.deepEqual(input.read(), inputData);
-  }
+    assert.deepStrictEqual(input.read(), inputData);
+  },
 );</code></pre></dd>
                 <section class="suite">
                   <h1>uses result indexOf conversions</h1>
@@ -2107,7 +2113,7 @@ return promise.then(
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;Larry\n&#x27;);
 const promise = readTo(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2115,15 +2121,15 @@ return promise;</code></pre></dd>
                     <dd><pre><code>const input = new PassThrough();
 const inputData = Buffer.from(&#x27;Larry\n&#x27;);
 const promise = readTo(input, &#x27;\n&#x27;.charCodeAt(0)).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                     <dt>Buffer marker in string</dt>
-                    <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                    <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readTo(input, Buffer.from(&#x27;\n&#x27;)).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2134,7 +2140,7 @@ const promise = readTo(input, true).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2150,30 +2156,30 @@ return promise;</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const promise = readToEnd(input).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
 });
 writeEachTo(input, inputData, input.end.bind(input));
 return promise;</code></pre></dd>
                 <dt>reads to stream end (encoded)</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;Larry\n&#x27;,
   &#x27;Curly\n&#x27;,
-  &#x27;Moe\n&#x27;
+  &#x27;Moe\n&#x27;,
 ];
 const promise = readToEnd(input).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData, input.end.bind(input));
 return promise;</code></pre></dd>
                 <dt>reads to stream end (objectMode)</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [0, 1, 2, 3, 4];
 const promise = readToEnd(input).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 writeEachTo(input, inputData, input.end.bind(input));
 return promise;</code></pre></dd>
@@ -2189,7 +2195,7 @@ return promise;</code></pre></dd>
 const errTest = new Error(&#x27;test&#x27;);
 const promise = readToEnd(input).then(
   sinon.mock().never(),
-  (err) =&#x3E; { assert.strictEqual(err, errTest); }
+  (err) =&#x3E; { assert.strictEqual(err, errTest); },
 );
 input.emit(&#x27;error&#x27;, errTest);
 return promise;</code></pre></dd>
@@ -2199,67 +2205,67 @@ return promise;</code></pre></dd>
               <h1>.readToMatch()</h1>
               <dl>
                 <dt>reads up to (and including) a RegExp</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readToMatch(input, /\n/g).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) a non-global RegExp</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readToMatch(input, /\n/).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) a string expression</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = &#x27;Larry\n&#x27;;
 const promise = readToMatch(input, &#x27;\n&#x27;).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>reads up to (and including) a match split across writes</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;Larry\n&#x27;,
   &#x27;Cur&#x27;,
   &#x27;ly\n&#x27;,
-  &#x27;Moe\n&#x27;
+  &#x27;Moe\n&#x27;,
 ];
 const promise = readToMatch(input, /Curly\n/g).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>optimizes search from options.maxMatchLen</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 const inputData = [
   &#x27;Larry\n&#x27;,
   &#x27;Cur&#x27;,
   &#x27;ly\n&#x27;,
-  &#x27;Moe\n&#x27;
+  &#x27;Moe\n&#x27;,
 ];
 const regexp = /Curly\n/g;
-const options = {maxMatchLen: 6};
+const options = { maxMatchLen: 6 };
 // Note:  We could spy on writes to .lastIndex of regexp, but this would
 // rely too much on implementation details (of readToMatch and RegExp).
 // Instead, this tests it doesn&#x27;t hurt and coverage shows the codepath.
 const promise = readToMatch(input, regexp, options).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
+  assert.deepStrictEqual(data, inputData.slice(0, 3).join(&#x27;&#x27;));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>rejects with SyntaxError for invalid string expressions</dt>
-                <dd><pre><code>const input = new PassThrough({encoding: &#x27;utf8&#x27;});
+                <dd><pre><code>const input = new PassThrough({ encoding: &#x27;utf8&#x27; });
 return readToMatch(input, &#x27;*&#x27;).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;SyntaxError&#x27;);
-  }
+  },
 );</code></pre></dd>
                 <dt>rejects with TypeError for non-string streams</dt>
                 <dd><pre><code>const input = new PassThrough();
@@ -2268,13 +2274,13 @@ const promise = readToMatch(input, /\n/g).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>resolves with null when no data if options.endOK</dt>
                 <dd><pre><code>const input = new PassThrough();
-const promise = readToMatch(input, /\n/g, {endOK: true})
+const promise = readToMatch(input, /\n/g, { endOK: true })
   .then((data) =&#x3E; {
     assert.strictEqual(data, null);
   });
@@ -2286,7 +2292,7 @@ return promise;</code></pre></dd>
               <h1>.readUntil()</h1>
               <dl>
                 <dt>continues reading when negative or non-numeric falsey</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [0, 1, 2, 3, 4];
 let callNum = 0;
 const returnValues = [undefined, null, false, -5, true];
@@ -2297,7 +2303,7 @@ function until(buffer, chunk) {
   return returnValues[callNum - 1];
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
@@ -2310,7 +2316,7 @@ function until(buffer, chunk) {
   return true;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2321,7 +2327,7 @@ function until(buffer, chunk) {
   return buffer.length;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2332,18 +2338,18 @@ function until(buffer, chunk) {
   return 2;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 2));
+  assert.deepStrictEqual(data, inputData.slice(0, 2));
 });
 input.write(inputData);
 return promise;</code></pre></dd>
                 <dt>stops reading and unshifts for objectMode stream</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [0, 1, 2, 3, 4];
 function until(buffer, chunk) {
   return buffer.length === inputData.length - 1 ? 2 : -1;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData.slice(0, 2));
+  assert.deepStrictEqual(data, inputData.slice(0, 2));
 });
 inputData.forEach((data) =&#x3E; {
   input.write(data);
@@ -2356,7 +2362,7 @@ function until(buffer, chunk) {
   return 0;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.alloc(0));
+  assert.deepStrictEqual(data, Buffer.alloc(0));
 });
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2367,7 +2373,7 @@ function until(buffer, chunk, ended) {
   return ended ? 2 : -1;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, inputData);
+  assert.deepStrictEqual(data, inputData);
 });
 input.end(inputData);
 return promise;</code></pre></dd>
@@ -2375,13 +2381,13 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = [
   Buffer.from(&#x27;test1&#x27;),
-  Buffer.from(&#x27;test2&#x27;)
+  Buffer.from(&#x27;test2&#x27;),
 ];
 function until(buffer, chunk) {
   return inputData[0].length + inputData[1].length;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
@@ -2390,13 +2396,13 @@ return promise;</code></pre></dd>
 input.unshift = undefined;
 const inputData = [
   Buffer.from(&#x27;test1&#x27;),
-  Buffer.from(&#x27;test2&#x27;)
+  Buffer.from(&#x27;test2&#x27;),
 ];
 function until(buffer, chunk) {
   return (inputData[0].length + inputData[1].length) - 2;
 }
 const promise = readUntil(input, until).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData).slice(0, -2));
+  assert.deepStrictEqual(data, Buffer.concat(inputData).slice(0, -2));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
@@ -2410,7 +2416,7 @@ const promise = readUntil(input, until).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2424,8 +2430,8 @@ const promise = readUntil(input, until).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-    assert.deepEqual(input.read(), inputData);
-  }
+    assert.deepStrictEqual(input.read(), inputData);
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2434,7 +2440,7 @@ return promise;</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 const spy = sinon.spy((buffer, chunk) =&#x3E; {
   assert(Buffer.isBuffer(buffer));
@@ -2443,16 +2449,16 @@ const spy = sinon.spy((buffer, chunk) =&#x3E; {
   return String(chunk) === String(inputData[inputData.length - 1]);
 });
 const promise = readUntil(input, spy).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
   assert.strictEqual(spy.callCount, 3);
   spy.getCall(0).calledWithExactly(inputData[0], inputData[0]);
   spy.getCall(1).calledWithExactly(
     Buffer.concat(inputData.slice(0, 2)),
-    inputData[1]
+    inputData[1],
   );
   spy.getCall(2).calledWithExactly(
     Buffer.concat(inputData),
-    inputData[2]
+    inputData[2],
   );
 });
 writeEachTo(input, inputData);
@@ -2461,7 +2467,7 @@ return promise;</code></pre></dd>
                 <dd><pre><code>const input = new PassThrough();
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
-  Buffer.alloc(512)
+  Buffer.alloc(512),
 ];
 const bigInputData = Buffer.allocUnsafe(4 * 1024);
 for (let i = 0; i &#x3C; bigInputData.length; i += 1) {
@@ -2473,7 +2479,7 @@ function untilBig(buffer, chunk) {
   return chunk.length === bigInputData.length;
 }
 const promise = readUntil(input, untilBig).then((data) =&#x3E; {
-  assert.deepEqual(data, Buffer.concat(inputData));
+  assert.deepStrictEqual(data, Buffer.concat(inputData));
 });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
@@ -2482,20 +2488,20 @@ return promise;</code></pre></dd>
 const inputData = [
   Buffer.from(&#x27;Larry\n&#x27;),
   Buffer.from(&#x27;Curly\n&#x27;),
-  Buffer.from(&#x27;Moe\n&#x27;)
+  Buffer.from(&#x27;Moe\n&#x27;),
 ];
 function until(buffer) {
   assert(Array.isArray(buffer));
   return buffer.length &#x3C; 2 ? -1 : 2;
 }
-const promise = readUntil(input, until, {objectMode: true})
+const promise = readUntil(input, until, { objectMode: true })
   .then((data) =&#x3E; {
-    assert.deepEqual(data, inputData.slice(0, 2));
+    assert.deepStrictEqual(data, inputData.slice(0, 2));
   });
 writeEachTo(input, inputData);
 return promise;</code></pre></dd>
                 <dt>does not combine Arrays in objectMode</dt>
-                <dd><pre><code>const input = new PassThrough({objectMode: true});
+                <dd><pre><code>const input = new PassThrough({ objectMode: true });
 const inputData = [[&#x27;a&#x27;], [&#x27;b&#x27;], []];
 function untilEmpty(arrays) {
   assert(arrays.every(Array.isArray));
@@ -2517,7 +2523,7 @@ const promise = readUntil(input, untilNever).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-  }
+  },
 );
 input.end();
 return promise;</code></pre></dd>
@@ -2528,8 +2534,8 @@ const promise = readUntil(input, untilNever).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );
 input.end(inputData);
 return promise;</code></pre></dd>
@@ -2543,7 +2549,7 @@ input.once(&#x27;end&#x27;, () =&#x3E; {
       sinon.mock().never(),
       (err) =&#x3E; {
         assert.strictEqual(err.name, &#x27;EOFError&#x27;);
-      }
+      },
     ).then(done, done);
   });
 });
@@ -2561,7 +2567,7 @@ const promise = readUntil(input, untilExcept).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2576,7 +2582,7 @@ const promise = readUntil(input, untilExcept).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-  }
+  },
 );
 input.write(inputData);
 return promise;</code></pre></dd>
@@ -2598,10 +2604,10 @@ readUntil(input, untilExcept).then(
     input.read();
     input.write(inputData2);
     setImmediate(() =&#x3E; {
-      assert.deepEqual(input.read(), inputData2);
+      assert.deepStrictEqual(input.read(), inputData2);
       done();
     });
-  }
+  },
 );
 input.write(inputData);</code></pre></dd>
                 <dt>without unshift, sets read data as .read on exception</dt>
@@ -2618,8 +2624,8 @@ return promise.then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
-    assert.deepEqual(err.read, inputData);
-  }
+    assert.deepStrictEqual(err.read, inputData);
+  },
 );</code></pre></dd>
                 <dt>with unshift, unshifts read data on exception</dt>
                 <dd><pre><code>const input = new PassThrough();
@@ -2635,8 +2641,8 @@ return promise.then(
   (err) =&#x3E; {
     assert.strictEqual(err, errTest);
     assert.strictEqual(err.read, undefined);
-    assert.deepEqual(input.read(), inputData);
-  }
+    assert.deepStrictEqual(input.read(), inputData);
+  },
 );</code></pre></dd>
                 <dt>rejects with TypeError for non-function until</dt>
                 <dd><pre><code>const input = new PassThrough();
@@ -2644,7 +2650,7 @@ const promise = readUntil(input, true).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );
 return promise;</code></pre></dd>
                 <dt>does not cause unhandledRejection for non-function</dt>
@@ -2658,7 +2664,7 @@ readUntil(input, true).then(
   sinon.mock().never(),
   (err) =&#x3E; {
     assert.strictEqual(err.name, &#x27;TypeError&#x27;);
-  }
+  },
 );</code></pre></dd>
               </dl>
             </section>
