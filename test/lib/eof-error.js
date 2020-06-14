@@ -22,7 +22,7 @@ describe('EOFError', () => {
 
   it('can be instantiated without new', () => {
     const testMsg = 'test message';
-    const a = EOFError(testMsg);
+    const a = EOFError(testMsg);  // eslint-disable-line new-cap
     assert(a instanceof EOFError);
     assert.strictEqual(a.message, testMsg);
   });

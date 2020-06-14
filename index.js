@@ -69,6 +69,8 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
     stream.on('error', errorListener);
   });
 
+  // Use null to preserve current API.
+  // eslint-disable-next-line unicorn/no-null
   return resultLength === 0 && !emptySlice ? null
     : resultLength < result.length ? result.slice(0, resultLength)
       : result;
@@ -151,6 +153,8 @@ function readInternal(stream, size, until, options) {
 
   const promise = new ReadPromise((resolve, reject, cancelled) => {
     let isDoneReading = false;
+    // Use null to preserve current API.
+    // eslint-disable-next-line unicorn/no-null
     let result = null;
     let timeoutID;
     function doneReading() {
@@ -213,6 +217,8 @@ function readInternal(stream, size, until, options) {
      * @see ReadOptions.cancellable
      */
     cancelRead = function() {
+      // Use null to preserve current API.
+      // eslint-disable-next-line unicorn/no-null
       if (isDoneReading) { return null; }
       // Note:  Must stop reading before unshifting to avoid emitting a
       // 'readable' event and immediately re-reading unshifted data.
@@ -309,6 +315,8 @@ function readInternal(stream, size, until, options) {
 
     function onEnd() {
       if (until) {
+        // Use null to preserve current API.
+        // eslint-disable-next-line unicorn/no-null
         if (!checkUntil(result, null, true)) {
           doReject(new EOFError());
         }
@@ -466,6 +474,8 @@ function readInternal(stream, size, until, options) {
 function read(stream, size, options) {
   if (!options && typeof size === 'object') {
     options = size;
+    // Use null to preserve current API.
+    // eslint-disable-next-line unicorn/no-null
     size = null;
   }
   return readInternal(stream, size, undefined, options);

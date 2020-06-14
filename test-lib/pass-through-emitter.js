@@ -16,6 +16,8 @@ const { inherits } = require('util');
  */
 function PassThroughEmitter(options) {
   EventEmitter.call(this);
+  // Set encoding to null if not in options, as done by stream.Readable
+  // eslint-disable-next-line unicorn/no-null
   this.encoding = (options && options.encoding) || null;
   this.objectMode = Boolean(options && options.objectMode);
 }
@@ -25,7 +27,7 @@ PassThroughEmitter.prototype.end = function end(chunk, encoding, callback) {
   const self = this;
   if (!callback && typeof encoding === 'function') {
     callback = encoding;
-    encoding = null;
+    encoding = undefined;
   }
   if (chunk) {
     self.write(chunk, encoding);
@@ -43,7 +45,7 @@ PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
   const self = this;
   if (!callback && typeof encoding === 'function') {
     callback = encoding;
-    encoding = null;
+    encoding = undefined;
   }
   if (!self.objectMode && typeof chunk === 'string') {
     chunk = Buffer.from(chunk, encoding);
@@ -54,7 +56,7 @@ PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
   process.nextTick(() => {
     self.emit('data', data);
     if (callback) {
-      callback(null);
+      callback(null); // eslint-disable-line unicorn/no-null
     }
   });
 };

@@ -22,7 +22,7 @@ describe('AbortError', () => {
 
   it('can be instantiated without new', () => {
     const testMsg = 'test message';
-    const a = AbortError(testMsg);
+    const a = AbortError(testMsg);  // eslint-disable-line new-cap
     assert(a instanceof AbortError);
     assert.strictEqual(a.message, testMsg);
   });

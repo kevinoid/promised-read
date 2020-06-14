@@ -31,10 +31,6 @@ const setImmediate = global.setImmediate || setTimeout;
 
 BBPromise.config({ cancellation: true });
 
-// Many tests define helper functions which could be global.
-// More readable to keep them near their point of use.
-/* eslint-disable unicorn/consistent-function-scoping */
-
 function untilNever() { return false; }
 
 function writeEachTo(writable, inputData, cb) {
