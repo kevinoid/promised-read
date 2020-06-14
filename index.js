@@ -15,12 +15,13 @@ const TimeoutError = require('./lib/timeout-error');
 const debug = util.debuglog('promised-read');
 
 /** Attempts to unshift result data down to a desired length.
- * @param {stream.Readable} stream Stream into which to unshift data.
+ *
+ * @param {module:stream.Readable} stream Stream into which to unshift data.
  * @param {!Buffer|string|!Array} result Read result data.
  * @param {number} desiredLength Desired length of result after unshifting.
  * @param {boolean=} emptySlice Return an empty slice when all data is
  * unshifted, rather than <code>null</code>.
- * @return {Buffer|string|Array} Result data after unshifting, or
+ * @returns {Buffer|string|Array} Result data after unshifting, or
  * <code>null</code> if all data was unshifted and <code>emptySlice</code> is
  * falsey.
  * @private
@@ -107,7 +108,8 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
  */
 // var ReadOptions;
 
-/** Promise type returned by {@link read}, {@link readTo}, and
+/**
+ * Promise type returned by {@link read}, {@link readTo}, and
  * {@link readUntil} for {@link ReadOptions.cancellable cancellable} reads.
  *
  * <p>The returned promise will be an instance of {@link ReadOptions.Promise},
@@ -123,13 +125,17 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
  * class, which prevents abort/cancel authority from being unintentionally
  * conveyed to other consumers of the read data or its dependencies.</p>
  *
- * @ template ReturnType
- * @constructor
- * @extends Promise<ReturnType>
+ * @class
+ * @template ReturnType
+ * @augments Promise<ReturnType>
  * @name CancellableReadPromise
  */
 // function CancellableReadPromise() {}
 
+/** Reads from a stream a given size or condition is met.
+ *
+ * @private
+ */
 function readInternal(stream, size, until, options) {
   const flowing =
     (options && options.flowing) || typeof stream.read !== 'function';
@@ -202,7 +208,7 @@ function readInternal(stream, size, until, options) {
      *
      * @function
      * @name CancellableReadPromise#cancelRead
-     * @return {Buffer|string|Array} Any previously read data which could not
+     * @returns {Buffer|string|Array} Any previously read data which could not
      * be unshifted, or <code>null</code> if all data was unshifted.
      * @see ReadOptions.cancellable
      */
@@ -237,7 +243,8 @@ function readInternal(stream, size, until, options) {
     }
 
     /** Calls the until function and handles its result.
-     * @return {boolean} <code>true</code> if done reading, <code>false</code>
+     *
+     * @returns {boolean} <code>true</code> if done reading, <code>false</code>
      * otherwise.
      * @private
      */
@@ -440,14 +447,15 @@ function readInternal(stream, size, until, options) {
 }
 
 /** Reads from a stream.Readable.
- * @param {stream.Readable} stream Stream from which to read.
+ *
+ * @param {module:stream.Readable} stream Stream from which to read.
  * @param {number=} size Number of bytes to read.  If <code>stream.read</code>
  * is a function, <code>size</code> is passed to it, guaranteeing maximum
  * result size.  Otherwise, <code>'data'</code> events will be consumed until
  * <code>size</code> bytes are read, making it a minimum rather than an exact
  * value.
  * @param {ReadOptions=} options Options.
- * @return {Promise<Buffer|string|*>|CancellableReadPromise<Buffer|string|*>}
+ * @returns {Promise<Buffer|string|*>|CancellableReadPromise<Buffer|string|*>}
  * Promise with result of read or Error.  Result may be shorter than
  * <code>size</code> if <code>'end'</code> occurs and will be <code>null</code>
  * if no data can be read.  If an error occurs after reading some data, the
@@ -463,20 +471,22 @@ function read(stream, size, options) {
   return readInternal(stream, size, undefined, options);
 }
 
-/** Reads from a stream.Readable until a given test is satisfied.
- * @param {stream.Readable} stream Stream from which to read.
- * @param {function((!Buffer|string|!Array), (Buffer|string|*)): number|boolean}
- * test Test function called with the data read so far and the most recent
- * chunk read.  If it returns a negative or falsey value, more data will be
- * read.  If it returns a non-negative number and the stream can be unshifted,
- * that many bytes will be returned and the others will be unshifted into the
- * stream.  Otherwise, all data read will be returned.  If it returns a number
- * larger than the length of the data read so far, enough data to reach the
- * requested length will be read before returning.  Non-numeric, non-boolean
- * values will result in an error.
+/**
+ * Reads from a stream.Readable until a given test is satisfied.
+ *
+ * @param {module:stream.Readable} stream Stream from which to read.
+ * @param {function((!Buffer|string|!Array), (Buffer|string|*)):
+ * number|boolean} until Test function called with the data read so far and the
+ * most recent chunk read.  If it returns a negative or falsey value, more
+ * data will be read.  If it returns a non-negative number and the stream can
+ * be unshifted, that many bytes will be returned and the others will be
+ * unshifted into the stream.  Otherwise, all data read will be returned.  If
+ * it returns a number larger than the length of the data read so far, enough
+ * data to reach the requested length will be read before returning.
+ * Non-numeric, non-boolean values will result in an error.
  * @param {ReadOptions=} options Options.
- * @return {Promise<!Buffer|string|!Array>|
- * CancellableReadPromise<!Buffer|string|!Array>} Promise with the data read
+ * @returns {Promise<!Buffer|string|!Array>|
+CancellableReadPromise<!Buffer|string|!Array>} Promise with the data read
  * and not unshifted, or an Error if one occurred.  If <code>'end'</code> is
  * emitted before <code>until</code> returns a non-negative/true value, an
  * {@link EOFError} is returned.  If an error occurs after reading some data,
@@ -508,14 +518,14 @@ function readUntil(stream, until, options) {
  * {@link ReadOptions}, but record types can't currently be extended.
  * See {@link https://github.com/google/closure-compiler/issues/604}.</p>
  *
- * @param {stream.Readable} stream Stream from which to read.
+ * @param {module:stream.Readable} stream Stream from which to read.
  * @param {!Buffer|string|*} needle Value to search for in the read result.
  * The stream will be read until this value is found or <code>'end'</code> or
  * <code>'error'</code> is emitted.
  * @param {ReadOptions=} options Options.  This function additionally supports
  * an <code>endOK</code> option which prevents {@link EOFError} on
  * <code>'end'</code>.
- * @return {Promise<Buffer|string|Array>|
+ * @returns {Promise<Buffer|string|Array>|
  * CancellableReadPromise<Buffer|string|Array>} Promise with the data read, up
  * to and including <code>needle</code>, or an Error if one occurs.  If
  * <code>stream</code> does not support <code>unshift</code>, the result may
@@ -596,9 +606,10 @@ function untilEnded(result, chunk, ended) {
 }
 
 /** Reads from a stream.Readable until 'end' is emitted.
- * @param {stream.Readable} stream Stream from which to read.
+ *
+ * @param {module:stream.Readable} stream Stream from which to read.
  * @param {ReadOptions=} options Options.
- * @return {Promise<!Buffer|string|!Array>|
+ * @returns {Promise<!Buffer|string|!Array>|
  * CancellableReadPromise<!Buffer|string|!Array>} Promise with the data read,
  * <code>null</code> if no data was read, or an <code>Error</code> if one
  * occurred.  If an error occurs after reading some data, the
@@ -619,8 +630,9 @@ function readToEnd(stream, options) {
  * ReadToOptions, but record types can't currently be extended.
  * See {@link https://github.com/google/closure-compiler/issues/604}.</p>
  *
- * @param {stream.Readable<string>} stream Stream from which to read.  This
- * stream must produce strings (so call <code>.setEncoding</code> if necessary).
+ * @param {module:stream.Readable<string>} stream Stream from which to read.
+ * This stream must produce strings (so call <code>.setEncoding</code> if
+ * necessary).
  * @param {!RegExp|string} regexp Expression to find in the read result.
  * The stream will be read until this value is matched or <code>'end'</code> or
  * <code>'error'</code> is emitted.
@@ -628,7 +640,7 @@ function readToEnd(stream, options) {
  * an <code>endOK</code> option which prevents {@link EOFError} on
  * <code>'end'</code> and a <code>maxMatchLen</code> option which specifies
  * the maximum length of a match, which allow additional search optimizations.
- * @return {Promise<string>|CancellableReadPromise<string>} Promise with the
+ * @returns {Promise<string>|CancellableReadPromise<string>} Promise with the
  * data read, up to and including the data matched by <code>regexp</code>, or
  * an Error if one occurs.  If <code>stream</code> does not support
  * <code>unshift</code>, the result may include additional data.  If

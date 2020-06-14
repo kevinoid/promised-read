@@ -11,8 +11,8 @@ const { inherits } = require('util');
 /** Creates a non-Readable (i.e. pre-0.10) stream similar to
  * {@link stream.PassThrough}.
  *
- * @constructor
- * @param {Object} options Stream options
+ * @class
+ * @param {object} options Stream options
  */
 function PassThroughEmitter(options) {
   EventEmitter.call(this);

@@ -51,7 +51,11 @@ function writeEachTo(writable, inputData, cb) {
   writeOne();
 }
 
-/** Describes the promisedRead behavior for a given stream type. */
+/**
+ * Describes the promisedRead behavior for a given stream type.
+ *
+ * @private
+ */
 function describeWithStreamType(PassThrough) {
   describe('.read()', () => {
     it('returns a Promise with read data', () => {
