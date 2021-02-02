@@ -24,37 +24,35 @@ function PassThroughEmitter(options) {
 inherits(PassThroughEmitter, EventEmitter);
 
 PassThroughEmitter.prototype.end = function end(chunk, encoding, callback) {
-  const self = this;
   if (!callback && typeof encoding === 'function') {
     callback = encoding;
     encoding = undefined;
   }
   if (chunk) {
-    self.write(chunk, encoding);
+    this.write(chunk, encoding);
   }
   if (callback) {
-    self.once('finish', callback);
+    this.once('finish', callback);
   }
   process.nextTick(() => {
-    self.emit('finish');
-    self.emit('end');
+    this.emit('finish');
+    this.emit('end');
   });
 };
 
 PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
-  const self = this;
   if (!callback && typeof encoding === 'function') {
     callback = encoding;
     encoding = undefined;
   }
-  if (!self.objectMode && typeof chunk === 'string') {
+  if (!this.objectMode && typeof chunk === 'string') {
     chunk = Buffer.from(chunk, encoding);
   }
   const data =
-    self.objectMode || !self.encoding || !Buffer.isBuffer(chunk) ? chunk
-      : chunk.toString(self.encoding);
+    this.objectMode || !this.encoding || !Buffer.isBuffer(chunk) ? chunk
+      : chunk.toString(this.encoding);
   process.nextTick(() => {
-    self.emit('data', data);
+    this.emit('data', data);
     if (callback) {
       callback(null); // eslint-disable-line unicorn/no-null
     }

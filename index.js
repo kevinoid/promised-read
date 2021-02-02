@@ -5,14 +5,14 @@
 
 'use strict';
 
-const util = require('util');
+const { debuglog } = require('util');
 
 const AbortError = require('./lib/abort-error');
 const EOFError = require('./lib/eof-error');
 const SyncPromise = require('./lib/sync-promise');
 const TimeoutError = require('./lib/timeout-error');
 
-const debug = util.debuglog('promised-read');
+const debug = debuglog('promised-read');
 
 /** Attempts to unshift result data down to a desired length.
  *
@@ -65,9 +65,9 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
   }
 
   stream.removeListener('error', onUnshiftError);
-  errorListeners.forEach((errorListener) => {
+  for (const errorListener of errorListeners) {
     stream.on('error', errorListener);
-  });
+  }
 
   // Use null to preserve current API.
   // eslint-disable-next-line unicorn/no-null
