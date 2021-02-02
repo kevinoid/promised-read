@@ -1,8 +1,7 @@
 promised-read
 =============
 
-[![Build Status: Linux](https://img.shields.io/travis/kevinoid/promised-read/master.svg?style=flat&label=build+on+linux)](https://travis-ci.org/kevinoid/promised-read)
-[![Build Status: Windows](https://img.shields.io/appveyor/ci/kevinoid/promised-read/master.svg?style=flat&label=build+on+windows)](https://ci.appveyor.com/project/kevinoid/promised-read)
+[![Build Status](https://img.shields.io/github/workflow/status/kevinoid/promised-read/Node.js%20CI/master.svg?style=flat&label=build)](https://github.com/kevinoid/promised-read/actions?query=branch%3Amaster)
 [![Coverage](https://img.shields.io/codecov/c/github/kevinoid/promised-read.svg?style=flat)](https://codecov.io/github/kevinoid/promised-read?branch=master)
 [![Dependency Status](https://img.shields.io/david/kevinoid/promised-read.svg?style=flat)](https://david-dm.org/kevinoid/promised-read)
 [![Supported Node Version](https://img.shields.io/node/v/promised-read.svg?style=flat)](https://www.npmjs.com/package/promised-read)
