@@ -25,10 +25,6 @@ const {
 // eslint-disable-next-line no-shadow
 const setImmediate = global.setImmediate || setTimeout;
 
-// TODO [eslint-plugin-unicorn@>27.0.0] Enable prefer-spread once fixed.
-// https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1068
-/* eslint-disable unicorn/prefer-spread */
-
 /* The stream APIs use callbacks instead of Promises.
  * It is necessary to use callbacks to test.  Ignore lint errors about it. */
 /* eslint-disable promise/catch-or-return, promise/no-callback-in-promise */
