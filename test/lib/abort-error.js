@@ -6,7 +6,7 @@
 'use strict';
 
 const assert = require('assert');
-const AbortError = require('../../lib/abort-error');
+const AbortError = require('../../lib/abort-error.js');
 
 describe('AbortError', () => {
   it('sets .message from argument', () => {

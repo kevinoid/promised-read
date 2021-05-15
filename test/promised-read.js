@@ -12,7 +12,7 @@ const sinon = require('sinon');
 const stream = require('stream');
 
 const promisedRead = require('..');
-const PassThroughEmitter = require('../test-lib/pass-through-emitter');
+const PassThroughEmitter = require('../test-lib/pass-through-emitter.js');
 
 const {
   read,

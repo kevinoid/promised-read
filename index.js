@@ -8,10 +8,10 @@
 
 const { debuglog } = require('util');
 
-const AbortError = require('./lib/abort-error');
-const EOFError = require('./lib/eof-error');
-const SyncPromise = require('./lib/sync-promise');
-const TimeoutError = require('./lib/timeout-error');
+const AbortError = require('./lib/abort-error.js');
+const EOFError = require('./lib/eof-error.js');
+const SyncPromise = require('./lib/sync-promise.js');
+const TimeoutError = require('./lib/timeout-error.js');
 
 const debug = debuglog('promised-read');
 

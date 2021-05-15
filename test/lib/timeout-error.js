@@ -6,7 +6,7 @@
 'use strict';
 
 const assert = require('assert');
-const TimeoutError = require('../../lib/timeout-error');
+const TimeoutError = require('../../lib/timeout-error.js');
 
 describe('TimeoutError', () => {
   it('sets .message from argument', () => {

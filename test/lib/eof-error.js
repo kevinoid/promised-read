@@ -6,7 +6,7 @@
 'use strict';
 
 const assert = require('assert');
-const EOFError = require('../../lib/eof-error');
+const EOFError = require('../../lib/eof-error.js');
 
 describe('EOFError', () => {
   it('sets .message from argument', () => {
