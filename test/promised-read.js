@@ -1122,7 +1122,7 @@ function describeWithStreamType(PassThrough) {
       const promise = readToEnd(input).then((data) => {
         assert.deepStrictEqual(data, Buffer.concat(inputData));
       });
-      writeEachTo(input, inputData, input.end.bind(input));
+      writeEachTo(input, inputData, () => input.end());
       return promise;
     });
 
@@ -1136,7 +1136,7 @@ function describeWithStreamType(PassThrough) {
       const promise = readToEnd(input).then((data) => {
         assert.deepStrictEqual(data, inputData.join(''));
       });
-      writeEachTo(input, inputData, input.end.bind(input));
+      writeEachTo(input, inputData, () => input.end());
       return promise;
     });
 
@@ -1146,7 +1146,7 @@ function describeWithStreamType(PassThrough) {
       const promise = readToEnd(input).then((data) => {
         assert.deepStrictEqual(data, inputData);
       });
-      writeEachTo(input, inputData, input.end.bind(input));
+      writeEachTo(input, inputData, () => input.end());
       return promise;
     });
 
