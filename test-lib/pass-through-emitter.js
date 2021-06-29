@@ -34,7 +34,7 @@ PassThroughEmitter.prototype.end = function end(chunk, encoding, callback) {
   if (callback) {
     this.once('finish', callback);
   }
-  process.nextTick(() => {
+  queueMicrotask(() => {
     this.emit('finish');
     this.emit('end');
   });
@@ -51,7 +51,7 @@ PassThroughEmitter.prototype.write = function write(chunk, encoding, callback) {
   const data =
     this.objectMode || !this.encoding || !Buffer.isBuffer(chunk) ? chunk
       : chunk.toString(this.encoding);
-  process.nextTick(() => {
+  queueMicrotask(() => {
     this.emit('data', data);
     if (callback) {
       callback(null); // eslint-disable-line unicorn/no-null

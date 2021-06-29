@@ -43,7 +43,11 @@ function writeEachTo(writable, inputData, cb) {
     writable.write(inputData[written]);
     written += 1;
     if (written < inputData.length) {
-      process.nextTick(writeOne);
+      // Note: Delay between writes must be long enough for separate reads.
+      // queueMicrotask() is too short.
+      // nextTick() currently works, but likely not guaranteed.
+      // setImmediate() guaranteed to run after I/O event callbacks.
+      setImmediate(writeOne);
     } else if (cb) {
       cb();
     }
@@ -61,7 +65,7 @@ function describeWithStreamType(PassThrough) {
     it('returns a Promise with read data', () => {
       const input = new PassThrough();
       const inputData = Buffer.from('test');
-      process.nextTick(() => {
+      queueMicrotask(() => {
         input.write(inputData);
       });
       return read(input).then((data) => {
@@ -84,7 +88,7 @@ function describeWithStreamType(PassThrough) {
         const inputData = Buffer.from('test');
         input.write(inputData);
 
-        process.nextTick(() => {
+        queueMicrotask(() => {
           read(input).then(
             (data) => {
               assert.deepStrictEqual(data, inputData);
@@ -103,7 +107,7 @@ function describeWithStreamType(PassThrough) {
         assert.deepStrictEqual(data, Buffer.concat([inputData, inputData]));
       });
       input.write(inputData);
-      process.nextTick(() => {
+      queueMicrotask(() => {
         input.write(inputData);
       });
       return promise;
@@ -201,7 +205,7 @@ function describeWithStreamType(PassThrough) {
         assert.deepStrictEqual(data, inputData);
       });
       input.write(inputData);
-      process.nextTick(() => {
+      queueMicrotask(() => {
         input.end();
       });
       return promise;
@@ -271,7 +275,7 @@ function describeWithStreamType(PassThrough) {
         // guaranteed to work (due to use of Readable implementation details).
         const input = new PassThrough();
         input.once('end', () => {
-          process.nextTick(() => {
+          queueMicrotask(() => {
             read(input).then((data) => {
               assert.strictEqual(data, null);
             }).then(done, done);
@@ -1018,7 +1022,7 @@ function describeWithStreamType(PassThrough) {
 
       const promise = readTo(input, '\n', { cancellable: true });
       input.write(inputData);
-      process.nextTick(() => {
+      queueMicrotask(() => {
         promise.abortRead();
       });
       return promise.then(
@@ -1037,7 +1041,7 @@ function describeWithStreamType(PassThrough) {
 
       const promise = readTo(input, '\n', { cancellable: true });
       input.write(inputData);
-      process.nextTick(() => {
+      queueMicrotask(() => {
         assert.deepStrictEqual(promise.cancelRead(), inputData);
         done();
       });
@@ -1066,7 +1070,7 @@ function describeWithStreamType(PassThrough) {
 
         const promise = readTo(input, '\n', { cancellable: true });
         input.write(inputData);
-        process.nextTick(() => {
+        queueMicrotask(() => {
           promise.abortRead();
         });
         return promise.then(
@@ -1086,7 +1090,7 @@ function describeWithStreamType(PassThrough) {
         const promise = readTo(input, '\n', { cancellable: true });
         input.write(inputData);
         // Wait until data has been read
-        process.nextTick(() => {
+        queueMicrotask(() => {
           promise.cancelRead();
           assert.deepStrictEqual(input.read(), inputData);
           done();
@@ -1594,7 +1598,7 @@ function describeWithStreamType(PassThrough) {
         // guaranteed to work (due to use of Readable implementation details).
         const input = new PassThrough();
         input.once('end', () => {
-          process.nextTick(() => {
+          queueMicrotask(() => {
             readUntil(input, untilNever).then(
               sinon.mock().never(),
               (err) => {
