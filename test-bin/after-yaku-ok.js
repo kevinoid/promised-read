@@ -12,6 +12,7 @@ const { read } = require('..');
 
 /* eslint-disable no-console */
 
+// eslint-disable-next-line no-restricted-properties
 if (yaku.nextTick !== process.nextTick) {
   console.error('yaku.nextTick !== process.nextTick');
   process.exitCode = 1;
