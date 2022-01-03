@@ -805,7 +805,7 @@ function describeWithStreamType(PassThrough) {
       it('character code marker in Buffer', () => {
         const input = new PassThrough();
         const inputData = Buffer.from('Larry\n');
-        const promise = readTo(input, '\n'.charCodeAt(0)).then((data) => {
+        const promise = readTo(input, '\n'.codePointAt(0)).then((data) => {
           assert.deepStrictEqual(data, inputData);
         });
         input.write(inputData);

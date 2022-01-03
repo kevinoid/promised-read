@@ -270,14 +270,17 @@ function readInternal(stream, size, until, options) {
           debug(
             'until returned a desired length of %d.  '
               + 'Only have %d.  Reading up to %d.',
-            desiredLength, resultLength, desiredLength,
+            desiredLength,
+            resultLength,
+            desiredLength,
           );
           numSize = desiredLength;
           size = desiredLength - resultLength;
         } else if (desiredLength >= 0) {
           debug(
             'until returned a desired length of %d out of %d',
-            desiredLength, resultLength,
+            desiredLength,
+            resultLength,
           );
           if (desiredLength < resultLength) {
             if (ended) {
