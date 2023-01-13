@@ -3,7 +3,7 @@ promised-read
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/kevinoid/promised-read/node.js.yml?branch=main&style=flat&label=build)](https://github.com/kevinoid/promised-read/actions?query=branch%3Amain)
 [![Coverage](https://img.shields.io/codecov/c/github/kevinoid/promised-read/main.svg?style=flat)](https://app.codecov.io/gh/kevinoid/promised-read/branch/main)
-[![Dependency Status](https://img.shields.io/david/kevinoid/promised-read.svg?style=flat)](https://david-dm.org/kevinoid/promised-read)
+[![Dependency Status](https://img.shields.io/librariesio/release/npm/promised-read.svg?style=flat)](https://libraries.io/npm/promised-read)
 [![Supported Node Version](https://img.shields.io/node/v/promised-read.svg?style=flat)](https://www.npmjs.com/package/promised-read)
 [![Version on NPM](https://img.shields.io/npm/v/promised-read.svg?style=flat)](https://www.npmjs.com/package/promised-read)
 
