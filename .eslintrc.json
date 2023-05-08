@@ -13,9 +13,6 @@
       ]
     }],
 
-    // Allow EventEmitter, since it's baked into the current API
-    "unicorn/prefer-event-target": "off",
-
     // Allow CommonJS modules
     "unicorn/prefer-module": "off",
 
