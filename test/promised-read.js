@@ -6,10 +6,10 @@
 'use strict';
 
 const BBPromise = require('bluebird');
-const assert = require('assert');
-const { fork } = require('child_process');
+const assert = require('node:assert');
+const { fork } = require('node:child_process');
 const sinon = require('sinon');
-const stream = require('stream');
+const stream = require('node:stream');
 
 const promisedRead = require('..');
 const PassThroughEmitter = require('../test-lib/pass-through-emitter.js');

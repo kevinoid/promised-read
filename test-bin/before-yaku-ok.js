@@ -6,7 +6,7 @@
 
 'use strict';
 
-const { EventEmitter } = require('events');
+const { EventEmitter } = require('node:events');
 const yaku = require('yaku');
 
 const { read } = require('..');

@@ -5,7 +5,7 @@
 
 'use strict';
 
-const assert = require('assert');
+const assert = require('node:assert');
 const AbortError = require('../../lib/abort-error.js');
 
 describe('AbortError', () => {

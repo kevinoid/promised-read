@@ -6,7 +6,7 @@
 
 'use strict';
 
-const { debuglog } = require('util');
+const { debuglog } = require('node:util');
 
 const AbortError = require('./lib/abort-error.js');
 const EOFError = require('./lib/eof-error.js');
