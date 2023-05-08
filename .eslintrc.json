@@ -35,6 +35,15 @@
         // Executable scripts should have a shebang
         "n/shebang": "off"
       }
+    },
+    {
+      "files": [
+        "test*/*.js"
+      ],
+      "rules": {
+        // Allow EventEmitter use in tests
+        "unicorn/prefer-event-target": "off"
+      }
     }
   ]
 }
