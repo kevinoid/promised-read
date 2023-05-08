@@ -346,8 +346,7 @@ function readInternal(stream, size, until, options) {
     let resultBuf;
     function onData(data) {
       if (result === null) {
-        objectMode = objectMode
-          || (typeof data !== 'string' && !(data instanceof Buffer));
+        objectMode ||= typeof data !== 'string' && !(data instanceof Buffer);
         result = objectMode ? [data] : data;
       } else if (typeof result === 'string' && typeof data === 'string') {
         result += data;
