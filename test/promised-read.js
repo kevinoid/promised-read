@@ -11,6 +11,8 @@ const { fork } = require('node:child_process');
 const sinon = require('sinon');
 const stream = require('node:stream');
 
+// https://github.com/import-js/eslint-plugin-import/issues/2844
+// eslint-disable-next-line import/extensions
 const promisedRead = require('..');
 const PassThroughEmitter = require('../test-lib/pass-through-emitter.js');
 

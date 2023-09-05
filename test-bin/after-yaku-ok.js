@@ -8,6 +8,9 @@
 
 const { EventEmitter } = require('node:events');
 const yaku = require('yaku');
+
+// https://github.com/import-js/eslint-plugin-import/issues/2844
+// eslint-disable-next-line import/extensions
 const { read } = require('..');
 
 /* eslint-disable no-console */
