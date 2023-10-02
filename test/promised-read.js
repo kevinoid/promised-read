@@ -5,11 +5,12 @@
 
 'use strict';
 
-const BBPromise = require('bluebird');
 const assert = require('node:assert');
 const { fork } = require('node:child_process');
-const sinon = require('sinon');
 const stream = require('node:stream');
+
+const BBPromise = require('bluebird');
+const sinon = require('sinon');
 
 // https://github.com/import-js/eslint-plugin-import/issues/2844
 // eslint-disable-next-line import/extensions

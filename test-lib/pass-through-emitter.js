@@ -9,7 +9,7 @@ const { EventEmitter } = require('node:events');
 const { inherits } = require('node:util');
 
 /** Creates a non-Readable (i.e. pre-0.10) stream similar to
- * {@link stream.PassThrough}.
+ * {@link module:stream.PassThrough}.
  *
  * @class
  * @param {object} options Stream options

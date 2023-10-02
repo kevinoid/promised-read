@@ -6,6 +6,7 @@
 'use strict';
 
 const assert = require('node:assert');
+
 const TimeoutError = require('../../lib/timeout-error.js');
 
 describe('TimeoutError', () => {

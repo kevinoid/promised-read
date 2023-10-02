@@ -6,6 +6,7 @@
 'use strict';
 
 const assert = require('node:assert');
+
 const EOFError = require('../../lib/eof-error.js');
 
 describe('EOFError', () => {
