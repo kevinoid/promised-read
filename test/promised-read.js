@@ -1489,7 +1489,7 @@ function describeWithStreamType(PassThrough) {
         assert(Buffer.isBuffer(buffer));
         assert(Buffer.isBuffer(chunk));
         // Note:  No Buffer.equals before Node v0.11.13
-        return String(chunk) === String(inputData[inputData.length - 1]);
+        return String(chunk) === String(inputData.at(-1));
       });
       const promise = readUntil(input, spy).then((data) => {
         assert.deepStrictEqual(data, Buffer.concat(inputData));
@@ -1555,7 +1555,7 @@ function describeWithStreamType(PassThrough) {
       const inputData = [['a'], ['b'], []];
       function untilEmpty(arrays) {
         assert(arrays.every(Array.isArray));
-        return arrays[arrays.length - 1].length === 0 ? arrays.length : -1;
+        return arrays.at(-1).length === 0 ? arrays.length : -1;
       }
       const promise = readUntil(input, untilEmpty).then((data) => {
         assert.strictEqual(data.length, inputData.length);
