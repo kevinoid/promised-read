@@ -23,7 +23,8 @@ describe('EOFError', () => {
 
   it('can be instantiated without new', () => {
     const testMsg = 'test message';
-    const a = EOFError(testMsg);  // eslint-disable-line new-cap
+    // eslint-disable-next-line new-cap, unicorn/throw-new-error
+    const a = EOFError(testMsg);
     assert(a instanceof EOFError);
     assert.strictEqual(a.message, testMsg);
   });

@@ -604,7 +604,7 @@ function readTo(stream, needle, options) {
     const start =
       Math.max((result.length - chunk.length - needleLength) + 1, 0);
     const needleIndex = result.indexOf(needleForIndexOf, start);
-    if (needleIndex < 0) {
+    if (needleIndex === -1) {
       return -1;
     }
 

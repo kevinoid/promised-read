@@ -23,7 +23,8 @@ describe('TimeoutError', () => {
 
   it('can be instantiated without new', () => {
     const testMsg = 'test message';
-    const a = TimeoutError(testMsg);  // eslint-disable-line new-cap
+    // eslint-disable-next-line new-cap, unicorn/throw-new-error
+    const a = TimeoutError(testMsg);
     assert(a instanceof TimeoutError);
     assert.strictEqual(a.message, testMsg);
   });

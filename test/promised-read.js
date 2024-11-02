@@ -26,7 +26,7 @@ const {
 } = promisedRead;
 
 // eslint-disable-next-line no-shadow
-const setImmediate = global.setImmediate || setTimeout;
+const setImmediate = globalThis.setImmediate || setTimeout;
 
 /* The stream APIs use callbacks instead of Promises.
  * It is necessary to use callbacks to test.  Ignore lint errors about it. */
@@ -623,7 +623,7 @@ function describeWithStreamType(PassThrough) {
 
       it('passes options.timeout of 0 to setTimeout', () => {
         const input = new PassThrough();
-        const spy = sinon.spy(global, 'setTimeout');
+        const spy = sinon.spy(globalThis, 'setTimeout');
         const promise = read(input, { timeout: 0 }).then(
           sinon.mock().never(),
           (err) => {
