@@ -14,7 +14,7 @@
   "author": "Kevin Locke <kevin@kevinlocke.name>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kevinoid/promised-read.git"
+    "url": "git+https://github.com/kevinoid/promised-read.git"
   },
   "type": "commonjs",
   "files": [
