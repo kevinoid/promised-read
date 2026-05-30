@@ -236,8 +236,8 @@ function readInternal(stream, size, until, options) {
     // Check for cancel method and config function to add certainty.
     // TODO:  Find a more reliable check.
     if (typeof cancelled === 'function'
-        && typeof ReadPromise.prototype.cancel === 'function'
-        && typeof ReadPromise.config === 'function') {
+      && typeof ReadPromise.prototype.cancel === 'function'
+      && typeof ReadPromise.config === 'function') {
       cancelled(cancelRead);
     }
 
@@ -269,7 +269,7 @@ function readInternal(stream, size, until, options) {
         if (desiredLength > resultLength) {
           debug(
             'until returned a desired length of %d.  '
-              + 'Only have %d.  Reading up to %d.',
+            + 'Only have %d.  Reading up to %d.',
             desiredLength,
             resultLength,
             desiredLength,
@@ -299,8 +299,8 @@ function readInternal(stream, size, until, options) {
         doResolve();
         return true;
       } else if (desiredLength !== undefined
-          && desiredLength !== null
-          && desiredLength !== false) {
+        && desiredLength !== null
+        && desiredLength !== false) {
         // Note:  Although this could be allowed, it causes an Error so that
         // future versions may add behavior for these values without causing
         // breakage.
@@ -335,8 +335,8 @@ function readInternal(stream, size, until, options) {
     // was not careful about handling the 'end' event.
     /* eslint-disable no-underscore-dangle */
     if (stream
-        && stream._readableState
-        && stream._readableState.endEmitted) {
+      && stream._readableState
+      && stream._readableState.endEmitted) {
       debug('Error:  stream has ended!  Calling read after end is unreliable!');
       onEnd();
       return;
@@ -689,7 +689,7 @@ function readToMatch(stream, regexp, options) {
 
     if (typeof result !== 'string') {
       throw new TypeError('readToMatch requires a string stream'
-          + ' (use constructor options.encoding or .setEncoding method)');
+        + ' (use constructor options.encoding or .setEncoding method)');
     }
 
     regexp.lastIndex = maxMatchLen
