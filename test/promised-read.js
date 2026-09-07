@@ -13,7 +13,7 @@ const BBPromise = require('bluebird');
 const sinon = require('sinon');
 
 // https://github.com/import-js/eslint-plugin-import/issues/2844
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line import-x/extensions
 const promisedRead = require('..');
 const PassThroughEmitter = require('../test-lib/pass-through-emitter.js');
 
