@@ -1,0 +1,16 @@
+{
+  "ignoreBinaries": [
+    // Ignore version binaries.  Install by running version-deps script.
+    "conventional-changelog",
+    "depcheck",
+    "david",
+    "git-branch-is",
+    "hub-ci-status"
+  ],
+  "ignoreFiles": [
+    // Ignore executable test files, which are not imported.
+    "test-bin/*.js"
+  ],
+  "treatConfigHintsAsErrors": true,
+  "treatTagHintsAsErrors": true
+}
