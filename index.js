@@ -144,7 +144,7 @@ function readInternal(stream, size, until, options) {
     (options && options.flowing) || typeof stream.read !== 'function';
   let numSize =
     size === null || Number.isNaN(Number(size)) ? undefined : Number(size);
-  let objectMode = Boolean(options && options.objectMode);
+  let isObjectMode = Boolean(options && options.objectMode);
   const timeout = options && options.timeout;
   const ReadPromise = (options && options.Promise)
     || (flowing ? SyncPromise : Promise);
@@ -346,8 +346,8 @@ function readInternal(stream, size, until, options) {
     let resultBuf;
     function onData(data) {
       if (result === null) {
-        objectMode ||= typeof data !== 'string' && !(data instanceof Buffer);
-        result = objectMode ? [data] : data;
+        isObjectMode ||= typeof data !== 'string' && !(data instanceof Buffer);
+        result = isObjectMode ? [data] : data;
       } else if (typeof result === 'string' && typeof data === 'string') {
         result += data;
       } else if (result instanceof Buffer && data instanceof Buffer) {
@@ -375,13 +375,13 @@ function readInternal(stream, size, until, options) {
       // result/data mismatch, must be in objectMode.  result becomes an Array.
       // This case is really ugly.  Well-behaved streams shouldn't use it.
       } else {
-        objectMode = true;
+        isObjectMode = true;
         result = [result, data];
       }
 
       // When doing a single read in objectMode, behave like stream.read(size):
       // ignore size and don't wrap the result in an Array.
-      if (objectMode && !until) {
+      if (isObjectMode && !until) {
         // Since resolving to null indicates EOF, we do not permit returning
         // null if it was emitted by a 'data' event.  If there is a use-case
         // for this, I'd be open to adding an option to allow it.
@@ -551,12 +551,12 @@ function readUntil(stream, until, options) {
  * streams in flowing mode (see README.md for details).
  */
 function readTo(stream, needle, options) {
-  const endOK = Boolean(options && (options.endOK || options.endOk));
+  const isEndOK = Boolean(options && (options.endOK || options.endOk));
   let needleForIndexOf;
   let needleLength;
   function until(result, chunk, ended) {
     if (ended) {
-      return endOK ? result ? result.length : 0 : -1;
+      return isEndOK ? result ? result.length : 0 : -1;
     }
 
     if (Array.isArray(result)) {
@@ -666,7 +666,7 @@ function readToEnd(stream, options) {
  * for details).
  */
 function readToMatch(stream, regexp, options) {
-  const endOK = Boolean(options && (options.endOK || options.endOk));
+  const isEndOK = Boolean(options && (options.endOK || options.endOk));
   const maxMatchLen = Number(options && options.maxMatchLen);
   // Convert to RegExp where necessary, like String.prototype.match
   // Make sure RegExp has global flag so lastIndex will be set
@@ -684,7 +684,7 @@ function readToMatch(stream, regexp, options) {
   }
   function until(result, chunk, ended) {
     if (ended) {
-      return endOK ? result ? result.length : 0 : -1;
+      return isEndOK ? result ? result.length : 0 : -1;
     }
 
     if (typeof result !== 'string') {
