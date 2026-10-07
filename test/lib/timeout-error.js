@@ -21,12 +21,9 @@ describe('TimeoutError', () => {
     assert(a.message, 'has default message');
   });
 
-  it('can be instantiated without new', () => {
-    const testMsg = 'test message';
+  it('can not be instantiated without new', () => {
     // eslint-disable-next-line new-cap, unicorn/throw-new-error
-    const a = TimeoutError(testMsg);
-    assert(a instanceof TimeoutError);
-    assert.strictEqual(a.message, testMsg);
+    assert.throws(() => TimeoutError('test message'), TypeError);
   });
 
   it('inherits from Error', () => {

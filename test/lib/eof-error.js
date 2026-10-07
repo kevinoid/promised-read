@@ -21,12 +21,9 @@ describe('EOFError', () => {
     assert(a.message, 'has default message');
   });
 
-  it('can be instantiated without new', () => {
-    const testMsg = 'test message';
+  it('can not be instantiated without new', () => {
     // eslint-disable-next-line new-cap, unicorn/throw-new-error
-    const a = EOFError(testMsg);
-    assert(a instanceof EOFError);
-    assert.strictEqual(a.message, testMsg);
+    assert.throws(() => EOFError('test message'), TypeError);
   });
 
   it('inherits from Error', () => {
