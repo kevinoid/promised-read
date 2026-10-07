@@ -45,7 +45,7 @@ function tryUnshift(stream, result, desiredLength, emptySlice) {
   let resultLength = result.length;
   try {
     if (Array.isArray(result)) {
-      while (resultLength > desiredLength && !unshiftErr) {
+      while (!unshiftErr && resultLength > desiredLength) {
         stream.unshift(result[resultLength - 1]);
         if (!unshiftErr) {
           resultLength -= 1;
