@@ -45,7 +45,7 @@ class PassThroughEmitter extends EventEmitter {
       callback = encoding;
       encoding = undefined;
     }
-    if (!this.objectMode && typeof chunk === 'string') {
+    if (typeof chunk === 'string' && !this.objectMode) {
       chunk = Buffer.from(chunk, encoding);
     }
     const data =
