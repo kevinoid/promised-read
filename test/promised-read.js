@@ -1291,10 +1291,7 @@ function describeWithStreamType(PassThrough) {
     it('stops reading on true', async () => {
       const input = new PassThrough();
       const inputData = Buffer.from('test');
-      function until(buffer, chunk) {
-        return true;
-      }
-      const promise = readUntil(input, until);
+      const promise = readUntil(input, () => true);
       input.write(inputData);
       const data = await promise;
       assert.deepStrictEqual(data, inputData);
@@ -1501,10 +1498,10 @@ function describeWithStreamType(PassThrough) {
       }
       inputData.push(bigInputData);
       // TODO:  Some way to test buffer is a slice of a much larger buffer?
-      function untilBig(buffer, chunk) {
+      function isChunkBig(buffer, chunk) {
         return chunk.length === bigInputData.length;
       }
-      const promise = readUntil(input, untilBig);
+      const promise = readUntil(input, isChunkBig);
       writeEachTo(input, inputData);
       const data = await promise;
       assert.deepStrictEqual(data, Buffer.concat(inputData));
