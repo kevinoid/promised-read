@@ -38,6 +38,7 @@ BBPromise.config({ cancellation: true });
 // More readable to keep them near their point of use.
 /* eslint-disable unicorn/consistent-function-scoping */
 
+// eslint-disable-next-line unicorn/consistent-boolean-name
 function untilNever() { return false; }
 
 function writeEachTo(writable, inputData, cb) {
