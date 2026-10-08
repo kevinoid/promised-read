@@ -287,13 +287,13 @@ function describeWithStreamType(PassThrough) {
       const errTest = new Error('test');
       const promise = read(input);
       input.emit('error', errTest);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err, errTest);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err, errTest);
+          return true;
+        },
+      );
     });
 
     if (PassThrough.prototype.read) {
@@ -303,14 +303,14 @@ function describeWithStreamType(PassThrough) {
         const promise = read(input);
         input.emit('error', errTest);
         input.write('data');
-        try {
-          await promise;
-        } catch (err) {
-          assert.strictEqual(err, errTest);
-          assert.notStrictEqual(input.read(), null);
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          promise,
+          (err) => {
+            assert.strictEqual(err, errTest);
+            return true;
+          },
+        );
+        assert.notStrictEqual(input.read(), null);
       });
     }
 
@@ -325,14 +325,14 @@ function describeWithStreamType(PassThrough) {
         input.write(inputData, () => {
           input.emit('error', errTest);
         });
-        try {
-          await promise;
-        } catch (err) {
-          assert.strictEqual(err, errTest);
-          assert.deepStrictEqual(err.read, inputData);
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          promise,
+          (err) => {
+            assert.strictEqual(err, errTest);
+            assert.deepStrictEqual(err.read, inputData);
+            return true;
+          },
+        );
       });
     }
 
@@ -618,13 +618,13 @@ function describeWithStreamType(PassThrough) {
     describe('with options.timeout', () => {
       it('rejects with TimeoutError after timeout ms', async () => {
         const input = new PassThrough();
-        try {
-          await read(input, { timeout: 1 });
-        } catch (err) {
-          assert.strictEqual(err.name, 'TimeoutError');
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          read(input, { timeout: 1 }),
+          (err) => {
+            assert.strictEqual(err.name, 'TimeoutError');
+            return true;
+          },
+        );
       });
 
       it('passes options.timeout of 0 to setTimeout', async () => {
@@ -634,13 +634,13 @@ function describeWithStreamType(PassThrough) {
         setTimeout.restore();
         assert.strictEqual(spy.callCount, 1);
         assert.strictEqual(spy.firstCall.args[1], 0);
-        try {
-          await promise;
-        } catch (err) {
-          assert.strictEqual(err.name, 'TimeoutError');
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          promise,
+          (err) => {
+            assert.strictEqual(err.name, 'TimeoutError');
+            return true;
+          },
+        );
       });
 
       if (PassThrough.prototype.read) {
@@ -829,13 +829,13 @@ function describeWithStreamType(PassThrough) {
         const inputData = Buffer.from('Larry\n');
         const promise = readTo(input, true);
         input.write(inputData);
-        try {
-          await promise;
-        } catch (err) {
-          assert.strictEqual(err.name, 'TypeError');
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          promise,
+          (err) => {
+            assert.strictEqual(err.name, 'TypeError');
+            return true;
+          },
+        );
       });
     });
 
@@ -955,27 +955,27 @@ function describeWithStreamType(PassThrough) {
       input.write(inputData, () => {
         input.emit('error', errTest);
       });
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err, errTest);
-        assert.deepStrictEqual(err.read, inputData);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err, errTest);
+          assert.deepStrictEqual(err.read, inputData);
+          return true;
+        },
+      );
     });
 
     it('rejects with EOFError when no data is read', async () => {
       const input = new PassThrough();
       const promise = readTo(input, '\n');
       input.end();
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'EOFError');
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'EOFError');
+          return true;
+        },
+      );
     });
 
     it('sets previously read data as .read on EOFError', async () => {
@@ -983,14 +983,14 @@ function describeWithStreamType(PassThrough) {
       const inputData = Buffer.from('test');
       const promise = readTo(input, '\n');
       input.end(inputData);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'EOFError');
-        assert.deepStrictEqual(err.read, inputData);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'EOFError');
+          assert.deepStrictEqual(err.read, inputData);
+          return true;
+        },
+      );
     });
 
     it('resolves with null when no data if options.endOK', async () => {
@@ -1020,14 +1020,14 @@ function describeWithStreamType(PassThrough) {
       queueMicrotask(() => {
         promise.abortRead();
       });
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'AbortError');
-        assert.deepStrictEqual(err.read, inputData);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'AbortError');
+          assert.deepStrictEqual(err.read, inputData);
+          return true;
+        },
+      );
     });
 
     it('without unshift, returns read data from .cancelRead', (done) => {
@@ -1050,14 +1050,14 @@ function describeWithStreamType(PassThrough) {
 
       const promise = readTo(input, '\n', { timeout: 1 });
       input.write(inputData);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'TimeoutError');
-        assert.deepStrictEqual(err.read, inputData);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'TimeoutError');
+          assert.deepStrictEqual(err.read, inputData);
+          return true;
+        },
+      );
     });
 
     if (PassThrough.prototype.unshift) {
@@ -1070,15 +1070,15 @@ function describeWithStreamType(PassThrough) {
         queueMicrotask(() => {
           promise.abortRead();
         });
-        try {
-          await promise;
-        } catch (err) {
-          assert.strictEqual(err.name, 'AbortError');
-          assert.strictEqual(err.read, undefined);
-          assert.deepStrictEqual(input.read(), inputData);
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          promise,
+          (err) => {
+            assert.strictEqual(err.name, 'AbortError');
+            assert.strictEqual(err.read, undefined);
+            return true;
+          },
+        );
+        assert.deepStrictEqual(input.read(), inputData);
       });
 
       it('with unshift, unshifts read data on .cancelRead', (done) => {
@@ -1101,15 +1101,15 @@ function describeWithStreamType(PassThrough) {
 
         const promise = readTo(input, '\n', { timeout: 1 });
         input.write(inputData);
-        try {
-          await promise;
-        } catch (err) {
-          assert.strictEqual(err.name, 'TimeoutError');
-          assert.strictEqual(err.read, undefined);
-          assert.deepStrictEqual(input.read(), inputData);
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          promise,
+          (err) => {
+            assert.strictEqual(err.name, 'TimeoutError');
+            assert.strictEqual(err.read, undefined);
+            return true;
+          },
+        );
+        assert.deepStrictEqual(input.read(), inputData);
       });
     }
   });
@@ -1163,13 +1163,13 @@ function describeWithStreamType(PassThrough) {
       const errTest = new Error('test');
       const promise = readToEnd(input);
       input.emit('error', errTest);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err, errTest);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err, errTest);
+          return true;
+        },
+      );
     });
   });
 
@@ -1236,13 +1236,13 @@ function describeWithStreamType(PassThrough) {
 
     it('rejects with SyntaxError for invalid string expressions', async () => {
       const input = new PassThrough({ encoding: 'utf8' });
-      try {
-        await readToMatch(input, '*');
-      } catch (err) {
-        assert.strictEqual(err.name, 'SyntaxError');
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        readToMatch(input, '*'),
+        (err) => {
+          assert.strictEqual(err.name, 'SyntaxError');
+          return true;
+        },
+      );
     });
 
     it('rejects with TypeError for non-string streams', async () => {
@@ -1250,13 +1250,13 @@ function describeWithStreamType(PassThrough) {
       const inputData = Buffer.from('Larry\n');
       const promise = readToMatch(input, /\n/g);
       input.write(inputData);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'TypeError');
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'TypeError');
+          return true;
+        },
+      );
     });
 
     it('resolves with null when no data if options.endOK', async () => {
@@ -1430,13 +1430,13 @@ function describeWithStreamType(PassThrough) {
       }
       const promise = readUntil(input, until);
       input.write(inputData);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'TypeError');
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'TypeError');
+          return true;
+        },
+      );
     });
 
     if (PassThrough.prototype.unshift) {
@@ -1448,14 +1448,14 @@ function describeWithStreamType(PassThrough) {
         }
         const promise = readUntil(input, until);
         input.write(inputData);
-        try {
-          await promise;
-        } catch (err) {
-          assert.strictEqual(err.name, 'TypeError');
-          assert.deepStrictEqual(input.read(), inputData);
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          promise,
+          (err) => {
+            assert.strictEqual(err.name, 'TypeError');
+            assert.deepStrictEqual(input.read(), inputData);
+            return true;
+          },
+        );
       });
     }
 
@@ -1549,13 +1549,13 @@ function describeWithStreamType(PassThrough) {
       const input = new PassThrough();
       const promise = readUntil(input, untilNever);
       input.end();
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'EOFError');
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'EOFError');
+          return true;
+        },
+      );
     });
 
     it('sets previously read data as .read on EOFError', async () => {
@@ -1563,14 +1563,14 @@ function describeWithStreamType(PassThrough) {
       const inputData = Buffer.from('test');
       const promise = readUntil(input, untilNever);
       input.end(inputData);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'EOFError');
-        assert.deepStrictEqual(err.read, inputData);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'EOFError');
+          assert.deepStrictEqual(err.read, inputData);
+          return true;
+        },
+      );
     });
 
     if (stream.Readable && new PassThrough() instanceof stream.Readable) {
@@ -1606,13 +1606,13 @@ function describeWithStreamType(PassThrough) {
       }
       const promise = readUntil(input, untilExcept);
       input.write(inputData);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err, errTest);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err, errTest);
+          return true;
+        },
+      );
     });
 
     it('rejects with a falsey value thrown by until', async () => {
@@ -1624,13 +1624,13 @@ function describeWithStreamType(PassThrough) {
       }
       const promise = readUntil(input, untilExcept);
       input.write(inputData);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err, errTest);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err, errTest);
+          return true;
+        },
+      );
     });
 
     if (PassThrough.prototype.read) {
@@ -1672,14 +1672,14 @@ function describeWithStreamType(PassThrough) {
       }
       const promise = readUntil(input, untilExcept);
       input.write(inputData);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err, errTest);
-        assert.deepStrictEqual(err.read, inputData);
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err, errTest);
+          assert.deepStrictEqual(err.read, inputData);
+          return true;
+        },
+      );
     });
 
     if (PassThrough.prototype.unshift) {
@@ -1692,28 +1692,28 @@ function describeWithStreamType(PassThrough) {
         }
         const promise = readUntil(input, untilExcept);
         input.write(inputData);
-        try {
-          await promise;
-        } catch (err) {
-          assert.strictEqual(err, errTest);
-          assert.strictEqual(err.read, undefined);
-          assert.deepStrictEqual(input.read(), inputData);
-          return;
-        }
-        sinon.mock().never()();
+        await assert.rejects(
+          promise,
+          (err) => {
+            assert.strictEqual(err, errTest);
+            assert.strictEqual(err.read, undefined);
+            return true;
+          },
+        );
+        assert.deepStrictEqual(input.read(), inputData);
       });
     }
 
     it('rejects with TypeError for non-function until', async () => {
       const input = new PassThrough();
       const promise = readUntil(input, true);
-      try {
-        await promise;
-      } catch (err) {
-        assert.strictEqual(err.name, 'TypeError');
-        return;
-      }
-      sinon.mock().never()();
+      await assert.rejects(
+        promise,
+        (err) => {
+          assert.strictEqual(err.name, 'TypeError');
+          return true;
+        },
+      );
     });
 
     // This can be an issue with synchronous promises.
