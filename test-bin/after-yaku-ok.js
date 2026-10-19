@@ -16,8 +16,7 @@ const { read } = require('..');
 
 /* eslint-disable no-console */
 
-// eslint-disable-next-line @stylistic/max-len
-// eslint-disable-next-line no-restricted-properties,unicorn/prefer-queue-microtask
+// eslint-disable-next-line unicorn/prefer-queue-microtask
 if (yaku.nextTick !== process.nextTick) {
   console.error('yaku.nextTick !== process.nextTick');
   process.exitCode = 1;
